@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
-  title: Service of Intelligence
-  description: Get zip codes
+  title: DIA
+  description: Decentralized Intelligence Agency
   termsOfService: http://swagger.io/terms/
   contact:
     email: shaokexu@gmail.com
@@ -10,12 +10,14 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.0
 servers:
-- url: https://soi-zipcode.munew.io/
+- url: https://dia.munew.io/
 tags:
 - name: soi
   description: Service of Intelligence
+- name: intelligences
+  description: Intelligences want to collect
 paths:
-  /register:
+  /apis/register:
     post:
       tags:
         - soi
@@ -35,7 +37,220 @@ paths:
             application/json:
               schema:
                 type: object
+  /apis/register/{gid}:
+    delete:
+      tags:
+        - soi
+      summary: Unregister a SOI from DIA
+      operationId: unregisterSOI
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of SOI
+      responses:
+        200:
+          description: Delete SOI successful
+          content:
+            application/json:
+              schema:
+                type: object
+        404:
+          description: Cannot find specific SOI
+  /apis/intelligences:
+    post:
+      tags:
+        - intelligences
+      summary: Add intelligences to collecting list
+      operationId: addIntelligences
+      requestBody:
+        description: Need to collect intelligences
+        required: true
+        content:
+          application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Intelligence'
+      responses:
+        200:
+          description: Extract intelligences successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddSuccess'
+        404:
+          description: Cannot find specific SOI, please make sure you registered
+    delete:
+      tags:
+        - intelligences
+      summary: Delete intelligences from collecting list
+      operationId: deleteIntelligences
+      requestBody:
+        description: Intelligences that need to be deleted
+        required: true
+        content:
+          application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/GlobalId'
+      responses:
+        200:
+          description: Delete intelligences successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddSuccess'
 components:
   schemas:
+    GlobalId:
+        type: string
+        format: base64
+        description: Global unique id.
+        example: ef72448b-7bc4-42d1-9436-822c9634d943
+    AddSuccess:
+      type: object
+      properties:
+        successful:
+          type: array
+          description: Successful Intelligence global_id
+          items:
+            $ref: '#/components/schemas/GlobalId'
+        fail:
+          type: array
+          description: Fail Intelligence global_id
+          items:
+            $ref: '#/components/schemas/GlobalId'
+        
     SOI:
       type: object
+      required:
+        - global_id
+        - soi_name
+        - base_url
+      properties:
+        global_id:
+          $ref: '#/components/schemas/GlobalId'
+        soi_name:
+          type: string
+          description: The name of SOI
+        api_key:
+          type: string
+          description: API key that used to access SOI
+        base_url:
+          type: string
+          description: Base URL for RESTFul APIs
+        health:
+          type: object
+          description: RESTFul API for check server's health status
+          properties:
+            method:
+              type: string
+              default: 'GET'
+              description: HTTP request method
+              enum:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+            path:
+              type: string
+              format: uri
+              default: '/apis/health'
+              description: path of RESTFul API for check server's health status
+        intelligences:
+          type: object
+          description: RESTFul API for collected intelligences
+          properties:
+            method:
+              type: string
+              default: 'POST'
+              description: HTTP request method
+              enum:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+            path:
+              type: string
+              format: uri
+              default: '/apis/intelligences'
+              description: path of RESTFul API for check server's health status
+    Intelligence:
+      type: object
+      description: Intelligence that agents collected
+      required:
+        - global_id
+        - status
+        - suitable_agents
+        - soi_gid
+        - url
+      properties:
+        global_id:
+          $ref: '#/components/schemas/GlobalId'
+        soi_gid:
+          type: string
+          description: Global unique soi global_id.
+          example: NDU4MSBidXJrZSBkcixzYW50YSBjbGFyYSxjYSw5NTA1NA==
+        priority:
+          type: number
+          description: Priority of this intelligence.
+        created_at:
+          type: number
+          description: Timestamp. When this intelligence job was created
+          example: 1553974629109
+        modified_at:
+          type: number
+          description: Timestamp. When this intelligence job was modified
+          example: 1553974629109
+        last_collected_at:
+          type: number
+          description: Timestamp. Last time collect this intelligence.
+          example: 1553974629109
+        started_at:
+          type: number
+          description: Timestamp. When this intelligence started to be collected
+          example: 1553974619655
+        ended_at:
+          type: number
+          description: Timestamp. When this intelligence finished collect
+          example: 1553974629109
+        status:
+          type: string
+          description: Status of this intelligence
+          enum:
+            - CONFIGURATED
+            - FINISHED
+            - RUNNING
+            - FAILED
+            - PAUSED
+            - TIMEOUT
+        suitable_agents:
+          type: array
+          items: 
+            type: string
+            enum:
+              - browserExtension
+              - headlessBrowser
+              - service
+        url:
+          type: string
+          description: Which URL need to collect intelligence
+          format: uri
+          example: https://json-schema.org
+        data:
+          type: object
+          description: Collected intelligence data
+          properties:
+            html:
+              type: string
+              description: Collected HTML data
+        metadata: 
+          type: object
+          description: Additional metadata for this intelligence    
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: X-API-KEY
+      in: header  
