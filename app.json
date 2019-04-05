@@ -1,0 +1,26 @@
+{
+  "name": "dia",
+  "description": "Decentralized Intelligence Agency",
+  "keywords": [
+    "dia",
+    "nodejs"
+  ],
+  "website": "https://github.com/shaoke/dia.git",
+  "repository": "https://github.com/shaoke/dia.git",
+  "env": {
+    "API_KEY": {
+      "description": "API Key for restful api validation",
+      "value": "5b0e37dd-2bc8-42b4-8e18-d9b8faf19c99"
+    },
+    "MONGODB_URI": {
+      "description": "Mongodb URI",
+      "value": "mongodb://localhost:27017/dia"
+    }
+  },
+  "success_url": "/",
+  "buildpacks": [
+    {
+      "url": "http://github.com/heroku/heroku-buildpack-nodejs.git"
+    }
+  ]
+}

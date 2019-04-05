@@ -1,0 +1,41 @@
+openapi: 3.0.1
+info:
+  title: Service of Intelligence
+  description: Get zip codes
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: shaokexu@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+- url: https://soi-zipcode.munew.io/
+tags:
+- name: soi
+  description: Service of Intelligence
+paths:
+  /register:
+    post:
+      tags:
+        - soi
+      summary: Register a SOI to DIA
+      operationId: registerSOI
+      requestBody:
+        description: Need to register SOI information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SOI'
+      responses:
+        200:
+          description: Registered successful
+          content:
+            application/json:
+              schema:
+                type: object
+components:
+  schemas:
+    SOI:
+      type: object
