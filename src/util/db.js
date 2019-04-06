@@ -51,7 +51,6 @@ async function DB() {
             });
         });
     } catch (err) {
-        logger.error('[db->DB], error: ', err);
         throw err;
     }
 }
@@ -64,7 +63,6 @@ async function find(collectionName, query, options) {
         result = result.toArray();
         return result;
     } catch (err) {
-        logger.error('[db->find], error: ', err);
         throw err;
     }
 }
@@ -76,7 +74,6 @@ async function findOne(collectionName, query, options) {
         const result = await collection.findOne(query, options || {});
         return result;
     } catch (err) {
-        logger.error('[db->findOne], error: ', err);
         throw err;
     }
 }
@@ -92,12 +89,7 @@ async function findOneByGlobalId(collectionName, gid, options) {
         }, options || {});
         return result;
     } catch (err) {
-        logger.error('[db->findOneByGlobalId], error: ', err);
-        throw new HTTPError(500, {
-            collectionName,
-            global_id: gid,
-            options
-        }, undefined, err);
+        throw err;
     }
 }
 
@@ -108,8 +100,18 @@ async function updateOne(collectionName, filter, update, options) {
         const result = await collection.updateOne(filter, update, options || {});
         return result;
     } catch (err) {
-        logger.error('[db->updateOne], error: ', err);
-        throw new HTTPError(500, {}, undefined, err);
+        throw err;
+    }
+}
+
+async function remove(collectionName, filter, options) {
+    try {
+        let db = await DB();
+        const collection = db.collection(collectionName);
+        const result = await collection.remove(filter, options || {});
+        return result;
+    } catch (err) {
+        throw err;
     }
 }
 
@@ -120,8 +122,7 @@ async function updateMany(collectionName, filter, update, options) {
         const result = await collection.updateMany(filter, update, options || {});
         return result;
     } catch (err) {
-        logger.error('[db->updateMany], error: ', err);
-        throw new HTTPError(500, {}, undefined, err);
+        throw err;
     }
 }
 
@@ -135,8 +136,7 @@ async function insertOne(collectionName, doc) {
         let result = await collection.insertOne(doc);
         return result;
     } catch (err) {
-        logger.error('[db->insertOne], error: ', err);
-        throw new HTTPError(500, {}, undefined, err);
+        throw err;
     }
 }
 
@@ -151,16 +151,19 @@ async function findOneById(collectionName, id, options) {
         }, options || {});
         return result;
     } catch (err) {
-        logger.error('[db->findOneById], error: ', err);
-        throw new HTTPError(500, {}, undefined, err);
+        throw err;
     }
 }
 
 async function checkExistByID(collectionName, id) {
-    const result = await findOneById(collectionName, id, {
-        '_id': 1
-    });
-    return !!result;
+    try{
+        const result = await findOneById(collectionName, id, {
+            '_id': 1
+        });
+        return !!result;
+    }catch(err){
+        throw err;
+    }
 }
 
 async function updateOneById(collectionName, id, data, upsert) {
@@ -182,8 +185,7 @@ async function updateOneById(collectionName, id, data, upsert) {
         });
         return result;
     } catch (err) {
-        logger.error('[db->updateOneById], error: ', err);
-        throw new HTTPError(500, {}, undefined, err);
+        throw err;
     }
 }
 
@@ -206,8 +208,7 @@ async function updateOneByGlobalId(collectionName, gid, data, upsert) {
         });
         return result;
     } catch (err) {
-        logger.error('[db->updateOneByGlobalId], error: ', err);
-        throw new HTTPError(500, {}, undefined, err);
+        throw err;
     }
 }
 
@@ -220,8 +221,7 @@ async function logUnknownDataToDB(doc) {
         let result = await updateOneByGlobalId(doc.global_id, doc, COLLECTIONS_NAME.unknownData, true);
         return result;
     } catch (err) {
-        logger.error('[db->logUnknownDataToDB], error: ', err);
-        throw new HTTPError(500, {}, undefined, err);
+        throw err;
     }
 }
 
@@ -233,6 +233,7 @@ module.exports = {
     insertOne,
     updateOne,
     updateMany,
+    remove,
     findOneById,
     updateOneById,
     updateOneByGlobalId,

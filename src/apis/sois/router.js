@@ -37,7 +37,7 @@ function registerRouter(router) {
 
         router.put('/sois/:gid', async (req, res, next) => {
             try {
-                let result = await helpers.updateSOI(_.get(req, 'params.gid'), _.get(req, 'body'));
+                await helpers.updateSOI(_.get(req, 'params.gid'), _.get(req, 'body'));
                 res.status(204).send();
             } catch (err) {
                 // Already HTTPError, then throw it
@@ -52,8 +52,8 @@ function registerRouter(router) {
 
         router.delete('/sois/:gid', async (req, res, next) => {
             try{
-                let result = await helpers.unregisterSOI(_.get(req, 'params.gid'));
-                res.send(result);
+                await helpers.unregisterSOI(_.get(req, 'params.gid'));
+                res.status(204).send();
             }catch(err){
                 // Already HTTPError, then throw its
                 if (err instanceof HTTPError) {
