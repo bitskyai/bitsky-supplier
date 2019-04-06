@@ -10,18 +10,20 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   version: 1.0.0
 servers:
-- url: https://dia.munew.io/
+- url: http://localhost:9099/
 tags:
 - name: soi
   description: Service of Intelligence
+- name: dia
+  description: Decentralized Intelligence Agency
 - name: intelligences
   description: Intelligences want to collect
 paths:
-  /apis/register:
+  /apis/sois:
     post:
       tags:
         - soi
-      summary: Register a SOI to DIA
+      summary: Register a SOI
       operationId: registerSOI
       requestBody:
         description: Need to register SOI information
@@ -37,11 +39,91 @@ paths:
             application/json:
               schema:
                 type: object
-  /apis/register/{gid}:
+                properties:
+                  _id:
+                    type: string
+                    description: Generate MongoDB Id
+                  global_id:
+                    $ref: '#/components/schemas/GlobalId'
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apis/sois/{gid}:
+    get:
+      tags:
+        - soi
+      summary: Get a SOI
+      operationId: getSOI
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of SOI
+      responses:
+        200:
+          description: Get a SOI successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOI'
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Cannot find specific SOI
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - soi
+      summary: Update a SOI
+      operationId: updateSOI
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of SOI
+      requestBody:
+        description: SOI information need to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SOI'
+      responses:
+        200:
+          description: Update SOI successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    description: Generate MongoDB Id
+                  global_id:
+                    $ref: '#/components/schemas/GlobalId'
+        404:
+          description: Cannot find specific SOI
+          content:
+            application/json:
+              schema:
+                type: object,
+                properties:
+                  global_id:
+                    $ref: '#/components/schemas/GlobalId'
     delete:
       tags:
         - soi
-      summary: Unregister a SOI from DIA
+      summary: Unregister a SOI
       operationId: unregisterSOI
       parameters:
         - in: path
@@ -54,9 +136,19 @@ paths:
           content:
             application/json:
               schema:
-                type: object
+                type: object,
+                properties:
+                  global_id:
+                    $ref: '#/components/schemas/GlobalId'
         404:
           description: Cannot find specific SOI
+          content:
+            application/json:
+              schema:
+                type: object,
+                properties:
+                  global_id:
+                    $ref: '#/components/schemas/GlobalId'
   /apis/intelligences:
     post:
       tags:
@@ -102,6 +194,19 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AddSuccess'
+  /health:
+    get:
+      tags:
+        - dia
+      summary: Check DIA's health status
+      operationId: checkHealth
+      responses:
+        200:
+          description: SOI is active
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
 components:
   schemas:
     GlobalId:
@@ -141,6 +246,12 @@ components:
         base_url:
           type: string
           description: Base URL for RESTFul APIs
+        status:
+          type: string
+          description: SOI status
+          enum:
+            - ACTIVE
+            - UNACTIVE
         health:
           type: object
           description: RESTFul API for check server's health status
@@ -182,8 +293,6 @@ components:
       description: Intelligence that agents collected
       required:
         - global_id
-        - status
-        - suitable_agents
         - soi_gid
         - url
       properties:
@@ -219,6 +328,7 @@ components:
         status:
           type: string
           description: Status of this intelligence
+          default: CONFIGURATED
           enum:
             - CONFIGURATED
             - FINISHED
@@ -228,6 +338,8 @@ components:
             - TIMEOUT
         suitable_agents:
           type: array
+          default:
+            - browserExtension
           items: 
             type: string
             enum:
@@ -249,6 +361,43 @@ components:
         metadata: 
           type: object
           description: Additional metadata for this intelligence    
+    HealthStatus:
+      type: object
+      properties:
+        name:
+          type: string
+          description: DIA Name
+          example: "dia"
+        description:
+          type: string
+          description: DIA description.
+          example: "Decentralized Intelligence Agency"
+        version:
+          type: string
+          description: DIA version
+          example: "0.0.1"
+        migrationVersion:
+          type: string
+          description: DIA currently migrationVersion
+          example: 1
+    Error:
+      type: object
+      properties:
+        stack:
+          type: string
+          description: Error stack, return to UI only in develop mode
+        message:
+          type: string
+          description: Error Message
+        statusCode:
+          type: number
+          description: HTTP Status Code
+        code:
+          type: string
+          description: Error Code
+        data:
+          type: object
+          description: Additional data for this error
   securitySchemes:
     api_key:
       type: apiKey

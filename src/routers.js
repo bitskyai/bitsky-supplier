@@ -7,6 +7,7 @@ const packageJson = require('../package.json');
 
 // routers
 const apikey = require('./apis/apikey');
+const sois = require('./apis/sois');
 
 function createAPIRouters(){
   const router = express.Router();
@@ -19,6 +20,7 @@ function createAPIRouters(){
 
   // register redfin routers
   apikey.router(router);
+  sois.router(router);
   return router;
 }
 
@@ -39,7 +41,7 @@ function createHealthRouter(){
 }
 
 function createRouters(app){
-  app.use('/api', createAPIRouters());
+  app.use('/apis', createAPIRouters());
   app.use('/', createHealthRouter());
 }
 

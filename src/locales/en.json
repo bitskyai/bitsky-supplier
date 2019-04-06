@@ -1,0 +1,27 @@
+{
+    "dia_00014000001":{
+        "message": "Please change another global_id. %s already exist!",
+        "reason": "",
+        "action": ""
+    },
+    "dia_00015000001":{
+        "message": "Register SOI fail, caused by unknown error!",
+        "reason": "",
+        "action": ""
+    },
+    "dia_00024000001":{
+        "message": "You didn't pass global_id. global_id is required",
+        "reason": "",
+        "action": ""
+    },
+    "dia_00024040001":{
+        "message": "Cannot find SOI by global_id - %s",
+        "reason": "",
+        "action": ""
+    },
+    "dia_00025000001":{
+        "message": "Get SOI fail, caused by unknown error!",
+        "reason": "",
+        "action": ""
+    }
+}

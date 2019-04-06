@@ -6,10 +6,16 @@ const CONFIG = {
     SERVICE_NAME: packageJson.name,
     LOG_LEVEL: 'debug',
     PORT: 9099,     // server port number
-    MONGODB_URI: `mongodb://localhost:27017/${packageJson.name}`
+    MONGODB_URI: `mongodb://localhost:27017/${packageJson.name}`,
+    DEFAULT_HEALTH_METHOD: 'GET',
+    DEFAULT_HEALTH_PATH: '/health',
+    DEFAULT_INTELLIGENCES_METHOD: 'POST',
+    DEFAULT_INTELLIGENCES_PATH: '/apis/intelligences'
 };
 
 const COLLECTIONS_NAME = {
+    'sois': 'sois',
+    'intelligences': 'intelligences',
     'serverInfo': 'server_info',
     'history': 'history',
     'log': 'log',

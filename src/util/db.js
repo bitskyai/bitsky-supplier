@@ -2,6 +2,7 @@ const MongoClient = require('mongodb').MongoClient;
 const _ = require('lodash');
 const config = require('../config');
 const logger = require('./logger');
+const {HTTPError} = require('./Error');
 
 // private variables, to store reference, shouldn't be directed access
 let _mongoDBURL;
@@ -80,6 +81,26 @@ async function findOne(collectionName, query, options) {
     }
 }
 
+async function findOneByGlobalId(collectionName, gid, options) {
+    try {
+        let db = await DB();
+        const collection = db.collection(collectionName);
+        const result = await collection.findOne({
+            global_id: {
+                $eq: gid
+            }
+        }, options || {});
+        return result;
+    } catch (err) {
+        logger.error('[db->findOneByGlobalId], error: ', err);
+        throw new HTTPError(500, {
+            collectionName,
+            global_id: gid,
+            options
+        }, undefined, err);
+    }
+}
+
 async function updateOne(collectionName, filter, update, options) {
     try {
         let db = await DB();
@@ -88,7 +109,7 @@ async function updateOne(collectionName, filter, update, options) {
         return result;
     } catch (err) {
         logger.error('[db->updateOne], error: ', err);
-        throw err;
+        throw new HTTPError(500, {}, undefined, err);
     }
 }
 
@@ -100,7 +121,7 @@ async function updateMany(collectionName, filter, update, options) {
         return result;
     } catch (err) {
         logger.error('[db->updateMany], error: ', err);
-        throw err;
+        throw new HTTPError(500, {}, undefined, err);
     }
 }
 
@@ -108,14 +129,14 @@ async function insertOne(collectionName, doc) {
     try {
         let db = await DB();
         let collection = db.collection(collectionName);
-        if (!doc.create_at) {
-            doc.create_at = Date.now();
+        if (!doc.created_at) {
+            doc.created_at = Date.now();
         }
         let result = await collection.insertOne(doc);
         return result;
     } catch (err) {
         logger.error('[db->insertOne], error: ', err);
-        throw err;
+        throw new HTTPError(500, {}, undefined, err);
     }
 }
 
@@ -131,23 +152,7 @@ async function findOneById(collectionName, id, options) {
         return result;
     } catch (err) {
         logger.error('[db->findOneById], error: ', err);
-        throw err;
-    }
-}
-
-async function findOneByGlobalId(collectionName, id, options) {
-    try {
-        let db = await DB();
-        const collection = db.collection(collectionName);
-        const result = await collection.findOne({
-            global_id: {
-                $eq: id
-            }
-        }, options || {});
-        return result;
-    } catch (err) {
-        logger.error('[db->findOneByGlobalId], error: ', err);
-        throw err;
+        throw new HTTPError(500, {}, undefined, err);
     }
 }
 
@@ -178,7 +183,7 @@ async function updateOneById(collectionName, id, data, upsert) {
         return result;
     } catch (err) {
         logger.error('[db->updateOneById], error: ', err);
-        throw err;
+        throw new HTTPError(500, {}, undefined, err);
     }
 }
 
@@ -202,7 +207,7 @@ async function updateOneByGlobalId(collectionName, gid, data, upsert) {
         return result;
     } catch (err) {
         logger.error('[db->updateOneByGlobalId], error: ', err);
-        throw err;
+        throw new HTTPError(500, {}, undefined, err);
     }
 }
 
@@ -216,7 +221,7 @@ async function logUnknownDataToDB(doc) {
         return result;
     } catch (err) {
         logger.error('[db->logUnknownDataToDB], error: ', err);
-        throw err;
+        throw new HTTPError(500, {}, undefined, err);
     }
 }
 
@@ -224,6 +229,7 @@ module.exports = {
     DB,
     find,
     findOne,
+    findOneByGlobalId,
     insertOne,
     updateOne,
     updateMany,
