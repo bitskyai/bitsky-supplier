@@ -26,7 +26,7 @@ async function registerSOI(soi) {
 
         // validate soi
         // TODO: change to validate based on schema
-        if(!_.get(soi, 'global_id')||!_.get(soi, 'soi_name')||!_.get(soi, 'base_url')){
+        if (!_.get(soi, 'global_id') || !_.get(soi, 'soi_name') || !_.get(soi, 'base_url')) {
             throw new HTTPError(400, null, {}, 'dia_00014000002');
         }
 
@@ -52,14 +52,7 @@ async function registerSOI(soi) {
         };
     } catch (err) {
         // Already HTTPError, then throw it
-        if (err instanceof HTTPError) {
-            throw err;
-        } else {
-            // Otherwise create a HTTPError
-            throw new HTTPError(500, err, {
-                global_id: soi.global_id
-            }, 'dia_00015000001');
-        }
+        throw err;
     }
 }
 
@@ -86,12 +79,7 @@ async function getSOI(gid) {
         return soi;
     } catch (err) {
         // Already HTTPError, then throw it
-        if (err instanceof HTTPError) {
-            throw err;
-        } else {
-            // Otherwise create a HTTPError
-            throw new HTTPError(500, err, {}, 'dia_00025000001');
-        }
+        throw err;
     }
 }
 
