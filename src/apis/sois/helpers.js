@@ -1,3 +1,4 @@
+const _ = require('lodash');
 const {
     COLLECTIONS_NAME
 } = require('../../util/constants');
@@ -22,7 +23,13 @@ const logger = require('../../util/logger');
  */
 async function registerSOI(soi) {
     try {
-        // logger.debug('>>>>>>>>>>>>>>>>');
+
+        // validate soi
+        // TODO: change to validate based on schema
+        if(!_.get(soi, 'global_id')||!_.get(soi, 'soi_name')||!_.get(soi, 'base_url')){
+            throw new HTTPError(400, null, {}, 'dia_00014000002');
+        }
+
         // TODO: Think about whether we need to support Dynamic Generate **global_id**.
         // Use global_id to find SOI.
         let soiInDB = await findOneByGlobalId(COLLECTIONS_NAME.sois, soi.global_id, {
@@ -44,13 +51,10 @@ async function registerSOI(soi) {
             global_id: soi.global_id
         };
     } catch (err) {
-        // logger.debug('===============', err);
         // Already HTTPError, then throw it
         if (err instanceof HTTPError) {
-            // logger.debug("Don't need to create a HTTPError");
             throw err;
         } else {
-            // logger.debug("Need to create a HTTPError");
             // Otherwise create a HTTPError
             throw new HTTPError(500, err, {
                 global_id: soi.global_id

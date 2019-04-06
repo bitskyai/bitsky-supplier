@@ -1,8 +1,13 @@
 {
     "dia_00014000001":{
         "message": "Please change another global_id. %s already exist!",
-        "reason": "",
-        "action": ""
+        "reason": "global_id isn't unique",
+        "action": "Change different global_id"
+    },
+    "dia_00014000002":{
+        "message": "Please check global_id, soi_name, base_url, both of them are required",
+        "reason": "Don't pass global_id, soi_name, base_url",
+        "action": "Check the data your passed, both of them are required"
     },
     "dia_00015000001":{
         "message": "Register SOI fail, caused by unknown error!",
