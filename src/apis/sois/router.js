@@ -35,6 +35,21 @@ function registerRouter(router) {
             }
         });
 
+        router.put('/sois/:gid', async (req, res, next) => {
+            try {
+                let result = await helpers.updateSOI(_.get(req, 'params.gid'), _.get(req, 'body'));
+                res.status(204).send();
+            } catch (err) {
+                // Already HTTPError, then throw it
+                if (err instanceof HTTPError) {
+                    next(err);
+                } else {
+                    // Otherwise create a HTTPError
+                    next(new HTTPError(500, err, {}, 'dia_00035000001'));
+                }
+            }
+        });
+
         router.delete('/sois/:gid', async (req, res, next) => {
             try{
                 let result = await helpers.unregisterSOI(_.get(req, 'params.gid'));
@@ -45,7 +60,7 @@ function registerRouter(router) {
                     next(err);
                 } else {
                     // Otherwise create a HTTPError
-                    next(new HTTPError(500, err, {}, 'dia_00035000001'));
+                    next(new HTTPError(500, err, {}, 'dia_00045000001'));
                 }
             }
         });

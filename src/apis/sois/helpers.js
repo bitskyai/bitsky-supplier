@@ -7,7 +7,8 @@ const {
 } = require('../../util/Error');
 const {
     findOneByGlobalId,
-    insertOne
+    insertOne,
+    updateOne
 } = require('../../util/db');
 
 const logger = require('../../util/logger');
@@ -78,16 +79,30 @@ async function getSOI(gid) {
         }
         return soi;
     } catch (err) {
-        // Already HTTPError, then throw it
         throw err;
     }
 }
 
-async function updateSOI(soi) {
+async function updateSOI(gid, soi) {
     try {
-
+        // Remove cannot update fields
+        delete soi.created_at;
+        delete soi._id;
+        delete soi.global_id;
+        
+        let originalSoi = await getSOI(gid);
+        let obj = _.merge({}, originalSoi, soi);
+        obj.modified_at = Date.now();
+        let result = await updateOne(COLLECTIONS_NAME.sois, {
+            global_id: {
+                $eq: gid
+            }
+        },{
+            $set: obj
+        });
+        return result;
     } catch (err) {
-
+        throw err;
     }
 }
 
