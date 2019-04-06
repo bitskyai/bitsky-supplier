@@ -33,5 +33,10 @@
         "message": "Update SOI fail, caused by unknown error!",
         "reason": "Unknown error",
         "action": "Check log to find more detail"
+    },
+    "dia_00045000001":{
+        "message": "Unregister SOI fail, caused by unknown error!",
+        "reason": "Unknown error",
+        "action": "Check log to find more detail"
     }
 }

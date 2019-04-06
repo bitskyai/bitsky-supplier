@@ -8,7 +8,8 @@ const {
 const {
     findOneByGlobalId,
     insertOne,
-    updateOne
+    updateOne,
+    remove
 } = require('../../util/db');
 
 const logger = require('../../util/logger');
@@ -106,8 +107,17 @@ async function updateSOI(gid, soi) {
     }
 }
 
-async function unregisterSOI() {
-
+async function unregisterSOI(gid) {
+    try {
+        let result = await remove(COLLECTIONS_NAME.sois, {
+            global_id: {
+                $eq: gid
+            }
+        });
+        return result;
+    } catch (err) {
+        throw err;
+    }
 }
 
 module.exports = {
