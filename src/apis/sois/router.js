@@ -6,7 +6,7 @@ function registerRouter(router) {
     if (!_registered) {
         router.post('/sois', async (req, res, next) => {
             try {
-                let result = await helpers.registerSOI(soi);
+                let result = await helpers.registerSOI(_.get(req, 'body'));
                 res.send(result);
             } catch (err) {
                 next(err);

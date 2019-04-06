@@ -108,10 +108,90 @@ function getTodaySpecificTimeUTCTimestamp(timeString){
 	return Date.parse(`${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}, ${timeString} UTC`);
 }
 
+/**
+ * Deeply omit keys.
+ * @example
+  let obj = {
+  	stack: 'stack1',
+  	message: 'message1',
+  	pro1: {
+		stack:'stack2',
+		message: 'message2',
+		pro1: {
+			stack:'stack3',
+			message: 'message3',
+			pro1: {
+				stack:'stack4',
+				message: 'message4',
+				pro2: {
+					name: 'name1'
+				}
+			}
+		}
+	  },
+	  pro2: {
+		stack:'stack2',
+		message: 'message2',
+		pro1: {
+			stack:'stack3',
+			message: 'message3',
+			pro1: {
+				stack:'stack4',
+				message: 'message4',
+			}
+		}
+  	}
+  }
+
+  omit(obj, ['stack', 'name'], ['pro1', 'pro2'])
+
+  result 
+  {
+	"message": "message1",
+	"pro1": {
+		"message": "message2",
+		"pro1": {
+		"message": "message3",
+		"pro1": {
+			"message": "message4",
+			"pro2": {}
+			}
+		}
+	},
+	"pro2": {
+		"message": "message2",
+		"pro1": {
+			"message": "message3",
+			"pro1": {
+				"message": "message4"
+			}
+		}
+	}
+  }
+ * @param {object} obj - obj need to be omitted, after omit it will return a new object 
+ * @param {array} omitKeys - Array of keys that need to be omitted
+ * @param {array} iterateKeys - Array of keys for property need to search
+ * 
+ * @returns{object}
+ */
+function omit(obj, omitKeys, iterateKeys){
+	if(typeof obj!= 'object'||!omitKeys||!iterateKeys){
+		return obj;
+	}
+	obj = _.omit(obj, omitKeys);
+	iterateKeys.forEach((key)=>{
+		if(obj[key]){
+			obj[key] = omit(obj[key], omitKeys, iterateKeys);
+		}
+	});
+	return obj;
+}
+
 module.exports = {
 	getNumber,
 	btoa,
 	atob,
 	logAnUnKnownData,
-	getTodaySpecificTimeUTCTimestamp
+	getTodaySpecificTimeUTCTimestamp,
+	omit
 }
