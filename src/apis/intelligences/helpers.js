@@ -3,17 +3,19 @@ const {
     HTTPError
 } = require('../../util/Error');
 const {
+    remove,
     insertMany,
     find,
     updateMany
 } = require('../../util/db');
 const {
     COLLECTIONS_NAME,
-    DEFAULT_SOI
+    DEFAULT_SOI,
+    INTELLIGENCE_STATUS
 } = require('../../util/constants');
 const config = require('../../config');
-
 const soisHelpers = require('../sois/helpers');
+const logger = require('../../util/logger');
 
 async function addIntelligences(intelligences) {
     try {
@@ -88,7 +90,7 @@ async function getIntelligences(agentType, agentGid, limit) {
         // 2. think about the case that SOI is inactive
         let intelligences = await find(COLLECTIONS_NAME.intelligences, {
             status: {
-                $nin: ['RUNNING']
+                $nin: [INTELLIGENCE_STATUS.running, INTELLIGENCE_STATUS.finished]
             }
         }, {
             sort: ['soi_gid', 'priority'],
@@ -133,7 +135,51 @@ async function getIntelligences(agentType, agentGid, limit) {
     }
 }
 
+async function deleteIntelligences(content){
+    try{
+        let contentMap = {};
+        let gids = content.map((item)=>{
+            contentMap[item.global_id] = item;
+            return item.global_id;
+        });
+        // get intelligences by gids
+        let intelligences = await find(COLLECTIONS_NAME.intelligences, {
+            global_id: {
+                $in: gids
+            }
+        });
+
+        if(!intelligences||!intelligences.length){
+            logger.warn("No intelligences found.", {intelligences:content});
+            return {};
+        }
+        
+        // update modified_at, ended_at, last_collected_at and status
+        intelligences = intelligences.map((item)=>{
+            delete item._id;
+            item.modified_at = Date.now();
+            item.ended_at = Date.now();
+            item.last_collected_at = Date.now();
+            item.status = _.get(contentMap[item.global_id], 'status', INTELLIGENCE_STATUS.finished);
+            return item;
+        });
+
+        // add it to intelligences_history
+        await insertMany(COLLECTIONS_NAME.intelligencesHistory, intelligences);
+
+        let result = await remove(COLLECTIONS_NAME.intelligences,{
+            global_id:{
+                $in: gids
+            }
+        });
+        return result;
+    }catch(err){
+        throw err;
+    }
+}
+
 module.exports = {
     addIntelligences,
-    getIntelligences
+    getIntelligences,
+    deleteIntelligences
 }
