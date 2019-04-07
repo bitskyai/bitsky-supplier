@@ -17,6 +17,7 @@ const CONFIG = {
 const COLLECTIONS_NAME = {
     'sois': 'sois',
     'intelligences': 'intelligences',
+    'intelligencesHistory': 'intelligences_history',
     'serverInfo': 'server_info',
     'history': 'history',
     'log': 'log',
@@ -36,8 +37,17 @@ const DEFAULT_SOI = {
     }
 }
 
+const INTELLIGENCE_STATUS = {
+    configured: 'CONFIGURED',
+    finished: 'FINISHED',
+    running: 'RUNNING',
+    paused: 'PAUSED',
+    timeout: 'TIMEOUT'
+}
+
 module.exports = {
     CONFIG,
     COLLECTIONS_NAME,
-    DEFAULT_SOI
+    DEFAULT_SOI,
+    INTELLIGENCE_STATUS
 }

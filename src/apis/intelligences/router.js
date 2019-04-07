@@ -22,8 +22,8 @@ function registerRouter(router) {
 
         router.post('/intelligences', async (req, res, next) => {
             try{
-                let key = await helpers.addIntelligences(_.get(req, 'body'));
-                res.send(key);
+                let result = await helpers.addIntelligences(_.get(req, 'body'));
+                res.send(result);
             }catch(err){
                 // Already HTTPError, then throw it
                 if (err instanceof HTTPError) {
@@ -31,6 +31,21 @@ function registerRouter(router) {
                 } else {
                     // Otherwise create a HTTPError
                     next(new HTTPError(500, err, {}, 'dia_00065000001'));
+                }
+            }
+        });
+
+        router.delete('/intelligences', async (req, res, next) => {
+            try{
+                await helpers.deleteIntelligences(_.get(req, 'body'));
+                res.status(204).send();
+            }catch(err){
+                // Already HTTPError, then throw it
+                if (err instanceof HTTPError) {
+                    next(err);
+                } else {
+                    // Otherwise create a HTTPError
+                    next(new HTTPError(500, err, {}, 'dia_00085000001'));
                 }
             }
         });

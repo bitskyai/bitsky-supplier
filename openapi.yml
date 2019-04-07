@@ -240,14 +240,25 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/GlobalId'
+                  type: object
+                  properties:
+                    global_id:
+                      $ref: '#/components/schemas/GlobalId'
+                    status:
+                      type: string
+                      description: Status of this intelligence
+                      default: CONFIGURED
+                      enum:
+                        - CONFIGURED
+                        - FINISHED
+                        - RUNNING
+                        - FAILED
+                        - PAUSED
+                        - TIMEOUT
+
       responses:
-        200:
-          description: Delete intelligences successful
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AddSuccess'
+        204:
+          description: Update SOI successful
   /health:
     get:
       tags:

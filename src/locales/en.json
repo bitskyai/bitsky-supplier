@@ -53,5 +53,10 @@
         "message": "Make sure the data you pass is valid, take a look of data for more detail information",
         "reason": "Passed data isn't valid",
         "action": "Check the data you passed"
+    },
+    "dia_00085000001":{
+        "message": "Delete intelligences fail, caused by unknown error!",
+        "reason": "Unknown error",
+        "action": "Check log to find more detail"
     }
 }
