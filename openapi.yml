@@ -148,16 +148,36 @@ paths:
       description: Operation Index - 0005
       operationId: getIntelligences
       parameters:
-        - 
+        - in: query
+          name: type
+          required: true
+          description: Agent Type
+          schema:
+            type: string
+            enum: 
+              - browserExtension
+              - headlessBrowser
+              - service
+        - in: query
+          name: gid
+          required: true
+          description: Agent Global Id
+          schema:
+            $ref: '#/components/schemas/GlobalId'
+        - in: query
+          name: limit
+          description: How many intelligences want to get
+          schema:
+            type: number
       responses:
         200:
-          description: Extract intelligences successful
+          description: Intelligences for collected
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AddSuccess'
-        404:
-          description: Cannot find specific SOI, please make sure you registered
+                type: array
+                items:
+                  $ref: '#/components/schemas/Intelligence'
     post:
       tags:
         - intelligences
@@ -261,14 +281,11 @@ components:
           type: array
           description: Fail Intelligence global_id
           items:
-            $ref: '#/components/schemas/GlobalId'
-        
+            $ref: '#/components/schemas/GlobalId'   
     SOI:
       type: object
       required:
         - global_id
-        - soi_name
-        - base_url
       properties:
         global_id:
           $ref: '#/components/schemas/GlobalId'
@@ -286,7 +303,7 @@ components:
           description: SOI status
           enum:
             - ACTIVE
-            - UNACTIVE
+            - INACTIVE
         health:
           type: object
           description: RESTFul API for check server's health status
@@ -305,7 +322,7 @@ components:
               format: uri
               default: '/apis/health'
               description: path of RESTFul API for check server's health status
-        intelligences:
+        callback:
           type: object
           description: RESTFul API for collected intelligences
           properties:
@@ -333,10 +350,8 @@ components:
       properties:
         global_id:
           $ref: '#/components/schemas/GlobalId'
-        soi_gid:
-          type: string
-          description: Global unique soi global_id.
-          example: NDU4MSBidXJrZSBkcixzYW50YSBjbGFyYSxjYSw5NTA1NA==
+        soi:
+          $ref: '#/components/schemas/SOI'
         priority:
           type: number
           description: Priority of this intelligence.
@@ -445,7 +460,7 @@ components:
           description: Agent status
           enum:
             - ACTIVE
-            - UNACTIVE
+            - INACTIVE
         type:
           type: string
           description: Agent type

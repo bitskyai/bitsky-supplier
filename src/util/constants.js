@@ -3,6 +3,7 @@ const packageJson = require('../../package.json');
 const CONFIG = {
     LOG_FILES_PATH: './public/log',
     NODE_ENV: 'development',
+    EACH_TIME_INTELLIGENCES_NUMBER:2,
     SERVICE_NAME: packageJson.name,
     LOG_LEVEL: 'debug',
     PORT: 9099,     // server port number
@@ -23,7 +24,20 @@ const COLLECTIONS_NAME = {
     'unknownData': 'unknown_data'
 };
 
+const DEFAULT_SOI = {
+    status: "ACTIVE",
+    health: {
+        method: 'GET',
+        path: '/apis/health'
+    },
+    callback: {
+        method: 'POST',
+        path: '/apis/intelligences'
+    }
+}
+
 module.exports = {
     CONFIG,
-    COLLECTIONS_NAME
+    COLLECTIONS_NAME,
+    DEFAULT_SOI
 }

@@ -5,6 +5,7 @@ const config = {
   PORT: Number(process.env.PORT) || constants.CONFIG.PORT,
   SERVICE_NAME: process.env.SERVICE_NAME || constants.CONFIG.SERVICE_NAME,
   NODE_ENV: process.env.NODE_ENV || constants.CONFIG.NODE_ENV,
+  EACH_TIME_INTELLIGENCES_NUMBER: process.env.EACH_TIME_INTELLIGENCES_NUMBER || constants.CONFIG.EACH_TIME_INTELLIGENCES_NUMBER,
   LOG_FILES_PATH: process.env.LOG_FILES_PATH || constants.CONFIG.LOG_FILES_PATH,
   LOG_LEVEL: process.env.LOG_LEVEL || constants.CONFIG.LOG_LEVEL,
   DEBUG_MODE: process.env.DEBUG_MODE,
