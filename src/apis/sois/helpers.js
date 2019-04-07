@@ -109,6 +109,13 @@ async function updateSOI(gid, soi) {
 
 async function unregisterSOI(gid) {
     try {
+        // remove all intelligences that this soi created
+        await remove(COLLECTIONS_NAME.intelligences, {
+            soi_gid:{
+                $eq: gid
+            }
+        });
+        // remove this SOI in sois collection
         let result = await remove(COLLECTIONS_NAME.sois, {
             global_id: {
                 $eq: gid
