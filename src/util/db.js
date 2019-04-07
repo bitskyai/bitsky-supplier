@@ -126,14 +126,30 @@ async function updateMany(collectionName, filter, update, options) {
     }
 }
 
-async function insertOne(collectionName, doc) {
+async function insertOne(collectionName, doc, options) {
     try {
         let db = await DB();
         let collection = db.collection(collectionName);
         if (!doc.created_at) {
             doc.created_at = Date.now();
         }
-        let result = await collection.insertOne(doc);
+        let result = await collection.insertOne(doc, options||{});
+        return result;
+    } catch (err) {
+        throw err;
+    }
+}
+
+async function insertMany(collectionName, docs, options) {
+    try {
+        let db = await DB();
+        let collection = db.collection(collectionName);
+        docs.forEach((doc)=>{
+            if (!doc.created_at) {
+                doc.created_at = Date.now();
+            }
+        });
+        let result = await collection.insertMany(docs, options||{});
         return result;
     } catch (err) {
         throw err;
@@ -231,6 +247,7 @@ module.exports = {
     findOne,
     findOneByGlobalId,
     insertOne,
+    insertMany,
     updateOne,
     updateMany,
     remove,

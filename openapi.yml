@@ -23,7 +23,8 @@ paths:
     post:
       tags:
         - soi
-      summary: Register a SOI
+      summary: Register a SOI. 
+      description: Operation Index - 0001
       operationId: registerSOI
       requestBody:
         description: Need to register SOI information
@@ -55,7 +56,8 @@ paths:
     get:
       tags:
         - soi
-      summary: Get a SOI
+      summary: Get a SOI. 
+      description: Operation Index - 0002
       operationId: getSOI
       parameters:
         - in: path
@@ -85,6 +87,7 @@ paths:
       tags:
         - soi
       summary: Update a SOI
+      description: Operation Index - 0003
       operationId: updateSOI
       parameters:
         - in: path
@@ -111,6 +114,7 @@ paths:
       tags:
         - soi
       summary: Unregister a SOI
+      description: Operation Index - 0004
       operationId: unregisterSOI
       parameters:
         - in: path
@@ -137,13 +141,55 @@ paths:
                   global_id:
                     $ref: '#/components/schemas/GlobalId'
   /apis/intelligences:
+    get:
+      tags:
+        - intelligences
+      summary: Get intelligences for agents to collect
+      description: Operation Index - 0005
+      operationId: getIntelligences
+      parameters:
+        - 
+      responses:
+        200:
+          description: Extract intelligences successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddSuccess'
+        404:
+          description: Cannot find specific SOI, please make sure you registered
     post:
       tags:
         - intelligences
       summary: Add intelligences to collecting list
+      description: Operation Index - 0006
       operationId: addIntelligences
       requestBody:
         description: Need to collect intelligences
+        required: true
+        content:
+          application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Intelligence'
+      responses:
+        200:
+          description: Extract intelligences successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AddSuccess'
+        404:
+          description: Cannot find specific SOI, please make sure you registered
+    put:
+      tags:
+        - intelligences
+      summary: Update intelligences
+      description: Operation Index - 0007
+      operationId: updateIntelligences
+      requestBody:
+        description: Update intelligences
         required: true
         content:
           application/json:
@@ -164,6 +210,7 @@ paths:
       tags:
         - intelligences
       summary: Delete intelligences from collecting list
+      description: Operation Index - 0008
       operationId: deleteIntelligences
       requestBody:
         description: Intelligences that need to be deleted
@@ -186,6 +233,7 @@ paths:
       tags:
         - dia
       summary: Check DIA's health status
+      description: Operation Index - 0009
       operationId: checkHealth
       responses:
         200:
@@ -315,9 +363,9 @@ components:
         status:
           type: string
           description: Status of this intelligence
-          default: CONFIGURATED
+          default: CONFIGURED
           enum:
-            - CONFIGURATED
+            - CONFIGURED
             - FINISHED
             - RUNNING
             - FAILED
@@ -347,7 +395,9 @@ components:
               description: Collected HTML data
         metadata: 
           type: object
-          description: Additional metadata for this intelligence    
+          description: Additional metadata for this intelligence
+        agent:
+          $ref: '#/components/schema/Agent'
     HealthStatus:
       type: object
       properties:
@@ -385,6 +435,32 @@ components:
         data:
           type: object
           description: Additional data for this error
+    Agent:
+      type: object
+      properties:
+        global_id:
+          $ref: '#/components/schemas/GlobalId'
+        status:
+          type: string
+          description: Agent status
+          enum:
+            - ACTIVE
+            - UNACTIVE
+        type:
+          type: string
+          description: Agent type
+          enum:
+            - browserExtension
+            - headlessBrowser
+            - service
+        started_at:
+          type: number
+          description: Timestamp. When this intelligence started to be collected
+          example: 1553974619655
+        ended_at:
+          type: number
+          description: Timestamp. When this intelligence finished collect
+          example: 1553974629109
   securitySchemes:
     api_key:
       type: apiKey
