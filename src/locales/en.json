@@ -38,5 +38,20 @@
         "message": "Unregister SOI fail, caused by unknown error!",
         "reason": "Unknown error",
         "action": "Check log to find more detail"
+    },
+    "dia_00055000001":{
+        "message": "Get intelligences fail, caused by unknown error!",
+        "reason": "Unknown error",
+        "action": "Check log to find more detail"
+    },
+    "dia_00065000001":{
+        "message": "Create intelligences fail, caused by unknown error!",
+        "reason": "Unknown error",
+        "action": "Check log to find more detail"
+    },
+    "dia_00064000001":{
+        "message": "Make sure the data you pass is valid, take a look of data for more detail information",
+        "reason": "Passed data isn't valid",
+        "action": "Check the data you passed"
     }
 }

@@ -8,6 +8,7 @@ const packageJson = require('../package.json');
 // routers
 const apikey = require('./apis/apikey');
 const sois = require('./apis/sois');
+const intelligences = require('./apis/intelligences');
 
 function createAPIRouters(){
   const router = express.Router();
@@ -21,6 +22,8 @@ function createAPIRouters(){
   // register redfin routers
   apikey.router(router);
   sois.router(router);
+  intelligences.router(router);
+  
   return router;
 }
 
