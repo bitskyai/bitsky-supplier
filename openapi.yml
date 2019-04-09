@@ -222,7 +222,17 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: '#/components/schemas/Intelligence'
+                  allOf:
+                    - $ref: '#/components/schemas/Intelligence'
+                    - type: object
+                      properties:
+                        operation:
+                          type: string
+                          description: what kind of operation want to do to this intelligence. This will not be save to Intelligence.
+                          default: DELETE
+                          enum:
+                            - DELETE
+                            - UPDATE
       responses:
         200:
           description: Extract intelligences successful
@@ -238,30 +248,10 @@ paths:
       summary: Delete intelligences from collecting list
       description: Operation Index - 0008
       operationId: deleteIntelligences
-      requestBody:
-        description: Intelligences that need to be deleted
-        required: true
-        content:
-          application/json:
-              schema:
-                type: array
-                items:
-                  type: object
-                  properties:
-                    global_id:
-                      $ref: '#/components/schemas/GlobalId'
-                    status:
-                      type: string
-                      description: Status of this intelligence
-                      default: CONFIGURED
-                      enum:
-                        - CONFIGURED
-                        - FINISHED
-                        - RUNNING
-                        - FAILED
-                        - PAUSED
-                        - TIMEOUT
-
+      parameters:
+        - in: query
+          name: gids
+          description: Intelligences' Global Id that want to delete
       responses:
         204:
           description: Update SOI successful
@@ -420,11 +410,7 @@ components:
           example: https://json-schema.org
         data:
           type: object
-          description: Collected intelligence data
-          properties:
-            html:
-              type: string
-              description: Collected HTML data
+          description: Collected intelligence data. It can be object, array, string, number ...
         metadata: 
           type: object
           description: Additional metadata for this intelligence

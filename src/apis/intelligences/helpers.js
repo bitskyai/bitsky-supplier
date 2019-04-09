@@ -48,10 +48,10 @@ async function addIntelligences(intelligences) {
                     description: 'global_id is undefined.'
                 });
             }
-            if (!intelligence.soi_gid) {
+            if (!intelligence.soi.global_id) {
                 err.push({
-                    key: 'soi_gid',
-                    description: 'soi_gid is undefined.'
+                    key: 'soi.global_id',
+                    description: 'soi.global_id is undefined.'
                 });
             }
             if (!intelligence.url) {
@@ -72,7 +72,7 @@ async function addIntelligences(intelligences) {
         });
 
         if (validationError.length) {
-            throw new HTTPError(400, err, validationError, 'dia_00064000001');
+            throw new HTTPError(400, validationError, validationError, 'dia_00064000001');
         }
 
         let result = await insertMany(COLLECTIONS_NAME.intelligences, intelligences);
@@ -98,7 +98,7 @@ async function getIntelligences(agentType, agentGid, limit) {
                 $nin: [INTELLIGENCE_STATUS.running, INTELLIGENCE_STATUS.finished]
             }
         }, {
-            sort: ['soi_gid', 'priority'],
+            sort: ['soi.global_id', 'priority'],
             limit: limit
         });
 
@@ -140,7 +140,7 @@ async function getIntelligences(agentType, agentGid, limit) {
     }
 }
 
-async function deleteIntelligences(content){
+async function updateIntelligences(content){
     try{
         let contentMap = {};
         let gids = content.map((item)=>{
@@ -183,8 +183,13 @@ async function deleteIntelligences(content){
     }
 }
 
+async function deleteIntelligences(gids){
+    // implement logic
+}
+
 module.exports = {
     addIntelligences,
     getIntelligences,
+    updateIntelligences,
     deleteIntelligences
 }
