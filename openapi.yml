@@ -64,6 +64,8 @@ paths:
           name: gid
           required: true
           description: global_id of SOI
+          schema:
+            $ref: '#/components/schemas/GlobalId'
       responses:
         200:
           description: Get a SOI successful
@@ -94,6 +96,8 @@ paths:
           name: gid
           required: true
           description: global_id of SOI
+          schema:
+            $ref: '#/components/schemas/GlobalId'
       requestBody:
         description: SOI information need to update
         required: true
@@ -121,13 +125,15 @@ paths:
           name: gid
           required: true
           description: global_id of SOI
+          schema:
+            $ref: '#/components/schemas/GlobalId'
       responses:
         200:
           description: Delete SOI successful
           content:
             application/json:
               schema:
-                type: object,
+                type: object
                 properties:
                   global_id:
                     $ref: '#/components/schemas/GlobalId'
@@ -136,7 +142,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object,
+                type: object
                 properties:
                   global_id:
                     $ref: '#/components/schemas/GlobalId'
@@ -423,7 +429,7 @@ components:
           type: object
           description: Additional metadata for this intelligence
         agent:
-          $ref: '#/components/schema/Agent'
+          $ref: '#/components/schemas/Agent'
     HealthStatus:
       type: object
       properties:

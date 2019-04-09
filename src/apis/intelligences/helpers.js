@@ -88,13 +88,18 @@ async function getIntelligences(agentType, agentGid, limit) {
         // 1. Think about if a lot of intelligences, how to schedule them
         // make them can be more efficient
         // 2. think about the case that SOI is inactive
+        limit = Number(limit);
+        if(isNaN(limit)){
+            limit = config.EACH_TIME_INTELLIGENCES_NUMBER;
+        }
+
         let intelligences = await find(COLLECTIONS_NAME.intelligences, {
             status: {
                 $nin: [INTELLIGENCE_STATUS.running, INTELLIGENCE_STATUS.finished]
             }
         }, {
             sort: ['soi_gid', 'priority'],
-            limit: limit || config.EACH_TIME_INTELLIGENCES_NUMBER
+            limit: limit
         });
 
         let gids = [];
