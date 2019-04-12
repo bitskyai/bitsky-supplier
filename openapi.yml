@@ -411,11 +411,28 @@ components:
         data:
           type: object
           description: Collected intelligence data. It can be object, array, string, number ...
+          properties:
+            url:
+              type: string
+              description: Which URL need to collect intelligence
+              format: uri
+              example: https://json-schema.org
+            data:
+              type: object
+              description: Collected intelligence data. It can be object, array, string, number ...
         metadata: 
           type: object
           description: Additional metadata for this intelligence
+          properties:
+            script:
+              type: string
+              description: Code want to execute after **window.onload**. You only need to pass function body. 
+                And Default you will get following parameters - **resolve**, **reject**, **intelligence**, **axios**. 
+                You need to resolve(data) or reject(err), and will send data or err to SOI.
+                If you need agent to execute your code. Only work with **browserExtension** and **headlessBrowser** agent
         agent:
           $ref: '#/components/schemas/Agent'
+              
     HealthStatus:
       type: object
       properties:
