@@ -114,6 +114,14 @@ async function getIntelligences(agentType, agentGid, limit) {
                 sois[item.soi.global_id] = _.merge({}, DEFAULT_SOI, soi);
                 item.soi = sois[item.soi.global_id];
             }
+            if(!item.agent){
+                item.agent = {
+                    global_id: agentGid,
+                    status: 'ACTIVE',
+                    type: agentType,
+                    started_at: Date.now()
+                };
+            }
         }
 
         await updateMany(COLLECTIONS_NAME.intelligences, {
