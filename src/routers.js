@@ -9,6 +9,7 @@ const packageJson = require('../package.json');
 const apikey = require('./apis/apikey');
 const sois = require('./apis/sois');
 const intelligences = require('./apis/intelligences');
+const health = require('./apis/health');
 
 function createAPIRouters(){
   const router = express.Router();
@@ -39,7 +40,7 @@ function createHealthRouter(){
   router.get('/', function (req, res) {
     res.send(`Welcome to ${packageJson.name}!`);
   });
-
+  health.router(router);
   return router;
 }
 
