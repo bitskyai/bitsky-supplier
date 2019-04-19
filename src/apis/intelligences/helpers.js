@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const {
     HTTPError
-} = require('../../util/Error');
+} = require('../../util/error');
 const {
     remove,
     insertMany,

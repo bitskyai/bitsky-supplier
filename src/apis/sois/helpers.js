@@ -4,7 +4,7 @@ const {
 } = require('../../util/constants');
 const {
     HTTPError
-} = require('../../util/Error');
+} = require('../../util/error');
 const {
     findOneByGlobalId,
     insertOne,

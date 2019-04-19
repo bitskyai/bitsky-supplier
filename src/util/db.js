@@ -2,7 +2,7 @@ const MongoClient = require('mongodb').MongoClient;
 const _ = require('lodash');
 const config = require('../config');
 const logger = require('./logger');
-const {HTTPError} = require('./Error');
+const {HTTPError} = require('./error');
 
 // private variables, to store reference, shouldn't be directed access
 let _mongoDBURL;

@@ -1,7 +1,7 @@
 let _registered = false;
 const _ = require('lodash');
 const helpers = require('./helpers');
-const {HTTPError} = require('../../util/Error');
+const {HTTPError} = require('../../util/error');
 
 function registerRouter(router) {
     if (!_registered) {
