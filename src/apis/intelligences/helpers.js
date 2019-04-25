@@ -33,6 +33,8 @@ async function addIntelligences(intelligences) {
         }
         // TODO: data validation need to improve
         let validationError = [];
+        // hash table for soi globalId
+        let soiGlobalIds = {};
         intelligences = intelligences.map((intelligence) => {
             // remove data that cannot set by user
             delete intelligence.created_at;
@@ -68,6 +70,7 @@ async function addIntelligences(intelligences) {
             }
             intelligence._id = intelligence.global_id;
             intelligence = _.merge({}, defaultIntelligence, intelligence);
+            soiGlobalIds[intelligence.soi.global_id] = 1;
             return intelligence;
         });
 
@@ -75,6 +78,11 @@ async function addIntelligences(intelligences) {
             throw new HTTPError(400, validationError, validationError, 'dia_00064000001');
         }
 
+        // make sure soi existed
+        for(let soiGlobalId in soiGlobalIds){
+            await soisHelpers.getSOI(soiGlobalId);
+        }
+        logger.debug("SOIs exist!", {soiGlobalIds});
         let result = await insertMany(COLLECTIONS_NAME.intelligences, intelligences);
         return result.insertedIds;
     } catch (err) {
