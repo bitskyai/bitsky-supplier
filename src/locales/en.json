@@ -54,6 +54,11 @@
         "reason": "Passed data isn't valid",
         "action": "Check the data you passed"
     },
+    "dia_00064040001":{
+        "message": "Cannot find SOI by global_id %s, please make sure your register SOI",
+        "reason": "SOI doesn't exist by global_id, maybe user didn't register it",
+        "action": "Register SOI"
+    },
     "dia_00075000001":{
         "message": "Update intelligences fail, caused by unknown error!",
         "reason": "Unknown error",
