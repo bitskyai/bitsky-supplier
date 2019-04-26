@@ -10,8 +10,9 @@ const apikey = require('./apis/apikey');
 const sois = require('./apis/sois');
 const intelligences = require('./apis/intelligences');
 const health = require('./apis/health');
+const agenda = require('./apis/agenda');
 
-function createAPIRouters(){
+function createAPIRouters(app){
   const router = express.Router();
 
   // middleware that is specific to this router
@@ -24,11 +25,12 @@ function createAPIRouters(){
   apikey.router(router);
   sois.router(router);
   intelligences.router(router);
-  
+  agenda.router(null, app);
+
   return router;
 }
 
-function createHealthRouter(){
+function createHealthRouter(app){
   const router = express.Router();
 
   // middleware that is specific to this router
@@ -45,8 +47,8 @@ function createHealthRouter(){
 }
 
 function createRouters(app){
-  app.use('/apis', createAPIRouters());
-  app.use('/', createHealthRouter());
+  app.use('/apis', createAPIRouters(app));
+  app.use('/', createHealthRouter(app));
 }
 
 module.exports = createRouters;

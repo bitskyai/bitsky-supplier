@@ -8,6 +8,8 @@
     "node": "8.x.x"
   },
   "dependencies": {
+    "agenda": "^2.0.2",
+    "agendash": "^1.0.0",
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
     "cheerio": "^1.0.0-rc.2",
