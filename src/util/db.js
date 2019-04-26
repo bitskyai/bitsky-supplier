@@ -22,6 +22,24 @@ if (config.MONGODB_URI) {
                     Or set env **MONGODB_USERNAME**, **MONGODB_PASSWORD**, **MONGODB_URL**, **MONGODB_NAME** `);
 }
 
+function mongodbConnectionURL(){
+    let dbUrl;
+    if (config.MONGODB_URI) {
+        // TODO validate **MONGODB_URI**
+        dbUrl = config.MONGODB_URI;
+    } else if (config.MONGODB_URL && config.MONGODB_NAME) {
+        if (!config.MONGODB_USERNAME || !config.MONGODB_PASSWORD) {
+            dbUrl = `mongodb://${config.MONGODB_URL}/${config.MONGODB_NAME}`;
+        } else {
+            dbUrl = `mongodb://${config.MONGODB_USERNAME}:${config.MONGODB_PASSWORD}@${config.MONGODB_URL}/${config.MONGODB_NAME}`;
+        }
+    } else {
+        throw Error(`You MUST set env **MONGODB_URI**, Format: mongodb://<dbUser>:<dbPassword>@<dbHost>:<dbPort>/<dbName>. 
+                        Or set env **MONGODB_USERNAME**, **MONGODB_PASSWORD**, **MONGODB_URL**, **MONGODB_NAME** `);
+    }
+    return dbUrl;
+}
+
 // TODO: need to think about support multiple database
 async function DB() {
     try {
@@ -242,6 +260,7 @@ async function logUnknownDataToDB(doc) {
 }
 
 module.exports = {
+    mongodbConnectionURL,
     DB,
     find,
     findOne,

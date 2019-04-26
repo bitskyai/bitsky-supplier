@@ -1,6 +1,7 @@
 const packageJson = require('../../package.json');
 
 const CONFIG = {
+    TIMEOUT_VALUE_FOR_INTELLIGENCE: 5*60*1000,
     LOG_FILES_PATH: './public/log',
     NODE_ENV: 'development',
     EACH_TIME_INTELLIGENCES_NUMBER:2,
