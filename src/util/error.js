@@ -1,7 +1,6 @@
 const util = require('util');
 const translate = require('./translate');
 
-
 class CustomError extends Error {
     constructor(error, data, code, ...args){
         let msgTemplate = translate.getTranslateMessage(code);
@@ -18,12 +17,18 @@ class CustomError extends Error {
         if(error instanceof Array){
             error = error.map((item)=>{
                 if(item instanceof Error){
-                    return item.serialize();
+                    item = item.serialize();
+                    if(item&&item.response){
+                        item = item.response.data
+                    }
                 }
                 return item;
             });
         }else if(error instanceof Error){
             error = error.serialize();
+            if(error&&error.response){
+                error = error.response.data
+            }
         }
 
         this.causedBy = error||'';
