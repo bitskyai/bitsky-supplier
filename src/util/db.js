@@ -2,7 +2,9 @@ const MongoClient = require('mongodb').MongoClient;
 const _ = require('lodash');
 const config = require('../config');
 const logger = require('./logger');
-const {HTTPError} = require('./error');
+const {
+    HTTPError
+} = require('./error');
 
 // private variables, to store reference, shouldn't be directed access
 let _mongoDBURL;
@@ -22,7 +24,7 @@ if (config.MONGODB_URI) {
                     Or set env **MONGODB_USERNAME**, **MONGODB_PASSWORD**, **MONGODB_URL**, **MONGODB_NAME** `);
 }
 
-function mongodbConnectionURL(){
+function mongodbConnectionURL() {
     let dbUrl;
     if (config.MONGODB_URI) {
         // TODO validate **MONGODB_URI**
@@ -144,6 +146,42 @@ async function updateMany(collectionName, filter, update, options) {
     }
 }
 
+async function bulkUpdate(collectionName, docs, upsert, dbURL) {
+    try {
+        const db = await DB(dbURL);
+        const collection = db.collection(collectionName);
+        let bulkUpdates = [];
+        for (let i = 0; i < docs.length; i++) {
+            let doc = docs[i];
+            let filter;
+            if (doc._id) {
+                filter = {
+                    _id: {
+                        $eq: doc._id
+                    }
+                }
+            }else{
+                filter = {
+                    global_id: {
+                        $eq: doc.global_id
+                    }
+                }
+            }
+            bulkUpdates.push({
+                updateOne: {
+                    filter: filter,
+                    update: doc,
+                    upsert: upsert
+                }
+            });
+        }
+        const result = collection.bulkWrite(bulkUpdates);
+        return result;
+    } catch (err) {
+        throw err;
+    }
+}
+
 async function insertOne(collectionName, doc, options) {
     try {
         let db = await DB();
@@ -151,7 +189,7 @@ async function insertOne(collectionName, doc, options) {
         if (!doc.created_at) {
             doc.created_at = Date.now();
         }
-        let result = await collection.insertOne(doc, options||{});
+        let result = await collection.insertOne(doc, options || {});
         return result;
     } catch (err) {
         throw err;
@@ -162,12 +200,12 @@ async function insertMany(collectionName, docs, options) {
     try {
         let db = await DB();
         let collection = db.collection(collectionName);
-        docs.forEach((doc)=>{
+        docs.forEach((doc) => {
             if (!doc.created_at) {
                 doc.created_at = Date.now();
             }
         });
-        let result = await collection.insertMany(docs, options||{});
+        let result = await collection.insertMany(docs, options || {});
         return result;
     } catch (err) {
         throw err;
@@ -190,12 +228,12 @@ async function findOneById(collectionName, id, options) {
 }
 
 async function checkExistByID(collectionName, id) {
-    try{
+    try {
         const result = await findOneById(collectionName, id, {
             '_id': 1
         });
         return !!result;
-    }catch(err){
+    } catch (err) {
         throw err;
     }
 }
@@ -269,6 +307,7 @@ module.exports = {
     insertMany,
     updateOne,
     updateMany,
+    bulkUpdate,
     remove,
     findOneById,
     updateOneById,

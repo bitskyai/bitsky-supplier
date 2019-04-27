@@ -6,6 +6,7 @@ const {
     remove,
     insertMany,
     find,
+    bulkUpdate,
     updateMany
 } = require('../../util/db');
 const {
@@ -83,8 +84,9 @@ async function addIntelligences(intelligences) {
             await soisHelpers.getSOI(soiGlobalId);
         }
         logger.debug("SOIs exist!", {soiGlobalIds});
-        let result = await insertMany(COLLECTIONS_NAME.intelligences, intelligences);
-        return result.insertedIds;
+        // let result = await insertMany(COLLECTIONS_NAME.intelligences, intelligences);
+        let result = await bulkUpdate(COLLECTIONS_NAME.intelligences, intelligences, true);
+        return result;
     } catch (err) {
         throw err;
     }
