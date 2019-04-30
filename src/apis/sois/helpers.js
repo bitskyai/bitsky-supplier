@@ -110,9 +110,12 @@ async function updateSOI(gid, soi) {
     }
 }
 
-async function updateSOIStatus(gid) {
+async function updateSOIStatus(gid, originalSoi) {
     try {
-        let originalSoi = await getSOI(gid);
+        // if user didn't pass originalSoi, then get it
+        if(!originalSoi){
+            originalSoi = await getSOI(gid);
+        }
         // let soiStatusCheckTime = config.SOI_STATUS_CHECK_TIME;
         let soi = _.merge({}, DEFAULT_SOI, originalSoi);
         let status = await new Promise((resolve, reject) => {
