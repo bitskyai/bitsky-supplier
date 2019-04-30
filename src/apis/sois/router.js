@@ -64,6 +64,21 @@ function registerRouter(router) {
                 }
             }
         });
+
+        router.put('/sois/:gid/status', async (req, res, next) => {
+            try {
+                let status = await helpers.updateSOIStatus(_.get(req, 'params.gid'));
+                res.json(status);
+            } catch (err) {
+                // Already HTTPError, then throw it
+                if (err instanceof HTTPError) {
+                    next(err);
+                } else {
+                    // Otherwise create a HTTPError
+                    next(new HTTPError(500, err, {}, 'dia_00035000001'));
+                }
+            }
+        });
     }
 }
 

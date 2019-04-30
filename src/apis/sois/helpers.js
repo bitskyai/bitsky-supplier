@@ -1,5 +1,7 @@
 const _ = require('lodash');
+const axios = require('axios');
 const {
+    DEFAULT_SOI,
     COLLECTIONS_NAME
 } = require('../../util/constants');
 const {
@@ -9,9 +11,10 @@ const {
     findOneByGlobalId,
     insertOne,
     updateOne,
+    updateMany,
     remove
 } = require('../../util/db');
-
+const config = require('../../config');
 const logger = require('../../util/logger');
 
 /**
@@ -90,7 +93,7 @@ async function updateSOI(gid, soi) {
         delete soi.created_at;
         delete soi._id;
         delete soi.global_id;
-        
+
         let originalSoi = await getSOI(gid);
         let obj = _.merge({}, originalSoi, soi);
         obj.modified_at = Date.now();
@@ -98,10 +101,65 @@ async function updateSOI(gid, soi) {
             global_id: {
                 $eq: gid
             }
-        },{
+        }, {
             $set: obj
         });
         return result;
+    } catch (err) {
+        throw err;
+    }
+}
+
+async function updateSOIStatus(gid) {
+    try {
+        let originalSoi = await getSOI(gid);
+        // let soiStatusCheckTime = config.SOI_STATUS_CHECK_TIME;
+        let soi = _.merge({}, DEFAULT_SOI, originalSoi);
+        let status = await new Promise((resolve, reject) => {
+            let headers = {};
+            if (soi.api_key) {
+                headers[constants.API_KEY_HEADER] = soi.api_key;
+            }
+            // send request
+            axios({
+                baseURL: soi.base_url,
+                method: soi.health.method,
+                url: soi.health.path,
+                headers
+            }).then((res) => {
+                resolve(true);
+            }).catch((err) => {
+                // logger.warn("");
+                // the reason of return [] is because, normally agent is automatically start and close, no human monitor it
+                // to make sure work flow isn't stopped, so resolve it as []
+                resolve(false);
+            })
+        });
+        if (status) {
+            originalSoi.status = "ACTIVE"
+        } else {
+            originalSoi.status = "INACTIVE"
+        }
+        originalSoi.modified_at = Date.now();
+        let result = await updateMany(COLLECTIONS_NAME.intelligences, {
+            "soi.global_id": {
+                $eq: gid
+            }
+        }, {
+            $set: {
+                "soi.status": originalSoi.status
+            }
+        });
+        result = await updateOne(COLLECTIONS_NAME.sois, {
+            global_id: {
+                $eq: gid
+            }
+        }, {
+            $set: originalSoi
+        });
+        return {
+            status: originalSoi.status
+        };
     } catch (err) {
         throw err;
     }
@@ -111,7 +169,7 @@ async function unregisterSOI(gid) {
     try {
         // remove all intelligences that this soi created
         await remove(COLLECTIONS_NAME.intelligences, {
-            soi_gid:{
+            soi_gid: {
                 $eq: gid
             }
         });
@@ -131,5 +189,6 @@ module.exports = {
     registerSOI,
     getSOI,
     updateSOI,
-    unregisterSOI
+    unregisterSOI,
+    updateSOIStatus
 }
