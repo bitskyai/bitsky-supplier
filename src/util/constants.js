@@ -1,6 +1,7 @@
 const packageJson = require('../../package.json');
 
 const CONFIG = {
+    SOI_STATUS_CHECK_TIME: 5*60*1000,
     TIMEOUT_VALUE_FOR_INTELLIGENCE: 5*60*1000,
     LOG_FILES_PATH: './public/log',
     NODE_ENV: 'development',
@@ -30,7 +31,7 @@ const DEFAULT_SOI = {
     status: "ACTIVE",
     health: {
         method: 'GET',
-        path: '/apis/health'
+        path: '/health'
     },
     callback: {
         method: 'POST',

@@ -18,6 +18,11 @@ const config = require('../../config');
 const soisHelpers = require('../sois/helpers');
 const logger = require('../../util/logger');
 
+// To avoid running check soi status multiple times
+// next check will not be started if previous job doesn't finish
+// TODO: when start thinking about load balance, then this data should be in memory cache, not inside service memory
+let __check_sois_status__ = {};
+
 async function addIntelligences(intelligences) {
     try {
         let defaultIntelligence = {
@@ -103,9 +108,13 @@ async function getIntelligences(agentType, agentGid, limit) {
             limit = config.EACH_TIME_INTELLIGENCES_NUMBER;
         }
 
+        // only return items that soi.status is ACTIVE
         let intelligences = await find(COLLECTIONS_NAME.intelligences, {
             status: {
                 $nin: [INTELLIGENCE_STATUS.running, INTELLIGENCE_STATUS.finished]
+            },
+            "soi.status":{
+                $eq: "ACTIVE"
             }
         }, {
             sort: ['soi.global_id', 'priority'],
@@ -151,6 +160,24 @@ async function getIntelligences(agentType, agentGid, limit) {
                 }
             }
         });
+
+        // Check SOI status in parallel
+        /*
+            After get intelligences that need to collect, during sametime to check whether this SOI is active. 
+         */
+        for(let gid in sois){
+            let soi = sois[gid];
+            // if this soi isn't in check status progress, then check it
+            if(!__check_sois_status__[gid]){
+                (async()=>{
+                    // change soi status to true to avoid duplicate check in same time
+                    __check_sois_status__[gid] = true;
+                    await soisHelpers.updateSOIStatus(gid, soi);
+                    // after finish, delete its value in hashmap
+                    delete __check_sois_status__[gid];
+                })();
+            }
+        }
 
         return intelligences;
     } catch (err) {

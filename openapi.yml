@@ -146,6 +146,39 @@ paths:
                 properties:
                   global_id:
                     $ref: '#/components/schemas/GlobalId'
+  /apis/sois/{gid}/status:
+    put:
+      tags:
+        - soi
+      summary: Update a SOI status 
+      description: Operation Index - 0010
+      operationId: updateSOIStatus
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of SOI
+          schema:
+            $ref: '#/components/schemas/GlobalId'
+      responses:
+        200:
+          description: Update a SOI successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SOI'
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Cannot find specific SOI
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /apis/intelligences:
     get:
       tags:

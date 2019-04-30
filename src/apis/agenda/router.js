@@ -23,8 +23,10 @@ function registerRouter(router, app) {
         helpers.registerJobs(agenda);
         agenda.on("ready", async function () {
             let time = config.TIMEOUT_VALUE_FOR_INTELLIGENCE/(60*1000);
+            let soiStatusCheckTime = config.SOI_STATUS_CHECK_TIME/(60*1000);
             await agenda.start();
             await agenda.every(`${time} minutes`, jobNames.timeoutIntelligence);
+            await agenda.every(`${soiStatusCheckTime} minutes`, jobNames.checkSOIStatus);
         });
     }
 }
