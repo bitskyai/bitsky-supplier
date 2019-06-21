@@ -20,6 +20,20 @@ tags:
   description: Intelligences want to collect
 paths:
   /apis/sois:
+    get: 
+      tags:
+        - soi
+      description: Operation Index - 0011
+      operationId: getSOIs
+      responses:
+        200:
+          description: Get SOIs successful
+          content:
+            application/json:
+              schema:
+                type: array
+                $item:
+                  $ref: '#/components/schemas/SOI'
     post:
       tags:
         - soi
@@ -306,7 +320,6 @@ components:
   schemas:
     GlobalId:
         type: string
-        format: base64
         description: Global unique id.
         example: ef72448b-7bc4-42d1-9436-822c9634d943
     AddSuccess:
@@ -326,12 +339,18 @@ components:
       type: object
       required:
         - global_id
+        - soi_name
+        - base_url
       properties:
         global_id:
           $ref: '#/components/schemas/GlobalId'
         soi_name:
           type: string
           description: The name of SOI
+          minLength: 3
+          maxLength: 50
+        security_key: 
+          $ref: '#/components/schemas/GlobalId'
         api_key:
           type: string
           description: API key that used to access SOI
@@ -390,8 +409,17 @@ components:
       properties:
         global_id:
           $ref: '#/components/schemas/GlobalId'
+        security_key: 
+          $ref: '#/components/schemas/GlobalId'
         soi:
           $ref: '#/components/schemas/SOI'
+        permission:
+          type: string
+          description: control who can collect this intelligence. private mean only matched security_key can collect, public mean any matched agent can collect. If your metadata has script, then it will be forced to private.
+          default: private
+          enum:
+            - private
+            - public
         priority:
           type: number
           description: Priority of this intelligence.
@@ -507,6 +535,8 @@ components:
       type: object
       properties:
         global_id:
+          $ref: '#/components/schemas/GlobalId'
+        security_key: 
           $ref: '#/components/schemas/GlobalId'
         status:
           type: string

@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const axios = require('axios');
 const {
+    CONFIG,
     DEFAULT_SOI,
     COLLECTIONS_NAME
 } = require('../../util/constants');
@@ -8,6 +9,7 @@ const {
     HTTPError
 } = require('../../util/error');
 const {
+    find,
     findOneByGlobalId,
     insertOne,
     updateOne,
@@ -23,10 +25,11 @@ const logger = require('../../util/logger');
  * Follow KISS principle, you need to make sure your **global_id** is unique. 
  * Currently, **global_id** is only way for **SOI** Identity. 
  * @param {object} soi - SOI need to be register
+ * @param {string} securityKey - The securityKey that previous service send, used to identify who send this request
  * 
  * @returns {object}
  */
-async function registerSOI(soi) {
+async function registerSOI(soi, securityKey) {
     try {
 
         // validate soi
@@ -48,6 +51,11 @@ async function registerSOI(soi) {
             throw new HTTPError(400, null, {
                 global_id: soi.global_id
             }, 'dia_00014000001', soi.global_id);
+        }
+
+        // if securityKey exist, then add securityKey to soi
+        if(securityKey){
+            soi[CONFIG.SECURITY_KEY_IN_DB] = securityKey;
         }
 
         let insertOneWriteOpResultObject = await insertOne(COLLECTIONS_NAME.sois, soi);
@@ -82,6 +90,29 @@ async function getSOI(gid) {
             }, 'dia_00024040001', gid);
         }
         return soi;
+    } catch (err) {
+        throw err;
+    }
+}
+
+/**
+ * OperationIndex: 0010
+ * Get a SOIs
+ * @param {string} securityKey - global_id
+ * 
+ * @returns {object}
+ */
+async function getSOIs(securityKey) {
+    try {
+        let query = {};
+        if(securityKey){
+            query[CONFIG.SECURITY_KEY_IN_DB] = {
+                $eq: securityKey
+            }
+        }
+
+        let sois = await find(COLLECTIONS_NAME.sois, query);
+        return sois;
     } catch (err) {
         throw err;
     }
@@ -193,5 +224,6 @@ module.exports = {
     getSOI,
     updateSOI,
     unregisterSOI,
-    updateSOIStatus
+    updateSOIStatus,
+    getSOIs
 }
