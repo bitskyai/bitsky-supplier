@@ -1,4 +1,9 @@
 {
+    "dia_00004040001":{
+        "message": "Cannot find SOI by global_id: %s and security_key: %s",
+        "reason": "User pass wrong global_id, or the global_id doesn't blong to security_key",
+        "action": "Check global_id and security_key"
+    },
     "dia_00014000001":{
         "message": "Please change another global_id. %s already exist!",
         "reason": "global_id isn't unique",

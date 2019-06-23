@@ -42,7 +42,11 @@ function registerRouter(router) {
 
     router.get("/sois/:gid", async (req, res, next) => {
       try {
-        let result = await helpers.getSOI(_.get(req, "params.gid"));
+        let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+        let result = await helpers.getSOI(
+          _.get(req, "params.gid"),
+          securityKey
+        );
         res.send(result);
       } catch (err) {
         // Already HTTPError, then throw it
@@ -57,7 +61,12 @@ function registerRouter(router) {
 
     router.put("/sois/:gid", async (req, res, next) => {
       try {
-        await helpers.updateSOI(_.get(req, "params.gid"), _.get(req, "body"));
+        let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+        await helpers.updateSOI(
+          _.get(req, "params.gid"),
+          _.get(req, "body"),
+          securityKey
+        );
         res.status(204).send();
       } catch (err) {
         // Already HTTPError, then throw it
@@ -72,7 +81,8 @@ function registerRouter(router) {
 
     router.delete("/sois/:gid", async (req, res, next) => {
       try {
-        await helpers.unregisterSOI(_.get(req, "params.gid"));
+        let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+        await helpers.unregisterSOI(_.get(req, "params.gid"), securityKey);
         res.status(204).send();
       } catch (err) {
         // Already HTTPError, then throw its
