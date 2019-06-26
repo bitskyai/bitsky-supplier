@@ -222,6 +222,15 @@ paths:
           description: How many intelligences want to get
           schema:
             type: number
+        - in: query
+          name: permission
+          description: permisson for this agent
+          schema:
+            type: string
+            default: public
+            enum:
+              - private
+              - public
       responses:
         200:
           description: Intelligences for collected

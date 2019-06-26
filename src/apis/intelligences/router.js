@@ -2,12 +2,16 @@ let _registered = false;
 const _ = require('lodash');
 const helpers = require('./helpers');
 const {HTTPError} = require('../../util/error');
+const {
+    CONFIG,
+  } = require("../../util/constants");
 
 function registerRouter(router) {
     if (!_registered) {
         router.get('/intelligences', async (req, res, next) => {
             try{
-                let intelligences = await helpers.getIntelligences(_.get(req, 'query.type'), _.get(req, 'query.gid'), _.get(req, 'query.limit'));
+                let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+                let intelligences = await helpers.getIntelligences(_.get(req, 'query.type'), _.get(req, 'query.gid'), _.get(req, 'query.limit'), _.get(req, 'query.permission'), securityKey);
                 res.send(intelligences);
             }catch(err){
                 // Already HTTPError, then throw it
