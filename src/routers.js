@@ -9,6 +9,7 @@ const packageJson = require('../package.json');
 const apikey = require('./apis/apikey');
 const sois = require('./apis/sois');
 const intelligences = require('./apis/intelligences');
+const agents = require('./apis/agents');
 const health = require('./apis/health');
 const agenda = require('./apis/agenda');
 
@@ -25,6 +26,7 @@ function createAPIRouters(app){
   apikey.router(router);
   sois.router(router);
   intelligences.router(router);
+  agents.router(router);
   agenda.router(null, app);
 
   return router;

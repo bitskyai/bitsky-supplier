@@ -22,6 +22,7 @@ const CONFIG = {
 
 const COLLECTIONS_NAME = {
   sois: "sois",
+  agents: "agents",
   intelligences: "intelligences",
   intelligencesHistory: "intelligences_history",
   serverInfo: "server_info",

@@ -4,6 +4,11 @@
         "reason": "User pass wrong global_id, or the global_id doesn't blong to security_key",
         "action": "Check global_id and security_key"
     },
+    "dia_00004040002":{
+        "message": "Cannot find Agent by global_id: %s and security_key: %s",
+        "reason": "User pass wrong global_id, or the global_id doesn't blong to security_key",
+        "action": "Check global_id and security_key"
+    },
     "dia_00014000001":{
         "message": "Please change another global_id. %s already exist!",
         "reason": "global_id isn't unique",
@@ -73,5 +78,15 @@
         "message": "Delete intelligences fail, caused by unknown error!",
         "reason": "Unknown error",
         "action": "Check log to find more detail"
+    },
+    "dia_00134000001":{
+        "message": "Please change another global_id. %s already exist!",
+        "reason": "global_id isn't unique",
+        "action": "Change different global_id"
+    },
+    "dia_00134000002":{
+        "message": "Please check global_id, name, both of them are required",
+        "reason": "Don't pass global_id, name, base_url",
+        "action": "Check the data you passed, both of them are required"
     }
 }

@@ -32,7 +32,7 @@ paths:
             application/json:
               schema:
                 type: array
-                $item:
+                items:
                   $ref: '#/components/schemas/SOI'
     post:
       tags:
@@ -193,6 +193,181 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /apis/agents:
+    get: 
+      tags:
+        - agent
+      description: Operation Index - 0012
+      operationId: getAgents
+      responses:
+        200:
+          description: Get Agents successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agent'
+    post:
+      tags:
+        - agent
+      summary: Register an Agent. 
+      description: Operation Index - 0013
+      operationId: registerAgent
+      requestBody:
+        description: Need to register Agent information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agent'
+      responses:
+        200:
+          description: Registered successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    description: Generate MongoDB Id
+                  global_id:
+                    $ref: '#/components/schemas/GlobalId'
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apis/agents/{gid}:
+    get:
+      tags:
+        - agent
+      summary: Get an Agent
+      description: Operation Index - 0014
+      operationId: getAgent
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of Agent
+          schema:
+            $ref: '#/components/schemas/GlobalId'
+      responses:
+        200:
+          description: Get an agent successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Cannot find specific Agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags:
+        - agent
+      summary: Update an Agent
+      description: Operation Index - 0015
+      operationId: updateAgent
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of Agent
+          schema:
+            $ref: '#/components/schemas/GlobalId'
+      requestBody:
+        description: Agent information need to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Agent'
+      responses:
+        204:
+          description: Update Agent successful
+        404:
+          description: Cannot find specific Agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      tags:
+        - agent
+      summary: Unregister an Agent
+      description: Operation Index - 0016
+      operationId: unregisterAgent
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of Agent
+          schema:
+            $ref: '#/components/schemas/GlobalId'
+      responses:
+        200:
+          description: Delete Agent successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  global_id:
+                    $ref: '#/components/schemas/GlobalId'
+        404:
+          description: Cannot find specific Agent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  global_id:
+                    $ref: '#/components/schemas/GlobalId'
+  /apis/agents/{gid}/status:
+    put:
+      tags:
+        - agent
+      summary: Update an Agent status 
+      description: Operation Index - 0017
+      operationId: updateAgentStatus
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of agent
+          schema:
+            $ref: '#/components/schemas/GlobalId'
+      responses:
+        200:
+          description: Update a Agent successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Cannot find specific Agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
   /apis/intelligences:
     get:
       tags:
@@ -545,6 +720,11 @@ components:
       properties:
         global_id:
           $ref: '#/components/schemas/GlobalId'
+        name:
+          type: string
+          description: The name of Agent
+          minLength: 3
+          maxLength: 50
         security_key: 
           $ref: '#/components/schemas/GlobalId'
         status:
