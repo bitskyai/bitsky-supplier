@@ -95,9 +95,28 @@ function registerRouter(router) {
       }
     });
 
-    router.put("/agents/:gid/status", async (req, res, next) => {
+    // 0017
+    router.post("/agents/:gid/activate", async (req, res, next) => {
       try {
-        let status = await helpers.updateAgentStatus(_.get(req, "params.gid"));
+        let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+        let status = await helpers.activateAgent(_.get(req, "params.gid"), securityKey);
+        res.json(status);
+      } catch (err) {
+        // Already HTTPError, then throw it
+        if (err instanceof HTTPError) {
+          next(err);
+        } else {
+          // Otherwise create a HTTPError
+          next(new HTTPError(500, err, {}, "dia_00035000001"));
+        }
+      }
+    });
+
+    // 0018
+    router.post("/agents/:gid/deactivate", async (req, res, next) => {
+      try {
+        let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+        let status = await helpers.deactivateAgent(_.get(req, "params.gid"), securityKey);
         res.json(status);
       } catch (err) {
         // Already HTTPError, then throw it

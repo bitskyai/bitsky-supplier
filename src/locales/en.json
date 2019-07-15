@@ -1,13 +1,18 @@
 {
     "dia_00004040001":{
-        "message": "Cannot find SOI by global_id: %s and security_key: %s",
+        "message": "Cannot find resource by global_id: %s and security_key: %s",
         "reason": "User pass wrong global_id, or the global_id doesn't blong to security_key",
         "action": "Check global_id and security_key"
     },
     "dia_00004040002":{
-        "message": "Cannot find Agent by global_id: %s and security_key: %s",
-        "reason": "User pass wrong global_id, or the global_id doesn't blong to security_key",
-        "action": "Check global_id and security_key"
+        "message": "Cannot find Agent by globalId: %s and security_key: %s",
+        "reason": "User pass wrong globalId, or the globalId doesn't blong to security_key",
+        "action": "Check globalId and security_key"
+    },
+    "dia_00004000001":{
+        "message": "An active agent's validation result is invalid, something wrong for this agent, please check. Agent GlobalID %s.",
+        "reason": "An active agent is invalid",
+        "action": "Deactivate this agent and review agent configuration"
     },
     "dia_00014000001":{
         "message": "Please change another global_id. %s already exist!",
@@ -23,6 +28,11 @@
         "message": "Register SOI fail, caused by unknown error!",
         "reason": "Unknown error",
         "action": "Check log to find more detail"
+    },
+    "dia_00015400001":{
+        "message": "Cannot change this agent, because its state is %s, agent globalId is %s",
+        "reason": "Change an active or deleted agent",
+        "action": "If it is an active agent, deactivate first. If it is an deleted agent, you cannot change it"
     },
     "dia_00024000001":{
         "message": "You didn't pass global_id. global_id is required",
@@ -88,5 +98,15 @@
         "message": "Please check global_id, name, both of them are required",
         "reason": "Don't pass global_id, name, base_url",
         "action": "Check the data you passed, both of them are required"
+    },
+    "dia_0017400001":{
+        "message": "Cannot activate, because this agent is in draft state, please make sure you fully configure this agent",
+        "reason": "This agent's state is draft",
+        "action": "Fully configure this agent, then try to activate again"
+    },
+    "dia_0018400001":{
+        "message": "Cannot deactivate, because this agent isn't active state, deactivate only works for active agent",
+        "reason": "This agent's state isn't active state",
+        "action": ""
     }
 }

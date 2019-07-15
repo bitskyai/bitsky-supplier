@@ -334,13 +334,46 @@ paths:
                 properties:
                   global_id:
                     $ref: '#/components/schemas/GlobalId'
-  /apis/agents/{gid}/status:
-    put:
+  /apis/agents/{gid}/activate:
+    post:
       tags:
         - agent
-      summary: Update an Agent status 
+      summary: Activate an Agent status 
       description: Operation Index - 0017
-      operationId: updateAgentStatus
+      operationId: activateAgentStatus
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of agent
+          schema:
+            $ref: '#/components/schemas/GlobalId'
+      responses:
+        200:
+          description: Update a Agent successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        404:
+          description: Cannot find specific Agent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /apis/agents/{gid}/deactivate:
+    post:
+      tags:
+        - agent
+      summary: Activate an Agent status 
+      description: Operation Index - 0018
+      operationId: deactivateAgentStatus
       parameters:
         - in: path
           name: gid

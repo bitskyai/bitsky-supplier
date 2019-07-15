@@ -52,6 +52,13 @@ const INTELLIGENCE_STATUS = {
   timeout: "TIMEOUT"
 };
 
+const AGENT_STATE = {
+  draft: 'DRAFT',
+  configured: 'CONFIGURED',
+  active: 'ACTIVE',
+  deleted: 'DELETED'
+}
+
 const PERMISSIONS = {
   public: 'PUBLIC',
   private: 'PRIVATE'
@@ -62,5 +69,6 @@ module.exports = {
   COLLECTIONS_NAME,
   DEFAULT_SOI,
   INTELLIGENCE_STATUS,
+  AGENT_STATE,
   PERMISSIONS
 };
