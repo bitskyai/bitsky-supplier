@@ -1,7 +1,7 @@
 const packageJson = require("../../package.json");
 
 const CONFIG = {
-  X_REQUESTED_WITH: 'x-requested-with',             // who send this request
+  X_REQUESTED_WITH: 'x-munew-requested-with',             // who send this request
   DIA_UI: 'x_munew_dia_ui',
   X_SECURITY_KEY_HEADER: "x-munew-security-key", // This is an http request header, used for follow service to identify who send this request
   SECURITY_KEY_IN_DB: 'security_key',

@@ -1,6 +1,7 @@
 const _ = require("lodash");
 const uuidv4 = require('uuid/v4');
 const axios = require("axios");
+const semver = require('semver');
 const {
   CONFIG,
   COLLECTIONS_NAME,
@@ -105,6 +106,8 @@ async function registerAgent(agent, securityKey) {
     agent.globalId = uuidv4();
     // Before validate, default set agent state to DRAFT
     agent.state = AGENT_STATE.draft;
+    // when create an agent, default version is 1.0.0, the reason of 1.0.0 is because currently Agent Schema version is 1.0.0, make sure the main version is same with schema
+    agent.version = '1.0.0';
 
     // if securityKey exist, then add securityKey to agent
     if (securityKey) {
@@ -201,13 +204,23 @@ async function updateAgent(gid, agent, securityKey) {
     let originalAgent = await getAgent(gid);
     let obj = _.merge({}, originalAgent, agent);
     obj.modified_at = Date.now();
-
+    
+    // state before validation
+    let agentState = obj.state;
     // Validate agent, based on validate result to update agent state, don't allow user to direct change agent state
     obj = validateAgentAndUpdateState(obj);
 
     // if agent state is **active** or **deleted**, then return error
     if(_.toUpper(obj.state) === _.toUpper(AGENT_STATE.active) || _.toUpper(obj.state) === _.toUpper(AGENT_STATE.deleted)){
       throw new HTTPError(400, null, {globalId:obj.globalId, state: obj.state, name: obj.name}, 'dia_00015400001', obj.state, obj.globalId);
+    }
+
+    // if state change, then we need to update minor version, otherwise only need to update patch version
+    if(agentState !== obj.state){
+      // this means state change, then need to update minor
+      obj.version = semver.inc(obj.version || '1.0.0', "minor");
+    }else{
+      obj.version = semver.inc(obj.version || '1.0.0', "patch");
     }
 
     let result = await updateOne(

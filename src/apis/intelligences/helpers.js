@@ -12,11 +12,14 @@ const {
   COLLECTIONS_NAME,
   DEFAULT_SOI,
   INTELLIGENCE_STATUS,
-  PERMISSIONS
+  PERMISSIONS,
+  AGENT_STATE
 } = require("../../util/constants");
 const config = require("../../config");
 const soisHelpers = require("../sois/helpers");
+const agentsHelpers = require('../agents/helpers');
 const logger = require("../../util/logger");
+const utils = require('../../util/utils');
 
 // To avoid running check soi status multiple times
 // next check will not be started if previous job doesn't finish
@@ -105,25 +108,37 @@ async function addIntelligences(intelligences) {
   }
 }
 
-async function getIntelligences(
-  agentType,
-  agentGid,
-  limit,
-  permission,
-  securityKey
-) {
+/**
+ * 
+ * 
+ * Operation Index - 0005
+ * 
+ * @param {*} agentGid 
+ */
+async function getIntelligences(agentGid) {
   try {
     // TODO: need to improve intelligences schedule
     // 1. Think about if a lot of intelligences, how to schedule them
     // make them can be more efficient
     // 2. think about the case that SOI is inactive
 
+    // Step 1: get agent configuration
+    let agentConfig = await agentsHelpers.getAgent(agentGid);
     // default empty intelligences
     let intelligences = [];
+    agentConfig = utils.omit(agentConfig, ['_id', 'security_key']);
 
-    limit = Number(limit);
-    if (isNaN(limit)) {
-      limit = config.EACH_TIME_INTELLIGENCES_NUMBER;
+    // if agent isn't active, then return empty intelligences
+    if(_.toUpper(agentConfig.state) !== _.toUpper(AGENT_STATE.active)){
+      return {
+        agent: agentConfig,
+        intelligences
+      }
+    }
+
+    let concurrent = Number(agentConfig.concurrent);
+    if (isNaN(concurrent)) {
+      concurrent = config.EACH_TIME_INTELLIGENCES_NUMBER;
     }
 
     let query = {
@@ -151,12 +166,15 @@ async function getIntelligences(
     }
 
     // if permission doesn't exit or agent is public then try to see any public intelligences need to collect
-    if ((!permission || _.upperCase(permission) === PERMISSIONS.public) && (!intelligences || !intelligences.length)) {
+    if (
+      (!permission || _.upperCase(permission) === PERMISSIONS.public) &&
+      (!intelligences || !intelligences.length)
+    ) {
       // if no intelligences for this securityKey and if this agent's permission is public then, get other intelligences that is public
       delete query[CONFIG.SECURITY_KEY_IN_DB];
       query.permission = {
-          $nin: [PERMISSIONS.private]
-      }
+        $nin: [PERMISSIONS.private]
+      };
 
       intelligences = await find(COLLECTIONS_NAME.intelligences, query, {
         sort: ["soi.global_id", "priority"],

@@ -3,6 +3,7 @@
     "$id": "https://munew.io/schemas/agent.json",
     "type": "object",
     "title": "Agent Schema",
+    "version": "1.0.0",
     "required": [
         "globalId",
         "type",
