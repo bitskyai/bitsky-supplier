@@ -670,7 +670,6 @@ components:
             - RUNNING
             - FAILED
             - PAUSED
-            - TIMEOUT
         suitable_agents:
           type: array
           default:

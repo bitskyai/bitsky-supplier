@@ -10,7 +10,8 @@ function registerRouter(router) {
     if (!_registered) {
         router.get('/intelligences', async (req, res, next) => {
             try{
-                let intelligences = await helpers.getIntelligences(_.get(req, 'query.gid'));
+                let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+                let intelligences = await helpers.getIntelligences(_.get(req, 'query.gid'), securityKey);
                 res.send(intelligences);
             }catch(err){
                 // Already HTTPError, then throw it
@@ -25,7 +26,8 @@ function registerRouter(router) {
 
         router.post('/intelligences', async (req, res, next) => {
             try{
-                let result = await helpers.addIntelligences(_.get(req, 'body'));
+                let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+                let result = await helpers.addIntelligences(_.get(req, 'body'), securityKey);
                 res.send(result);
             }catch(err){
                 // Already HTTPError, then throw it
@@ -40,7 +42,8 @@ function registerRouter(router) {
 
         router.put('/intelligences', async (req, res, next) => {
             try{
-                await helpers.updateIntelligences(_.get(req, 'body'));
+                let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+                await helpers.updateIntelligences(_.get(req, 'body'), securityKey);
                 res.status(204).send();
             }catch(err){
                 // Already HTTPError, then throw it
@@ -55,7 +58,8 @@ function registerRouter(router) {
 
         router.delete('/intelligences', async (req, res, next) => {
             try{
-                await helpers.deleteIntelligences(_.get(req, 'query.gids'));
+                let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+                await helpers.deleteIntelligences(_.get(req, 'query.gids'), securityKey);
                 res.status(204).send();
             }catch(err){
                 // Already HTTPError, then throw it

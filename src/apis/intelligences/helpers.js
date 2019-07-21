@@ -26,7 +26,7 @@ const utils = require('../../util/utils');
 // TODO: when start thinking about load balance, then this data should be in memory cache, not inside service memory
 let __check_sois_status__ = {};
 
-async function addIntelligences(intelligences) {
+async function addIntelligences(intelligences, securityKey) {
   try {
     let defaultIntelligence = {
       permission: PERMISSIONS.private,
@@ -115,7 +115,7 @@ async function addIntelligences(intelligences) {
  * 
  * @param {*} agentGid 
  */
-async function getIntelligences(agentGid) {
+async function getIntelligences(agentGid, securityKey) {
   try {
     // TODO: need to improve intelligences schedule
     // 1. Think about if a lot of intelligences, how to schedule them
@@ -250,7 +250,7 @@ async function getIntelligences(agentGid) {
   }
 }
 
-async function updateIntelligences(content) {
+async function updateIntelligences(content, securityKey) {
   try {
     let contentMap = {};
     let gids = content.map(item => {
@@ -297,8 +297,8 @@ async function updateIntelligences(content) {
   }
 }
 
-async function deleteIntelligences(gids) {
-  // implement logic
+async function deleteIntelligences(gids, securityKey) {
+  // TODO: implement logic
 }
 
 module.exports = {
