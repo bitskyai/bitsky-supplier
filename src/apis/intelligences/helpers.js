@@ -17,9 +17,9 @@ const {
 } = require("../../util/constants");
 const config = require("../../config");
 const soisHelpers = require("../sois/helpers");
-const agentsHelpers = require('../agents/helpers');
+const agentsHelpers = require("../agents/helpers");
 const logger = require("../../util/logger");
-const utils = require('../../util/utils');
+const utils = require("../../util/utils");
 
 // To avoid running check soi status multiple times
 // next check will not be started if previous job doesn't finish
@@ -37,7 +37,7 @@ async function addIntelligences(intelligences, securityKey) {
       started_at: 0,
       ended_at: 0,
       status: "CONFIGURED",
-      suitable_agents: ["browserExtension"]
+      suitable_agents: ['BROWSEREXTENSION']
     };
     // TODO: data validation need to improve
     let validationError = [];
@@ -79,6 +79,10 @@ async function addIntelligences(intelligences, securityKey) {
       intelligence._id = intelligence.global_id;
       intelligence = _.merge({}, defaultIntelligence, intelligence);
       soiGlobalIds[intelligence.soi.global_id] = 1;
+      // Make sure agent type is uppercase
+      intelligence.suitable_agents = intelligence.suitable_agents.map(agentType => {
+        return _.toUpper(agentType);
+      })
       return intelligence;
     });
 
@@ -109,35 +113,62 @@ async function addIntelligences(intelligences, securityKey) {
 }
 
 /**
- * 
- * 
+ * @typedef {Object} IntelligencesAndConfig
+ * @property {object} agent - Agent Configuration
+ * @property {array} intelligences - Intelligences Array
+ */
+/**
+ * Get intelligences by Agent Global ID and Security Key
+ *
  * Operation Index - 0005
- * 
- * @param {*} agentGid 
+ *
+ * @param {string} agentGid - Agent Global ID
+ * @param {string} securityKey - Security Key
+ *
+ * @returns {IntelligencesAndConfig}
  */
 async function getIntelligences(agentGid, securityKey) {
   try {
     // TODO: need to improve intelligences schedule
     // 1. Think about if a lot of intelligences, how to schedule them
     // make them can be more efficient
-    // 2. think about the case that SOI is inactive
+    // 2. Think about the case that SOI is inactive
 
     // Step 1: get agent configuration
     let agentConfig = await agentsHelpers.getAgent(agentGid);
+    // If security key doesn't match, then we assume this agnet doesn't belong to this user
+    // For security issue, don't allow user do this
+    if (agentConfig.security_key !== securityKey) {
+      throw new HTTPError(
+        400,
+        null,
+        { agentGlobalId: agentGid, securityKey },
+        "dia_00054000001",
+        agentGid,
+        securityKey
+      );
+    }
+
     // default empty intelligences
     let intelligences = [];
-    agentConfig = utils.omit(agentConfig, ['_id', 'security_key']);
+    agentConfig = utils.omit(agentConfig, ["_id", "security_key"]);
 
     // if agent isn't active, then return empty intelligences
-    if(_.toUpper(agentConfig.state) !== _.toUpper(AGENT_STATE.active)){
-      return {
-        agent: agentConfig,
-        intelligences
-      }
+    if (_.toUpper(agentConfig.state) !== _.toUpper(AGENT_STATE.active)) {
+      throw new HTTPError(
+        400,
+        null,
+        {
+          agent: agentConfig
+        },
+        "dia_00054000002",
+        agentGid
+      );
     }
 
     let concurrent = Number(agentConfig.concurrent);
     if (isNaN(concurrent)) {
+      // if concurrent isn't a number, then use default value
       concurrent = config.EACH_TIME_INTELLIGENCES_NUMBER;
     }
 
@@ -151,6 +182,11 @@ async function getIntelligences(agentGid, securityKey) {
       },
       "soi.status": {
         $eq: "ACTIVE"
+      },
+      suitable_agents: {
+        $elemMatch: {
+          $eq: _.toUpper(agentConfig.type)
+        }
       }
     };
 
@@ -161,8 +197,12 @@ async function getIntelligences(agentGid, securityKey) {
       // for this case, get intelligences that created by this securitykey
       intelligences = await find(COLLECTIONS_NAME.intelligences, query, {
         sort: ["soi.global_id", "priority"],
-        limit: limit
+        limit: concurrent
       });
+    }
+    let permission = PERMISSIONS.private;
+    if (!agentConfig.private) {
+      permission = PERMISSIONS.public;
     }
 
     // if permission doesn't exit or agent is public then try to see any public intelligences need to collect
@@ -178,7 +218,7 @@ async function getIntelligences(agentGid, securityKey) {
 
       intelligences = await find(COLLECTIONS_NAME.intelligences, query, {
         sort: ["soi.global_id", "priority"],
-        limit: limit
+        limit: concurrent
       });
     }
 
@@ -198,7 +238,7 @@ async function getIntelligences(agentGid, securityKey) {
         item.agent = {
           global_id: agentGid,
           status: "ACTIVE",
-          type: agentType,
+          type: _.toUpper(agentConfig.type),
           started_at: Date.now()
         };
       }
@@ -219,7 +259,7 @@ async function getIntelligences(agentGid, securityKey) {
           agent: {
             global_id: agentGid,
             status: "ACTIVE",
-            type: agentType,
+            type: _.toUpper(agentConfig.type),
             started_at: Date.now()
           }
         }
@@ -227,9 +267,7 @@ async function getIntelligences(agentGid, securityKey) {
     );
 
     // Check SOI status in parallel
-    /*
-            After get intelligences that need to collect, during sametime to check whether this SOI is active. 
-         */
+    // After get intelligences that need to collect, during sametime to check whether this SOI is active.
     for (let gid in sois) {
       let soi = sois[gid];
       // if this soi isn't in check status progress, then check it
