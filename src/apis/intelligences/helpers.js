@@ -1,4 +1,5 @@
 const _ = require("lodash");
+const uuidv4 = require('uuid/v4');
 const { HTTPError } = require("../../util/error");
 const {
   remove,
@@ -53,16 +54,21 @@ async function addIntelligences(intelligences, securityKey) {
       delete intelligence.status;
       let err = [];
       if (!intelligence.global_id) {
-        err.push({
-          key: "global_id",
-          description: "global_id is undefined."
-        });
+        // comment 07/25/2019 - instead of error, generate an globalid
+        // err.push({
+        //   key: "global_id",
+        //   description: "global_id is undefined."
+        // });
+        intelligence.global_id = uuidv4();
       }
       if (!intelligence.soi.global_id) {
         err.push({
           key: "soi.global_id",
           description: "soi.global_id is undefined."
         });
+      }
+      if (!intelligence.soi.status){
+        intelligence.soi.status = "ACTIVE";
       }
       if (!intelligence.url) {
         err.push({
@@ -106,7 +112,7 @@ async function addIntelligences(intelligences, securityKey) {
       intelligences,
       true
     );
-    return result;
+    return result&&result.upsertedIds || [];
   } catch (err) {
     throw err;
   }
