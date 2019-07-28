@@ -266,6 +266,7 @@ async function activateAgent(gid, securityKey) {
     
     // change state to **active**
     originalAgent.state = _.toUpper(AGENT_STATE.active);
+    originalAgent.version = semver.inc(originalAgent.version || '1.0.0', "minor");
     result = await updateOne(
       COLLECTIONS_NAME.agents,
       {
@@ -310,6 +311,7 @@ async function deactivateAgent(gid, securityKey) {
     
     // change state to **configured**
     originalAgent.state = _.toUpper(AGENT_STATE.configured);
+    originalAgent.version = semver.inc(originalAgent.version || '1.0.0', "minor");
     result = await updateOne(
       COLLECTIONS_NAME.agents,
       {

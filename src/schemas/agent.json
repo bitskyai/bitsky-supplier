@@ -82,12 +82,6 @@
                 "DELETED"
             ]
         },
-        "baseURL": {
-            "title": "DIA Base URL",
-            "type": "string",
-            "description": "Base url to DIA Server",
-            "format": "uri"
-        },
         "private": {
             "title": "Private Mode",
             "type": "boolean",
