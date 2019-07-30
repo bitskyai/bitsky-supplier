@@ -1,0 +1,82 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "https://munew.io/schemas/agent.json",
+    "type": "object",
+    "title": "Intelligence Schema",
+    "version": "1.0.0",
+    "required": [
+        "globalId",
+        "type",
+        "name",
+        "state",
+        "private"
+    ],
+    "properties": {
+        "id": {
+            "title": "ID",
+            "description": "identifier of this agent",
+            "type": "string"
+        },
+        "version": {
+            "title": "Version",
+            "description": "version of this agent",
+            "type": "string",
+            "pattern": "^\\d+\\.\\d+\\.\\d+$",
+            "examples": [
+                "1.0.0"
+            ]
+        },
+        "globalId": {
+            "title": "Global ID",
+            "description": "globally unique identifier of this agent",
+            "type": "string",
+            "examples": [
+                "59f43b55-46a3-4efc-a960-018bcca91f46"
+            ]
+        },
+        "type": {
+            "title": "Agent Type",
+            "type": "string",
+            "description": "Agent type of this agent",
+            "enum": [
+                "browserExtension",
+                "headlessBrowser",
+                "service"
+            ]
+        },
+        "name": {
+            "title": "Name",
+            "description": "name of this agent",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "examples": [
+                "My Chrome Extension"
+            ]
+        },
+        "description":{
+            "title": "Description",
+            "description": "description of this agent",
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "examples": [
+                "My chrome extension used for test purpose"
+            ]
+        },
+        "state":{
+            "title": "State",
+            "type": "string",
+            "description": "State of this agent",
+            "enum": [
+                "DRAFT",
+                "CONFIGURED",
+                "ACTIVE",
+                "DELETED"
+            ]
+        }
+    },
+    "definitions": {
+
+    }
+}
