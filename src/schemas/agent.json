@@ -45,7 +45,7 @@
         }
       }
     },
-    "id": {
+    "_id": {
       "title": "ID",
       "description": "identifier of this agent",
       "type": "string"
@@ -68,44 +68,47 @@
       "description": "Whether collect intelligences that not created by yourself",
       "default": true
     },
+    "permission": {
+      "$ref": "#/definitions/permission"
+    },
     "concurrent": {
       "title": "Concurrent Collect Intelligences",
-      "type": "number",
+      "type": "integer",
       "description": "How many intelligences need to be concurrent collected",
       "default": 1
     },
     "pollingInterval": {
       "title": "Polling Interval",
-      "type": "number",
+      "type": "integer",
       "description": "Unit: second. How frequently to check whether need to collect new intelligences",
       "default": 30
     },
     "maxWaitingTime": {
       "title": "Max Waiting Time",
-      "type": "number",
+      "type": "integer",
       "description": "Unit: second. Max waiting time between two collecting jobs.",
       "default": 5
     },
     "maxCollect": {
       "title": "Max Collect Intelligences",
-      "type": "number",
+      "type": "integer",
       "description": "**undefined** means infinity. Browser has memory leak issue if continue to open urls. To avoid this, need to close window when reach max collect times. Collect Time equal to how many request send to DIA to get intelligence."
     },
     "idelTime": {
       "title": "Agent Idel Time",
-      "type": "number",
+      "type": "integer",
       "description": "How long time browser need to wait to restart collect intelligences after close browser window. This time is used for browser to release memory.",
       "default": 0
     },
     "timeout": {
       "title": "Request Timeout",
-      "type": "number",
+      "type": "integer",
       "description": "Unit: second. If the request takes longer than timeout, the request will be aborted",
       "default": 90
     },
     "maxRetry": {
       "title": "Max Retry Time",
-      "type": "number",
+      "type": "integer",
       "description": "Max retry time if send collected intelligences fail, if retried max time, then it will send back to DIA and mark those intelligences fail",
       "default": 3
     }

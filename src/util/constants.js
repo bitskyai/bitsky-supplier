@@ -1,10 +1,10 @@
 const packageJson = require("../../package.json");
 
 const CONFIG = {
-  X_REQUESTED_WITH: 'x-munew-requested-with',             // who send this request
-  DIA_UI: 'x_munew_dia_ui',
+  X_REQUESTED_WITH: "x-munew-requested-with", // who send this request
+  DIA_UI: "x_munew_dia_ui",
   X_SECURITY_KEY_HEADER: "x-munew-security-key", // This is an http request header, used for follow service to identify who send this request
-  SECURITY_KEY_IN_DB: 'security_key',
+  SECURITY_KEY_IN_DB: "security_key",
   SOI_STATUS_CHECK_TIME: 5 * 60 * 1000,
   TIMEOUT_VALUE_FOR_INTELLIGENCE: 5 * 60 * 1000,
   LOG_FILES_PATH: "./public/log",
@@ -44,31 +44,59 @@ const DEFAULT_SOI = {
   }
 };
 
-const INTELLIGENCE_STATUS = {
+const INTELLIGENCE_STATE = {
+  draft: "DRAFT",
   configured: "CONFIGURED",
   finished: "FINISHED",
   running: "RUNNING",
+  failed: "FAILED",
   paused: "PAUSED",
   timeout: "TIMEOUT"
 };
 
 const AGENT_STATE = {
-  draft: 'DRAFT',
-  configured: 'CONFIGURED',
-  active: 'ACTIVE',
-  deleted: 'DELETED'
-}
+  draft: "DRAFT",
+  configured: "CONFIGURED",
+  active: "ACTIVE",
+  deleted: "DELETED"
+};
 
 const PERMISSIONS = {
-  public: 'PUBLIC',
-  private: 'PRIVATE'
-}
+  public: "PUBLIC",
+  private: "PRIVATE"
+};
+
+const DEFAULT_INTELLIGENCE = {
+  system: {
+    state: "CONFIGURED",
+    version: "1.0.0"
+  },
+  type: "CRAWLER",
+  permission: "PRIVATE",
+  suitableAgents: ["BROWSEREXTENSION"],
+  priority: 100
+};
+
+const DEFAULT_AGENT = {
+  system: {
+    version: "1.0.0",
+    state: "DRAFT"
+  },
+  permission: "PRIVATE",
+  concurrent: 1,
+  maxWaitingTime: 5,
+  idelTime: 0,
+  timeout: 90,
+  maxRetry: 3
+};
 
 module.exports = {
   CONFIG,
   COLLECTIONS_NAME,
   DEFAULT_SOI,
-  INTELLIGENCE_STATUS,
+  INTELLIGENCE_STATE,
   AGENT_STATE,
-  PERMISSIONS
+  PERMISSIONS,
+  DEFAULT_INTELLIGENCE,
+  DEFAULT_AGENT
 };

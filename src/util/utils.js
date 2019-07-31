@@ -1,6 +1,9 @@
 const _ = require("lodash");
 const Ajv = require("ajv");
+const uuidv4 = require('uuid/v4');
+
 const agentSchema = require("../schemas/agent.json");
+const intelligenceSchema = require("../schemas/intelligence.json");
 const UnknownData = require("../data_models/UnknownData");
 const { logUnknownDataToDB } = require("./db");
 const logger = require("./logger");
@@ -196,13 +199,27 @@ function omit(obj, omitKeys, iterateKeys) {
 }
 
 /**
- * Based on Agent Schema to validate agent
+ * Based on Agent Schema to validate an agent
  * @param {object} agentData - agent data want to be validate
  * @returns {boolean} - true: valid, false: invalid
  */
 function validateAgent(agentData) {
   var ajv = new Ajv();
   let valid = ajv.validate(agentSchema, agentData);
+  return {
+	  valid,
+	  errors: ajv.errors
+  };
+}
+
+/**
+ * Based on Intelligence Schema to validate an intelligence
+ * @param {object} intelligenceData - intelligence data want to be validated
+ * @returns {boolean} - true: valid, false: invalid
+ */
+function validateIntelligence(intelligenceData) {
+  var ajv = new Ajv();
+  let valid = ajv.validate(intelligenceSchema, intelligenceData);
   return {
 	  valid,
 	  errors: ajv.errors
@@ -244,13 +261,25 @@ function validateAgentAndUpdateState(agentData) {
   return agentData;
 }
 
+function generateGlobalId(entityType){
+  let id = uuidv4();
+  if(!entityType){
+    entityType = "munew-dia";
+  }
+  id = `${entityType}::${Date.now()}::${id}`;
+  id = btoa(id);
+  return id;
+}
+
 module.exports = {
   getNumber,
   btoa,
   atob,
+  generateGlobalId,
   logAnUnKnownData,
   getTodaySpecificTimeUTCTimestamp,
   omit,
   validateAgentAndUpdateState,
-  validateAgent
+  validateAgent,
+  validateIntelligence
 };

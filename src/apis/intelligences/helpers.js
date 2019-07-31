@@ -12,9 +12,10 @@ const {
   CONFIG,
   COLLECTIONS_NAME,
   DEFAULT_SOI,
-  INTELLIGENCE_STATUS,
+  INTELLIGENCE_STATE,
   PERMISSIONS,
-  AGENT_STATE
+  AGENT_STATE,
+  DEFAULT_INTELLIGENCE
 } = require("../../util/constants");
 const config = require("../../config");
 const soisHelpers = require("../sois/helpers");
@@ -29,66 +30,67 @@ let __check_sois_status__ = {};
 
 async function addIntelligences(intelligences, securityKey) {
   try {
-    let defaultIntelligence = {
-      permission: PERMISSIONS.private,
-      priority: 100000,
-      created_at: Date.now(),
-      modified_at: Date.now(),
-      last_collected_at: 0,
-      started_at: 0,
-      ended_at: 0,
-      status: "CONFIGURED",
-      suitable_agents: ['BROWSEREXTENSION']
-    };
+    // Comment: 07/30/2019
+    // let defaultIntelligence = {
+    //   permission: PERMISSIONS.private,
+    //   priority: 100000,
+    //   created_at: Date.now(),
+    //   modified_at: Date.now(),
+    //   last_collected_at: 0,
+    //   started_at: 0,
+    //   ended_at: 0,
+    //   status: "CONFIGURED",
+    //   suitable_agents: ['BROWSEREXTENSION']
+    // };
+    let defaultIntelligence = DEFAULT_INTELLIGENCE;
     // TODO: data validation need to improve
     let validationError = [];
     // hash table for soi globalId
     let soiGlobalIds = {};
     intelligences = intelligences.map(intelligence => {
       // remove data that cannot set by user
-      delete intelligence.created_at;
-      delete intelligence.modified_at;
-      delete intelligence.last_collected_at;
-      delete intelligence.started_at;
-      delete intelligence.ended_at;
-      delete intelligence.status;
+      // Comment: 07/30/2019
+      // delete intelligence.created_at;
+      // delete intelligence.modified_at;
+      // delete intelligence.last_collected_at;
+      // delete intelligence.started_at;
+      // delete intelligence.ended_at;
+      // delete intelligence.status;
+
       let err = [];
-      if (!intelligence.global_id) {
+      if (!intelligence.globalId) {
         // comment 07/25/2019 - instead of error, generate an globalid
         // err.push({
         //   key: "global_id",
         //   description: "global_id is undefined."
         // });
-        intelligence.global_id = uuidv4();
+        intelligence.globalId = utils.generateGlobalId('intelligence');
+        // To avoid same intelligence insert multiple time
+        intelligence._id = intelligence.globalId;
       }
-      if (!intelligence.soi.global_id) {
-        err.push({
-          key: "soi.global_id",
-          description: "soi.global_id is undefined."
-        });
-      }
-      if (!intelligence.soi.status){
-        intelligence.soi.status = "ACTIVE";
-      }
-      if (!intelligence.url) {
-        err.push({
-          key: "url",
-          description: "url is undefined."
-        });
-      }
-      if (err.length) {
-        validationError.push({
-          intelligence,
-          error: err
-        });
-      }
-      intelligence._id = intelligence.global_id;
       intelligence = _.merge({}, defaultIntelligence, intelligence);
-      soiGlobalIds[intelligence.soi.global_id] = 1;
+
+      // Update system information
+      intelligence.system.created = Date.now();
+      intelligence.system.modified = Date.now();
+      intelligence.system.securityKey = securityKey;
+
       // Make sure agent type is uppercase
-      intelligence.suitable_agents = intelligence.suitable_agents.map(agentType => {
+      intelligence.suitableAgents = intelligence.suitableAgents.map(agentType => {
         return _.toUpper(agentType);
       })
+      
+      let validateResult = utils.validateIntelligence(intelligence);
+
+      // If it isn't valid
+      if (!validateResult.valid) {
+        validationError.push({
+          intelligence,
+          error: validateResult.errors
+        });
+      }
+      // Need to update global_id to globalId
+      soiGlobalIds[intelligence.soi.global_id] = 1;
       return intelligence;
     });
 

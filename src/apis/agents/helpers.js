@@ -1,6 +1,6 @@
 const _ = require("lodash");
 const uuidv4 = require('uuid/v4');
-const axios = require("axios");
+// const axios = require("axios");
 const semver = require('semver');
 const {
   CONFIG,
