@@ -235,17 +235,17 @@ function validateIntelligence(intelligenceData) {
 function validateAgentAndUpdateState(agentData) {
   // Default to set agent state to draft, since agent state is required.
   // It is useful for new agent that need to be registered
-  if (!agentData.state) {
-    agentData.state = AGENT_STATE.draft;
+  if (!agentData.system.state) {
+    agentData.system.state = AGENT_STATE.draft;
   }
   // for **deleted** status don't need to validate
   // TODO: maybe need to retrun warning, when need then can change
-  if( _.toUpper(agentData.state) === _.toUpper(AGENT_STATE.deleted)){
+  if( _.toUpper(agentData.system.state) === _.toUpper(AGENT_STATE.deleted)){
     return agentData;
   }
   let validateResult = validateAgent(agentData);
   // for active state, don't change its state
-  if(_.toUpper(agentData.state) === _.toUpper(AGENT_STATE.active)){
+  if(_.toUpper(agentData.system.state) === _.toUpper(AGENT_STATE.active)){
     if (!validateResult.valid) {
       // for active state, but it isn't valid, then this means something wrong, throw error
       throw new CustomError(null, {agentData}, 'dia_00004000001', agentData.globalId);
@@ -253,9 +253,9 @@ function validateAgentAndUpdateState(agentData) {
     // if it is valid, then don't need to change state
   }else{
     if (validateResult.valid) {
-      agentData.state = _.toUpper(AGENT_STATE.configured);
+      agentData.system.state = _.toUpper(AGENT_STATE.configured);
     } else {
-      agentData.state = _.toUpper(AGENT_STATE.draft);
+      agentData.system.state = _.toUpper(AGENT_STATE.draft);
     }
   }
   return agentData;

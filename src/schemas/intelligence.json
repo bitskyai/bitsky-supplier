@@ -64,6 +64,9 @@
             "globalId": {
               "$ref": "#/definitions/globalId"
             },
+            "type": {
+              "$ref": "#/definitions/agentType"
+            },
             "startedAt": {
               "allOf": [
                 {
@@ -88,6 +91,13 @@
         },
         "version": {
           "$ref": "#/definitions/version"
+        },
+        "failuresNumber": {
+          "title": "Number of failures",
+          "type": "integer",
+          "default": 0,
+          "description": "How many times this intelligence was fail running.",
+          "minimum": 0
         }
       }
     },
@@ -184,7 +194,7 @@
       ]
     },
     "timestamp": {
-      "type": "integer",
+      "type": ["integer", "null"],
       "description": "Timestamp of when this intelligence was assigned to an agent",
       "examples": [1553974629109]
     },

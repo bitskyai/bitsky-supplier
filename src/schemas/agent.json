@@ -9,7 +9,6 @@
     "globalId",
     "type",
     "name",
-    "state",
     "private",
     "concurrent",
     "pollingInterval",
@@ -31,24 +30,32 @@
         "version": {
           "$ref": "#/definitions/version"
         },
+        "securityKey": {
+          "$ref": "#/definitions/securityKey"
+        },
         "created": {
-          "title": "Created at",
-          "type": "integer",
-          "description": "Timestamp of when this intelligence was created",
-          "examples": [1553974629109]
+          "$ref": "#/definitions/created"
         },
         "modified": {
-          "title": "Last time modified at",
-          "type": "integer",
-          "description": "Timestamp of when this intelligence was last time modified",
-          "examples": [1553974629109]
+          "$ref": "#/definitions/modified"
+        },
+        "lastPing": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/timestamp"
+            },
+            {
+              "title": "Last Ping Time",
+              "description": "When last time this agent ping DIA server"
+            }
+          ]
         }
       }
     },
     "_id": {
       "title": "ID",
       "description": "identifier of this agent",
-      "type": "string"
+      "type": ["string", "object"]
     },
     "globalId": {
       "$ref": "#/definitions/globalId"
@@ -135,7 +142,7 @@
       ]
     },
     "timestamp": {
-      "type": "integer",
+      "type": ["integer", "null"],
       "description": "Timestamp of when this intelligence was assigned to an agent",
       "examples": [1553974629109]
     },
@@ -162,8 +169,8 @@
     "permission": {
       "type": "string",
       "description": "Decide whether this agent to accept public intelligences. if it is **private**, then don't accept public intelligences",
-      "default": "private",
-      "enum": ["private", "public"]
+      "default": "PRIVATE",
+      "enum": ["PRIVATE", "PUBLIC"]
     },
     "url": {
       "type": "string",

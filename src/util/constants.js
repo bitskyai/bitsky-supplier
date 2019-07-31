@@ -4,7 +4,7 @@ const CONFIG = {
   X_REQUESTED_WITH: "x-munew-requested-with", // who send this request
   DIA_UI: "x_munew_dia_ui",
   X_SECURITY_KEY_HEADER: "x-munew-security-key", // This is an http request header, used for follow service to identify who send this request
-  SECURITY_KEY_IN_DB: "security_key",
+  SECURITY_KEY_IN_DB: "securityKey",
   SOI_STATUS_CHECK_TIME: 5 * 60 * 1000,
   TIMEOUT_VALUE_FOR_INTELLIGENCE: 5 * 60 * 1000,
   LOG_FILES_PATH: "./public/log",
@@ -69,7 +69,8 @@ const PERMISSIONS = {
 const DEFAULT_INTELLIGENCE = {
   system: {
     state: "CONFIGURED",
-    version: "1.0.0"
+    version: "1.0.0",
+    failuresNumber: 0
   },
   type: "CRAWLER",
   permission: "PRIVATE",

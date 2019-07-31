@@ -1,5 +1,4 @@
 const _ = require("lodash");
-const uuidv4 = require('uuid/v4');
 const { HTTPError } = require("../../util/error");
 const {
   remove,
@@ -146,7 +145,7 @@ async function getIntelligences(agentGid, securityKey) {
     let agentConfig = await agentsHelpers.getAgent(agentGid);
     // If security key doesn't match, then we assume this agnet doesn't belong to this user
     // For security issue, don't allow user do this
-    if (agentConfig.security_key !== securityKey) {
+    if (agentConfig.system.securityKey !== securityKey) {
       throw new HTTPError(
         400,
         null,
@@ -159,10 +158,10 @@ async function getIntelligences(agentGid, securityKey) {
 
     // default empty intelligences
     let intelligences = [];
-    agentConfig = utils.omit(agentConfig, ["_id", "security_key"]);
+    agentConfig = utils.omit(agentConfig, ["_id", "securityKey"], ['system']);
 
-    // if agent isn't active, then return empty intelligences
-    if (_.toUpper(agentConfig.state) !== _.toUpper(AGENT_STATE.active)) {
+    // if agent isn't active, then throw an error
+    if (_.toUpper(agentConfig.system.state) !== _.toUpper(AGENT_STATE.active)) {
       throw new HTTPError(
         400,
         null,
@@ -183,15 +182,16 @@ async function getIntelligences(agentGid, securityKey) {
     let query = {
       status: {
         $nin: [
-          INTELLIGENCE_STATUS.running,
-          INTELLIGENCE_STATUS.finished,
-          INTELLIGENCE_STATUS.paused
+          INTELLIGENCE_STATE.draft,
+          INTELLIGENCE_STATE.running,
+          INTELLIGENCE_STATE.finished,
+          INTELLIGENCE_STATE.paused
         ]
       },
       "soi.status": {
         $eq: "ACTIVE"
       },
-      suitable_agents: {
+      suitableAgents: {
         $elemMatch: {
           $eq: _.toUpper(agentConfig.type)
         }
@@ -200,7 +200,9 @@ async function getIntelligences(agentGid, securityKey) {
 
     // if security key provide, get all intelligences for this security key first
     if (securityKey) {
-      query[CONFIG.SECURITY_KEY_IN_DB] = securityKey;
+      query[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
+        $eq: securityKey
+      };
       // only return items that soi.status is ACTIVE
       // for this case, get intelligences that created by this securitykey
       intelligences = await find(COLLECTIONS_NAME.intelligences, query, {
@@ -219,7 +221,7 @@ async function getIntelligences(agentGid, securityKey) {
       (!intelligences || !intelligences.length)
     ) {
       // if no intelligences for this securityKey and if this agent's permission is public then, get other intelligences that is public
-      delete query[CONFIG.SECURITY_KEY_IN_DB];
+      delete query[`system.${CONFIG.SECURITY_KEY_IN_DB}`];
       query.permission = {
         $nin: [PERMISSIONS.private]
       };
@@ -234,45 +236,58 @@ async function getIntelligences(agentGid, securityKey) {
     let sois = {};
     for (let i = 0; i < intelligences.length; i++) {
       let item = intelligences[i] || {};
-      gids.push(item.global_id);
+      gids.push(item.globalId);
       if (sois[item.soi.global_id]) {
         item.soi = sois[item.soi.global_id];
       } else {
         let soi = await soisHelpers.getSOI(item.soi.global_id);
-        sois[item.soi.global_id] = _.merge({}, DEFAULT_SOI, soi);
+        soi = _.merge({}, DEFAULT_SOI, soi);
+        // remove unnecessary data
+        soi = utils.omit(soi, ['_id', 'security_key', 'created_at', 'created', 'modified', 'modified_at'], []);
+        sois[item.soi.global_id] = soi;
         item.soi = sois[item.soi.global_id];
       }
-      if (!item.agent) {
-        item.agent = {
-          global_id: agentGid,
-          status: "ACTIVE",
-          type: _.toUpper(agentConfig.type),
-          started_at: Date.now()
-        };
+      
+      // Comment: 07/30/2019
+      // Reason: Since this intelligence is reassigned, so it always need to update agent information
+      // if (!item.agent) {
+      //   item.agent = {
+      //     global_id: agentGid,
+      //     type: _.toUpper(agentConfig.type),
+      //     started_at: Date.now()
+      //   };
+      // }
+      item.system.agent = {
+        globalId: agentGid,
+        type: _.toUpper(agentConfig.type),
       }
     }
 
+    // Update intelligences that return to agent
     await updateMany(
       COLLECTIONS_NAME.intelligences,
       {
-        global_id: {
+        globalId: {
           $in: gids
         }
       },
       {
         $set: {
-          started_at: Date.now(),
-          status: "RUNNING",
-          ended_at: 0,
-          agent: {
-            global_id: agentGid,
-            status: "ACTIVE",
-            type: _.toUpper(agentConfig.type),
-            started_at: Date.now()
+          system:{
+            startedAt: Date.now(), 
+            endedAt: null,
+            state: INTELLIGENCE_STATE.running,
+            agent: {
+              globalId: agentGid,
+              status: "ACTIVE",
+              type: _.toUpper(agentConfig.type)
+            }
           }
         }
       }
     );
+    
+    // TODO: Also need to update agent **lastPing**
 
     // Check SOI status in parallel
     // After get intelligences that need to collect, during sametime to check whether this SOI is active.
