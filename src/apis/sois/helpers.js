@@ -1,9 +1,10 @@
 const _ = require("lodash");
-const axios = require("axios");
+const { http } = require("../../util/http");
 const {
   CONFIG,
   DEFAULT_SOI,
-  COLLECTIONS_NAME
+  COLLECTIONS_NAME,
+  SOI_STATE
 } = require("../../util/constants");
 const { HTTPError } = require("../../util/error");
 const {
@@ -14,18 +15,23 @@ const {
   updateMany,
   remove
 } = require("../../util/db");
-const config = require("../../config");
+const {
+  validateSOI,
+  validateSOIAndUpdateState,
+  generateGlobalId
+} = require("../../util/utils");
+// const config = require("../../config");
 const logger = require("../../util/logger");
 
 async function checkSOIExistByGlobalID(gid, securityKey) {
   try {
     let soiQuery = {
-      global_id: {
+      globalId: {
         $eq: gid
       }
     };
     if (securityKey) {
-      soiQuery[CONFIG.SECURITY_KEY_IN_DB] = {
+      soiQuery[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
         $eq: securityKey
       };
     }
@@ -37,7 +43,7 @@ async function checkSOIExistByGlobalID(gid, securityKey) {
       throw new HTTPError(
         404,
         null,
-        { global_id: gid },
+        { globalId: gid },
         "dia_00004040001",
         gid,
         securityKey
@@ -52,8 +58,8 @@ async function checkSOIExistByGlobalID(gid, securityKey) {
 /**
  * OperationIndex: 0001
  * Register a SOI to DIA.
- * Follow KISS principle, you need to make sure your **global_id** is unique.
- * Currently, **global_id** is only way for **SOI** Identity.
+ * Follow KISS principle, you need to make sure your **globalId** is unique.
+ * Currently, **globalId** is only way for **SOI** Identity.
  * @param {object} soi - SOI need to be register
  * @param {string} securityKey - The securityKey that previous service send, used to identify who send this request
  *
@@ -61,44 +67,48 @@ async function checkSOIExistByGlobalID(gid, securityKey) {
  */
 async function registerSOI(soi, securityKey) {
   try {
-    // validate soi
-    // TODO: change to validate based on schema
-    if (
-      !_.get(soi, "global_id") ||
-      !_.get(soi, "soi_name") ||
-      !_.get(soi, "base_url")
-    ) {
-      throw new HTTPError(400, null, {}, "dia_00014000002");
+    // Set default value
+    soi = _.merge({}, DEFAULT_SOI, soi);
+    // Update system information
+    soi.system.created = Date.now();
+    soi.system.modified = Date.now();
+    // if securityKey exist, then add securityKey to soi
+    if (securityKey) {
+      soi.system[CONFIG.SECURITY_KEY_IN_DB] = securityKey;
+    }
+    if (!soi.globalId) {
+      soi.globalId = generateGlobalId("soi");
     }
 
-    // TODO: Think about whether we need to support Dynamic Generate **global_id**.
-    // Use global_id to find SOI.
-    let soiInDB = await findOneByGlobalId(
-      COLLECTIONS_NAME.sois,
-      soi.global_id,
-      {
-        projection: {
-          global_id: 1
-        }
+    // validate soi
+    let validateResult = validateSOI(soi);
+    if (!validateResult.valid) {
+      throw new HTTPError(
+        422,
+        validateResult.errors,
+        { soi },
+        "dia_00014000002"
+      );
+    }
+
+    // Use globalId to find SOI.
+    let soiInDB = await findOneByGlobalId(COLLECTIONS_NAME.sois, soi.globalId, {
+      projection: {
+        globalId: 1
       }
-    );
-    // global_id must be unique
+    });
+    // globalId must be unique
     if (soiInDB) {
-      // global_id already exist
+      // globalId already exist
       throw new HTTPError(
         400,
         null,
         {
-          global_id: soi.global_id
+          globalId: soi.globalId
         },
         "dia_00014000001",
-        soi.global_id
+        soi.globalId
       );
-    }
-
-    // if securityKey exist, then add securityKey to soi
-    if (securityKey) {
-      soi[CONFIG.SECURITY_KEY_IN_DB] = securityKey;
     }
 
     let insertOneWriteOpResultObject = await insertOne(
@@ -107,7 +117,7 @@ async function registerSOI(soi, securityKey) {
     );
     return {
       _id: insertOneWriteOpResultObject.insertedId,
-      global_id: soi.global_id
+      globalId: soi.globalId
     };
   } catch (err) {
     // Already HTTPError, then throw it
@@ -117,20 +127,19 @@ async function registerSOI(soi, securityKey) {
 
 /**
  * OperationIndex: 0002
- * Get a SOI by global_id
- * @param {string} gid - global_id
+ * Get a SOI by globalId
+ * @param {string} gid - globalId
  *
  * @returns {object}
  */
 async function getSOI(gid, securityKey) {
   try {
-
     if (!gid) {
       throw new HTTPError(
         400,
         null,
         {
-          global_id: gid
+          globalId: gid
         },
         "dia_00024000001"
       );
@@ -141,7 +150,7 @@ async function getSOI(gid, securityKey) {
         404,
         null,
         {
-          global_id: gid
+          globalId: gid
         },
         "dia_00024040001",
         gid
@@ -156,7 +165,7 @@ async function getSOI(gid, securityKey) {
 /**
  * OperationIndex: 0010
  * Get a SOIs
- * @param {string} securityKey - global_id
+ * @param {string} securityKey - globalId
  *
  * @returns {object}
  */
@@ -164,7 +173,7 @@ async function getSOIs(securityKey) {
   try {
     let query = {};
     if (securityKey) {
-      query[CONFIG.SECURITY_KEY_IN_DB] = {
+      query[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
         $eq: securityKey
       };
     }
@@ -182,17 +191,18 @@ async function updateSOI(gid, soi, securityKey) {
     await checkSOIExistByGlobalID(gid, securityKey);
 
     // Remove cannot update fields
-    delete soi.created_at;
-    delete soi._id;
-    delete soi.global_id;
+    if (soi.system) {
+      delete soi.system;
+    }
 
     let originalSoi = await getSOI(gid);
     let obj = _.merge({}, originalSoi, soi);
-    obj.modified_at = Date.now();
+    obj.system.modified = Date.now();
+    obj = validateSOIAndUpdateState(obj);
     let result = await updateOne(
       COLLECTIONS_NAME.sois,
       {
-        global_id: {
+        globalId: {
           $eq: gid
         }
       },
@@ -200,74 +210,121 @@ async function updateSOI(gid, soi, securityKey) {
         $set: obj
       }
     );
+
+    // After update SOI, need to update SOI state
+    updateSOIState(gid, originalSoi);
     return result;
   } catch (err) {
     throw err;
   }
 }
 
-async function updateSOIStatus(gid, originalSoi) {
+/**
+ * Check SOI Health
+ * @param {string} baseURL - Base URL of SOI server
+ * @param {string} method - HTTP method
+ * @param {string} url - health path
+ * 
+ * @returns {object} - {status: true/false, reason: err}
+ */
+async function checkSOIHealth(baseURL, method, url){
+  try{
+    // Ping SOI server
+    await http({
+      baseURL: baseURL,
+      method: method,
+      url: url
+    });
+    return {
+      status: true
+    };
+  }catch(err){
+    logger.warn("[checkSOIHealth] Ping SOI fail", { err: err });
+    return {
+      status: false,
+      reason: err
+    };
+  }
+}
+
+/**
+ * Update SOI state
+ * @param {string} gid - SOI globalId
+ * @param {object} originalSoi - Original SOI Data
+ */
+async function updateSOIState(gid, originalSoi) {
   try {
     // if user didn't pass originalSoi, then get it
     if (!originalSoi) {
       originalSoi = await getSOI(gid);
     }
-    // let soiStatusCheckTime = config.SOI_STATUS_CHECK_TIME;
-    let soi = _.merge({}, DEFAULT_SOI, originalSoi);
-    let status = await new Promise((resolve, reject) => {
-      let headers = {};
-      if (soi.api_key) {
-        headers[constants.API_KEY_HEADER] = soi.api_key;
+
+    // check whether need to check SOI State. To avoid performance issue, don't allow user check SOI state too frequently
+    // TODO: maybe we need to think about support **FORCE** update
+    let lastPing = originalSoi.system.lastPing;
+    if(Date.now() - lastPing < CONFIG.SOI_STATE_CHECK_TIME){
+      // Don't need to check SOI state
+      return {
+        state: originalSoi.system.state
       }
-      // send request
-      axios({
-        baseURL: soi.base_url,
-        method: soi.health.method,
-        url: soi.health.path,
-        headers
-      })
-        .then(res => {
-          resolve(true);
-        })
-        .catch(err => {
-          // logger.warn("");
-          // the reason of return [] is because, normally agent is automatically start and close, no human monitor it
-          // to make sure work flow isn't stopped, so resolve it as []
-          resolve(false);
-        });
-    });
-    if (status) {
-      originalSoi.status = "ACTIVE";
-    } else {
-      originalSoi.status = "INACTIVE";
     }
-    originalSoi.modified_at = Date.now();
+
+    // First validate SOI, in case it was draft
+    originalSoi = validateSOIAndUpdateState(originalSoi);
+
+    let state = originalSoi.system.state;
+    let pingFailReason = '';
+    if(_.toUpper(state) !== _.toUpper(SOI_STATE.draft)){
+      // if it isn't draft, then ping SOI
+      let result = await checkSOIHealth(originalSoi.baseURL, originalSoi.health.method, originalSoi.health.path);
+      if (result.status) {
+        // SOI is health
+        state = _.toUpper(SOI_STATE.active);
+        pingFailReason = '';
+      } else {
+        state = _.toUpper(SOI_STATE.failed);
+        if(typeof result.reason === 'object'){
+          pingFailReason = JSON.stringify(result.reason);
+        }else{
+          pingFailReason = result.reason;
+        }
+      }
+    }
+    
+    // Update all intelligences that reference to this SOI
     let result = await updateMany(
       COLLECTIONS_NAME.intelligences,
       {
-        "soi.global_id": {
+        "soi.globalId": {
           $eq: gid
         }
       },
       {
         $set: {
-          "soi.status": originalSoi.status
+          "soi.state": state
         }
       }
     );
+
+    // Update this SOI
     result = await updateOne(
       COLLECTIONS_NAME.sois,
       {
-        global_id: {
+        globalId: {
           $eq: gid
         }
       },
       {
-        $set: originalSoi
+        $set: {
+          "system.state": state,
+          "system.modified": Date.now(),
+          "system.lastPing": Date.now(),
+          "system.pingFailReason": pingFailReason
+        }
       }
     );
     return {
-      status: originalSoi.status
+      state: state
     };
   } catch (err) {
     throw err;
@@ -280,13 +337,13 @@ async function unregisterSOI(gid, securityKey) {
     await checkSOIExistByGlobalID(gid, securityKey);
 
     let query = {
-      soi_gid: {
+      "soi.globalId": {
         $eq: gid
       }
     };
 
     if (securityKey) {
-      query[CONFIG.SECURITY_KEY_IN_DB] = {
+      query[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
         $eq: securityKey
       };
     }
@@ -296,12 +353,12 @@ async function unregisterSOI(gid, securityKey) {
     });
 
     let soiQuery = {
-      global_id: {
+      globalId: {
         $eq: gid
       }
     };
     if (securityKey) {
-      soiQuery[CONFIG.SECURITY_KEY_IN_DB] = {
+      query[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
         $eq: securityKey
       };
     }
@@ -319,6 +376,6 @@ module.exports = {
   getSOI,
   updateSOI,
   unregisterSOI,
-  updateSOIStatus,
+  updateSOIState,
   getSOIs
 };

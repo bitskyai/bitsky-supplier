@@ -6,7 +6,7 @@ const {
     find
 } = require('../../../util/db');
 const {
-    updateSOIStatus
+    updateSOIState
 } = require('../../sois/helpers');
 const config = require('../../../config');
 const logger = require('../../../util/logger');
@@ -20,7 +20,7 @@ module.exports = function (agenda) {
             let sois = await find(COLLECTIONS_NAME.sois, {
                 $or: [{
                         modified_at: {
-                            $lt: (Date.now() - config.SOI_STATUS_CHECK_TIME)
+                            $lt: (Date.now() - config.SOI_STATE_CHECK_TIME)
                         }
                     },
                     {
@@ -33,7 +33,7 @@ module.exports = function (agenda) {
 
             // TODO: This need to improve, it shouldn't check one by one, it should check multiple together
             for (let i = 0; i < sois.length; i++) {
-                await updateSOIStatus(sois[i].global_id, sois[i]);
+                await updateSOIState(sois[i].globalId, sois[i]);
             }
             done();
         } catch (err) {

@@ -53,9 +53,7 @@
       }
     },
     "_id": {
-      "title": "ID",
-      "description": "identifier of this agent",
-      "type": ["string", "object"]
+      "$ref": "#/definitions/_id"
     },
     "globalId": {
       "$ref": "#/definitions/globalId"
@@ -121,6 +119,11 @@
     }
   },
   "definitions": {
+    "_id": {
+      "title": "ID",
+      "description": "identifier of this entitle",
+      "type": ["string", "object"]
+    },
     "created": {
       "allOf": [
         {

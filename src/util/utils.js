@@ -2,12 +2,13 @@ const _ = require("lodash");
 const Ajv = require("ajv");
 const uuidv4 = require('uuid/v4');
 
+const soiSchema = require("../schemas/soi.json");
 const agentSchema = require("../schemas/agent.json");
 const intelligenceSchema = require("../schemas/intelligence.json");
 const UnknownData = require("../data_models/UnknownData");
 const { logUnknownDataToDB } = require("./db");
 const logger = require("./logger");
-const { AGENT_STATE } = require("./constants");
+const { AGENT_STATE, SOI_STATE } = require("./constants");
 const { CustomError } = require('./error');
 /**
  * Get a number value. If it doesn't contain valid number value, then return NaN
@@ -199,9 +200,16 @@ function omit(obj, omitKeys, iterateKeys) {
 }
 
 /**
+ * Validate Result
+ * @typedef {Object} ValidateResult
+ * @property {boolean} valid - true: valid, false: invalid
+ * @property {array} errors - Ajv validation errors. Read more detail in [Validation Errors](https://github.com/epoberezkin/ajv#validation-errors)
+ */
+
+/**
  * Based on Agent Schema to validate an agent
  * @param {object} agentData - agent data want to be validate
- * @returns {boolean} - true: valid, false: invalid
+ * @returns {ValidateResult}
  */
 function validateAgent(agentData) {
   var ajv = new Ajv();
@@ -215,11 +223,25 @@ function validateAgent(agentData) {
 /**
  * Based on Intelligence Schema to validate an intelligence
  * @param {object} intelligenceData - intelligence data want to be validated
- * @returns {boolean} - true: valid, false: invalid
+ * @returns {ValidateResult}
  */
 function validateIntelligence(intelligenceData) {
   var ajv = new Ajv();
   let valid = ajv.validate(intelligenceSchema, intelligenceData);
+  return {
+	  valid,
+	  errors: ajv.errors
+  };
+}
+
+/**
+ * Based on SOI Schema to validate a SOI
+ * @param {object} soiData - agent data want to be validate
+ * @returns {ValidateResult}
+ */
+function validateSOI(soiData) {
+  var ajv = new Ajv();
+  let valid = ajv.validate(soiSchema, soiData);
   return {
 	  valid,
 	  errors: ajv.errors
@@ -261,6 +283,42 @@ function validateAgentAndUpdateState(agentData) {
   return agentData;
 }
 
+/**
+ * Based on SOI Schema to validate SOI and update SOI state.
+
+ * @param {object} soiData - SOI data want to validate
+ * @returns {object} - return validate soi with state be updated to correct
+ */
+function validateSOIAndUpdateState(soiData) {
+  // Default to set agent state to draft, since agent state is required.
+  // It is useful for new agent that need to be registered
+  if (!soiData.system.state) {
+    soiData.system.state = SOI_STATE.draft;
+  }
+  // for **deleted** status don't need to validate
+  // TODO: maybe need to retrun warning, when need then can change
+  if( _.toUpper(soiData.system.state) === _.toUpper(soiData.deleted)){
+    return soiData;
+  }
+  let validateResult = validateSOI(soiData);
+  // for active state, don't change its state
+  if(_.toUpper(soiData.system.state) === _.toUpper(SOI_STATE.active)){
+    if (!validateResult.valid) {
+      // for active state, but it isn't valid, then this means something wrong, throw error
+      // throw new CustomError(null, {soiData}, 'dia_00004000001', soiData.globalId);
+      soiData.system.state = _.toUpper(SOI_STATE.draft);
+    }
+    // if it is valid, then don't need to change state
+  }else{
+    if (validateResult.valid) {
+      soiData.system.state = _.toUpper(SOI_STATE.configured);
+    } else {
+      soiData.system.state = _.toUpper(SOI_STATE.draft);
+    }
+  }
+  return soiData;
+}
+
 function generateGlobalId(entityType){
   let id = uuidv4();
   if(!entityType){
@@ -279,7 +337,9 @@ module.exports = {
   logAnUnKnownData,
   getTodaySpecificTimeUTCTimestamp,
   omit,
-  validateAgentAndUpdateState,
   validateAgent,
-  validateIntelligence
+  validateAgentAndUpdateState,
+  validateIntelligence,
+  validateSOI,
+  validateSOIAndUpdateState
 };

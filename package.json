@@ -8,6 +8,7 @@
     "node": "8.x.x"
   },
   "dependencies": {
+    "circular-json": "^0.5.9",
     "agenda": "^2.0.2",
     "agendash": "^1.0.0",
     "ajv": "^6.10.1",

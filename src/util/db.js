@@ -103,7 +103,7 @@ async function findOneByGlobalId(collectionName, gid, options) {
         let db = await DB();
         const collection = db.collection(collectionName);
         const result = await collection.findOne({
-            global_id: {
+            globalId: {
                 $eq: gid
             }
         }, options || {});
@@ -162,8 +162,8 @@ async function bulkUpdate(collectionName, docs, upsert, dbURL) {
                 }
             }else{
                 filter = {
-                    global_id: {
-                        $eq: doc.global_id
+                    globalId: {
+                        $eq: doc.globalId
                     }
                 }
             }
@@ -267,7 +267,7 @@ async function updateOneByGlobalId(collectionName, gid, data, upsert) {
         }
 
         let result = await collection.updateOne({
-            global_id: {
+            globalId: {
                 $eq: gid
             }
         }, {
@@ -283,11 +283,11 @@ async function updateOneByGlobalId(collectionName, gid, data, upsert) {
 
 async function logUnknownDataToDB(doc) {
     try {
-        if (!doc.global_id) {
-            logger.error(`no global_id, ignore it. `, doc);
+        if (!doc.globalId) {
+            logger.error(`no globalId, ignore it. `, doc);
             return false;
         }
-        let result = await updateOneByGlobalId(doc.global_id, doc, COLLECTIONS_NAME.unknownData, true);
+        let result = await updateOneByGlobalId(doc.globalId, doc, COLLECTIONS_NAME.unknownData, true);
         return result;
     } catch (err) {
         throw err;

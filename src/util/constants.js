@@ -5,7 +5,7 @@ const CONFIG = {
   DIA_UI: "x_munew_dia_ui",
   X_SECURITY_KEY_HEADER: "x-munew-security-key", // This is an http request header, used for follow service to identify who send this request
   SECURITY_KEY_IN_DB: "securityKey",
-  SOI_STATUS_CHECK_TIME: 5 * 60 * 1000,
+  SOI_STATE_CHECK_TIME: 1 * 60 * 1000,           // How frequently to check SOI state
   TIMEOUT_VALUE_FOR_INTELLIGENCE: 5 * 60 * 1000,
   LOG_FILES_PATH: "./public/log",
   NODE_ENV: "development",
@@ -32,18 +32,6 @@ const COLLECTIONS_NAME = {
   unknownData: "unknown_data"
 };
 
-const DEFAULT_SOI = {
-  status: "ACTIVE",
-  health: {
-    method: "GET",
-    path: "/health"
-  },
-  callback: {
-    method: "POST",
-    path: "/apis/intelligences"
-  }
-};
-
 const INTELLIGENCE_STATE = {
   draft: "DRAFT",
   configured: "CONFIGURED",
@@ -61,9 +49,31 @@ const AGENT_STATE = {
   deleted: "DELETED"
 };
 
+const SOI_STATE = {
+  draft: "DRAFT",
+  configured: "CONFIGURED",
+  active: "ACTIVE",
+  failed: "FAILED"
+};
+
 const PERMISSIONS = {
   public: "PUBLIC",
   private: "PRIVATE"
+};
+
+const DEFAULT_SOI = {
+  system: {
+    state: "DRAFT",
+    version: "1.0.0"
+  },
+  health: {
+    method: "GET",
+    path: "/health"
+  },
+  callback: {
+    method: "POST",
+    path: "/apis/intelligences"
+  }
 };
 
 const DEFAULT_INTELLIGENCE = {
@@ -97,6 +107,7 @@ module.exports = {
   DEFAULT_SOI,
   INTELLIGENCE_STATE,
   AGENT_STATE,
+  SOI_STATE,
   PERMISSIONS,
   DEFAULT_INTELLIGENCE,
   DEFAULT_AGENT

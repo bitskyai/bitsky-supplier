@@ -1,13 +1,13 @@
 {
   "dia_00004040001": {
-    "message": "Cannot find resource by global_id: %s and security_key: %s",
-    "reason": "User pass wrong global_id, or the global_id doesn't blong to security_key",
-    "action": "Check global_id and security_key"
+    "message": "Cannot find resource by globalId: %s and securityKey: %s",
+    "reason": "User pass wrong globalId, or the globalId doesn't blong to securityKey",
+    "action": "Check globalId and securityKey"
   },
   "dia_00004040002": {
-    "message": "Cannot find Agent by globalId: %s and security_key: %s",
-    "reason": "User pass wrong globalId, or the globalId doesn't blong to security_key",
-    "action": "Check globalId and security_key"
+    "message": "Cannot find Agent by globalId: %s and securityKey: %s",
+    "reason": "User pass wrong globalId, or the globalId doesn't blong to securityKey",
+    "action": "Check globalId and securityKey"
   },
   "dia_00004000001": {
     "message": "An active agent's validation result is invalid, something wrong for this agent, please check. Agent GlobalID %s.",
@@ -15,13 +15,13 @@
     "action": "Deactivate this agent and review agent configuration"
   },
   "dia_00014000001": {
-    "message": "Please change another global_id. %s already exist!",
-    "reason": "global_id isn't unique",
-    "action": "Change different global_id"
+    "message": "Please change another globalId. %s already exist!",
+    "reason": "globalId isn't unique",
+    "action": "Change different globalId"
   },
   "dia_00014000002": {
-    "message": "Please check global_id, soi_name, base_url, both of them are required",
-    "reason": "Don't pass global_id, soi_name, base_url",
+    "message": "Please check globalId, name, baseURL, both of them are required",
+    "reason": "Don't pass globalId, name, baseURL",
     "action": "Check the data you passed, both of them are required"
   },
   "dia_00015000001": {
@@ -35,14 +35,14 @@
     "action": "If it is an active agent, deactivate first. If it is an deleted agent, you cannot change it"
   },
   "dia_00024000001": {
-    "message": "You didn't pass global_id. global_id is required",
-    "reason": "Don't pass global_id",
-    "action": "Check the global_id you passed"
+    "message": "You didn't pass globalId. globalId is required",
+    "reason": "Don't pass globalId",
+    "action": "Check the globalId you passed"
   },
   "dia_00024040001": {
-    "message": "Cannot find SOI by global_id - %s",
-    "reason": "Cannot find SOI by global_id",
-    "action": "Check whether you passed correct global_id"
+    "message": "Cannot find SOI by globalId - %s",
+    "reason": "Cannot find SOI by globalId",
+    "action": "Check whether you passed correct globalId"
   },
   "dia_00025000001": {
     "message": "Get SOI fail, caused by unknown error!",
@@ -85,8 +85,8 @@
     "action": "Check the data you passed"
   },
   "dia_00064040001": {
-    "message": "Cannot find SOI by global_id %s, please make sure your register SOI",
-    "reason": "SOI doesn't exist by global_id, maybe user didn't register it",
+    "message": "Cannot find SOI by globalId %s, please make sure your register SOI",
+    "reason": "SOI doesn't exist by globalId, maybe user didn't register it",
     "action": "Register SOI"
   },
   "dia_00075000001": {
@@ -100,13 +100,13 @@
     "action": "Check log to find more detail"
   },
   "dia_00134000001": {
-    "message": "Please change another global_id. %s already exist!",
-    "reason": "global_id isn't unique",
-    "action": "Change different global_id"
+    "message": "Please change another globalId. %s already exist!",
+    "reason": "globalId isn't unique",
+    "action": "Change different globalId"
   },
   "dia_00134000002": {
-    "message": "Please check global_id, name, both of them are required",
-    "reason": "Don't pass global_id, name, base_url",
+    "message": "Please check globalId, name, both of them are required",
+    "reason": "Don't pass globalId, name, baseURL",
     "action": "Check the data you passed, both of them are required"
   },
   "dia_0017400001": {

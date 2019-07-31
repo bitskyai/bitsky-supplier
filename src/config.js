@@ -3,7 +3,7 @@ const constants = require('./util/constants');
 // Env vars should be casted to correct types
 const config = {
   PORT: Number(process.env.PORT) || constants.CONFIG.PORT,
-  SOI_STATUS_CHECK_TIME: Number(process.env.SOI_STATUS_CHECK_TIME) || constants.CONFIG.SOI_STATUS_CHECK_TIME,
+  SOI_STATE_CHECK_TIME: Number(process.env.SOI_STATE_CHECK_TIME) || constants.CONFIG.SOI_STATE_CHECK_TIME,
   TIMEOUT_VALUE_FOR_INTELLIGENCE: Number(process.env.TIMEOUT_VALUE_FOR_INTELLIGENCE) || constants.CONFIG.TIMEOUT_VALUE_FOR_INTELLIGENCE,
   SERVICE_NAME: process.env.SERVICE_NAME || constants.CONFIG.SERVICE_NAME,
   NODE_ENV: process.env.NODE_ENV || constants.CONFIG.NODE_ENV,

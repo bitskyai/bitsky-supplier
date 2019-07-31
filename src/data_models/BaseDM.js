@@ -3,18 +3,18 @@ const _ = require('lodash');
 class BaseDM{
     constructor(){
         this._data={
-            global_id: undefined,    // default generate a uuid
+            globalId: undefined,    // default generate a uuid
             modified_at: Date.now(),
             data:{}                 // store you data information to data object
         };
     }
 
     get globalId(){
-        return this._data.global_id;
+        return this._data.globalId;
     }
 
     set globalId(val){
-        this._data.global_id = val;
+        this._data.globalId = val;
     }
 
     set data(val){

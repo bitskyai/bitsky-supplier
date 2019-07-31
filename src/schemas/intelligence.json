@@ -102,9 +102,7 @@
       }
     },
     "_id": {
-      "title": "ID",
-      "description": "identifier of this agent. This value only need to be unique inside database, don't need to unique.",
-      "type": "string"
+      "$ref": "#/definitions/_id"
     },
     "globalId": {
       "$ref": "#/definitions/globalId"
@@ -125,9 +123,9 @@
     "soi": {
       "type": "object",
       "description": "After agent execute this intelligence, which SOI to send **callback** to",
-      "required": ["global_id"],
+      "required": ["globalId"],
       "properties": {
-        "global_id": {
+        "globalId": {
           "$ref": "#/definitions/globalId"
         },
         "state": {
@@ -173,6 +171,11 @@
     }
   },
   "definitions": {
+    "_id": {
+      "title": "ID",
+      "description": "identifier of this entitle",
+      "type": ["string", "object"]
+    },
     "created": {
       "allOf": [
         {

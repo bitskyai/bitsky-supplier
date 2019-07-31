@@ -27,6 +27,12 @@ const utils = require("../../util/utils");
 // TODO: when start thinking about load balance, then this data should be in memory cache, not inside service memory
 let __check_sois_status__ = {};
 
+/**
+ * Create intelligences
+ * 
+ * @param {array} intelligences 
+ * @param {string} securityKey 
+ */
 async function addIntelligences(intelligences, securityKey) {
   try {
     // Comment: 07/30/2019
@@ -60,8 +66,8 @@ async function addIntelligences(intelligences, securityKey) {
       if (!intelligence.globalId) {
         // comment 07/25/2019 - instead of error, generate an globalid
         // err.push({
-        //   key: "global_id",
-        //   description: "global_id is undefined."
+        //   key: "globalId",
+        //   description: "globalId is undefined."
         // });
         intelligence.globalId = utils.generateGlobalId('intelligence');
         // To avoid same intelligence insert multiple time
@@ -88,8 +94,8 @@ async function addIntelligences(intelligences, securityKey) {
           error: validateResult.errors
         });
       }
-      // Need to update global_id to globalId
-      soiGlobalIds[intelligence.soi.global_id] = 1;
+      // Need to update globalId to globalId
+      soiGlobalIds[intelligence.soi.globalId] = 1;
       return intelligence;
     });
 
@@ -180,7 +186,7 @@ async function getIntelligences(agentGid, securityKey) {
     }
 
     let query = {
-      status: {
+      'system.state': {
         $nin: [
           INTELLIGENCE_STATE.draft,
           INTELLIGENCE_STATE.running,
@@ -188,7 +194,7 @@ async function getIntelligences(agentGid, securityKey) {
           INTELLIGENCE_STATE.paused
         ]
       },
-      "soi.status": {
+      "soi.state": {
         $eq: "ACTIVE"
       },
       suitableAgents: {
@@ -206,7 +212,7 @@ async function getIntelligences(agentGid, securityKey) {
       // only return items that soi.status is ACTIVE
       // for this case, get intelligences that created by this securitykey
       intelligences = await find(COLLECTIONS_NAME.intelligences, query, {
-        sort: ["soi.global_id", "priority"],
+        sort: ["soi.globalId", "priority"],
         limit: concurrent
       });
     }
@@ -227,7 +233,7 @@ async function getIntelligences(agentGid, securityKey) {
       };
 
       intelligences = await find(COLLECTIONS_NAME.intelligences, query, {
-        sort: ["soi.global_id", "priority"],
+        sort: ["soi.globalId", "priority"],
         limit: concurrent
       });
     }
@@ -237,22 +243,22 @@ async function getIntelligences(agentGid, securityKey) {
     for (let i = 0; i < intelligences.length; i++) {
       let item = intelligences[i] || {};
       gids.push(item.globalId);
-      if (sois[item.soi.global_id]) {
-        item.soi = sois[item.soi.global_id];
+      if (sois[item.soi.globalId]) {
+        item.soi = sois[item.soi.globalId];
       } else {
-        let soi = await soisHelpers.getSOI(item.soi.global_id);
+        let soi = await soisHelpers.getSOI(item.soi.globalId);
         soi = _.merge({}, DEFAULT_SOI, soi);
         // remove unnecessary data
-        soi = utils.omit(soi, ['_id', 'security_key', 'created_at', 'created', 'modified', 'modified_at'], []);
-        sois[item.soi.global_id] = soi;
-        item.soi = sois[item.soi.global_id];
+        soi = utils.omit(soi, ['_id', 'securityKey', 'created_at', 'created', 'modified', 'modified_at'], []);
+        sois[item.soi.globalId] = soi;
+        item.soi = sois[item.soi.globalId];
       }
       
       // Comment: 07/30/2019
       // Reason: Since this intelligence is reassigned, so it always need to update agent information
       // if (!item.agent) {
       //   item.agent = {
-      //     global_id: agentGid,
+      //     globalId: agentGid,
       //     type: _.toUpper(agentConfig.type),
       //     started_at: Date.now()
       //   };
@@ -298,7 +304,7 @@ async function getIntelligences(agentGid, securityKey) {
         (async () => {
           // change soi status to true to avoid duplicate check in same time
           __check_sois_status__[gid] = true;
-          await soisHelpers.updateSOIStatus(gid, soi);
+          await soisHelpers.updateSOIState(gid, soi);
           // after finish, delete its value in hashmap
           delete __check_sois_status__[gid];
         })();
@@ -315,12 +321,12 @@ async function updateIntelligences(content, securityKey) {
   try {
     let contentMap = {};
     let gids = content.map(item => {
-      contentMap[item.global_id] = item;
-      return item.global_id;
+      contentMap[item.globalId] = item;
+      return item.globalId;
     });
     // get intelligences by gids
     let intelligences = await find(COLLECTIONS_NAME.intelligences, {
-      global_id: {
+      globalId: {
         $in: gids
       }
     });
@@ -330,16 +336,15 @@ async function updateIntelligences(content, securityKey) {
       return {};
     }
 
-    // update modified_at, ended_at, last_collected_at and status
+    // update modified, endedAt and state
     intelligences = intelligences.map(item => {
       delete item._id;
-      item.modified_at = Date.now();
-      item.ended_at = Date.now();
-      item.last_collected_at = Date.now();
-      item.status = _.get(
-        contentMap[item.global_id],
-        "status",
-        INTELLIGENCE_STATUS.finished
+      item.system.modified = Date.now();
+      item.system.endedAt = Date.now();
+      item.system.state = _.get(
+        contentMap[item.globalId],
+        "system.state",
+        INTELLIGENCE_STATE.finished
       );
       return item;
     });
@@ -348,7 +353,7 @@ async function updateIntelligences(content, securityKey) {
     await insertMany(COLLECTIONS_NAME.intelligencesHistory, intelligences);
 
     let result = await remove(COLLECTIONS_NAME.intelligences, {
-      global_id: {
+      globalId: {
         $in: gids
       }
     });

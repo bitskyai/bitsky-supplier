@@ -97,7 +97,7 @@ function registerRouter(router) {
 
     router.put("/sois/:gid/status", async (req, res, next) => {
       try {
-        let status = await helpers.updateSOIStatus(_.get(req, "params.gid"));
+        let status = await helpers.updateSOIState(_.get(req, "params.gid"));
         res.json(status);
       } catch (err) {
         // Already HTTPError, then throw it
