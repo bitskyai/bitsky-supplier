@@ -67,6 +67,10 @@
             "type": {
               "$ref": "#/definitions/agentType"
             },
+            "retryTimes": {
+              "type": "integer",
+              "description": "How many times client side retried to re-execute this intelligence"
+            },
             "startedAt": {
               "allOf": [
                 {
@@ -98,6 +102,10 @@
           "default": 0,
           "description": "How many times this intelligence was fail running.",
           "minimum": 0
+        },
+        "failuresReason": {
+          "type": "string",
+          "description": "Why ping SOI fail, so user can know why it was fail"
         }
       }
     },

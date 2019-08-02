@@ -14,6 +14,7 @@ const {
   INTELLIGENCE_STATE,
   PERMISSIONS,
   AGENT_STATE,
+  SOI_STATE,
   DEFAULT_INTELLIGENCE
 } = require("../../util/constants");
 const config = require("../../config");
@@ -29,9 +30,9 @@ let __check_sois_status__ = {};
 
 /**
  * Create intelligences
- * 
- * @param {array} intelligences 
- * @param {string} securityKey 
+ *
+ * @param {array} intelligences
+ * @param {string} securityKey
  */
 async function addIntelligences(intelligences, securityKey) {
   try {
@@ -69,7 +70,7 @@ async function addIntelligences(intelligences, securityKey) {
         //   key: "globalId",
         //   description: "globalId is undefined."
         // });
-        intelligence.globalId = utils.generateGlobalId('intelligence');
+        intelligence.globalId = utils.generateGlobalId("intelligence");
         // To avoid same intelligence insert multiple time
         intelligence._id = intelligence.globalId;
       }
@@ -81,10 +82,14 @@ async function addIntelligences(intelligences, securityKey) {
       intelligence.system.securityKey = securityKey;
 
       // Make sure agent type is uppercase
-      intelligence.suitableAgents = intelligence.suitableAgents.map(agentType => {
-        return _.toUpper(agentType);
-      })
-      
+      intelligence.suitableAgents = intelligence.suitableAgents.map(
+        agentType => {
+          return _.toUpper(agentType);
+        }
+      );
+      // since just recieve SOI request, so set the state to **ACTIVE**
+      intelligence.soi.state = SOI_STATE.active;
+
       let validateResult = utils.validateIntelligence(intelligence);
 
       // If it isn't valid
@@ -119,7 +124,7 @@ async function addIntelligences(intelligences, securityKey) {
       intelligences,
       true
     );
-    return result&&result.upsertedIds || [];
+    return (result && result.upsertedIds) || [];
   } catch (err) {
     throw err;
   }
@@ -164,7 +169,7 @@ async function getIntelligences(agentGid, securityKey) {
 
     // default empty intelligences
     let intelligences = [];
-    agentConfig = utils.omit(agentConfig, ["_id", "securityKey"], ['system']);
+    agentConfig = utils.omit(agentConfig, ["_id", "securityKey"], ["system"]);
 
     // if agent isn't active, then throw an error
     if (_.toUpper(agentConfig.system.state) !== _.toUpper(AGENT_STATE.active)) {
@@ -186,7 +191,7 @@ async function getIntelligences(agentGid, securityKey) {
     }
 
     let query = {
-      'system.state': {
+      "system.state": {
         $nin: [
           INTELLIGENCE_STATE.draft,
           INTELLIGENCE_STATE.running,
@@ -249,11 +254,15 @@ async function getIntelligences(agentGid, securityKey) {
         let soi = await soisHelpers.getSOI(item.soi.globalId);
         soi = _.merge({}, DEFAULT_SOI, soi);
         // remove unnecessary data
-        soi = utils.omit(soi, ['_id', 'securityKey', 'created_at', 'created', 'modified', 'modified_at'], []);
+        soi = utils.omit(
+          soi,
+          ["_id", "securityKey", "created", "modified"],
+          ["system"]
+        );
         sois[item.soi.globalId] = soi;
         item.soi = sois[item.soi.globalId];
       }
-      
+
       // Comment: 07/30/2019
       // Reason: Since this intelligence is reassigned, so it always need to update agent information
       // if (!item.agent) {
@@ -265,8 +274,8 @@ async function getIntelligences(agentGid, securityKey) {
       // }
       item.system.agent = {
         globalId: agentGid,
-        type: _.toUpper(agentConfig.type),
-      }
+        type: _.toUpper(agentConfig.type)
+      };
     }
 
     // Update intelligences that return to agent
@@ -279,20 +288,16 @@ async function getIntelligences(agentGid, securityKey) {
       },
       {
         $set: {
-          system:{
-            startedAt: Date.now(), 
-            endedAt: null,
-            state: INTELLIGENCE_STATE.running,
-            agent: {
-              globalId: agentGid,
-              status: "ACTIVE",
-              type: _.toUpper(agentConfig.type)
-            }
-          }
+          "system.startedAt": Date.now(),
+          "system.endedAt": null,
+          "system.state": INTELLIGENCE_STATE.running,
+          "system.agent.globalId": agentGid,
+          "system.agent.status": "ACTIVE",
+          "system.agent.type": _.toUpper(agentConfig.type)
         }
       }
     );
-    
+
     // TODO: Also need to update agent **lastPing**
 
     // Check SOI status in parallel
@@ -346,6 +351,24 @@ async function updateIntelligences(content, securityKey) {
         "system.state",
         INTELLIGENCE_STATE.finished
       );
+      
+      // If this intelligence was failed, then increase **failuresNuber**
+      if(item.system.state === INTELLIGENCE_STATE.failed){
+        if(!item.system.failuresNumber){
+          item.system.failuresNumber = 1;
+        }else{
+          item.system.failuresNumber += 1;
+        }
+      }
+
+      if(!item.system.agent){
+        item.system.agent = {}
+      }
+      let passedAgent = contentMap[item.globalId].system.agent;
+      item.system.agent.globalId = passedAgent.globalId;
+      item.system.agent.type = passedAgent.type;
+      item.system.agent.startedAt = passedAgent.startedAt;
+      item.system.agent.endedAt = passedAgent.endedAt;
       return item;
     });
 
