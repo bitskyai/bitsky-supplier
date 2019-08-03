@@ -42,6 +42,10 @@ async function getIntelligencesForManagement(cursor, limit, securityKey) {
       id = parseCursor[2];
     }
 
+    if(limit){
+      limit = limit*1;
+    }
+
     let options = {
       sort: {
         "system.modified": -1,
