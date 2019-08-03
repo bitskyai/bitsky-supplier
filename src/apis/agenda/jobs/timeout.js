@@ -15,15 +15,17 @@ module.exports = function (agenda) {
             let runningStatus = "RUNNING";
             let configuredStatus = "TIMEOUT";
             await updateMany(COLLECTIONS_NAME.intelligences, {
-                started_at: {
+                "system.startedAt": {
                     $lt: timeoutValue
                 },
-                status: {
+                "system.state": {
                     $eq: runningStatus
                 }
             }, {
                 $set: {
-                    status: configuredStatus
+                    "system.state": configuredStatus,
+                    "system.endedAt": Date.now(),
+                    "system.modified": Date.now()
                 }
             })
 
