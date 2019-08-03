@@ -28,6 +28,67 @@ const utils = require("../../util/utils");
 // TODO: when start thinking about load balance, then this data should be in memory cache, not inside service memory
 let __check_sois_status__ = {};
 
+//================================================================
+// Following APIs are designed for CRUD intelligences
+async function getIntelligencesForManagement(cursor, limit, securityKey) {
+  try {
+    let modified, id;
+    // formart of cursor
+    // {modified}:_:_:_{_id}
+    if (cursor) {
+      let parseCursor = utils.atob(cursor);
+      parseCursor = /^(.*):_:_:_(.*)$/.exec(parseCursor);
+      modified = parseCursor[1];
+      id = parseCursor[2];
+    }
+
+    let options = {
+      sort: {
+        "system.modified": -1,
+        _id: -1
+      },
+      limit: limit || 50
+    };
+
+    let query = {};
+    if(securityKey){
+      query["system.securityKey"] = securityKey;
+    }
+    if (modified && id) {
+      query['$or'] = [
+        {
+          "system.modified": {
+            $lt: modified*1
+          }
+        },
+        // If the "sytem.modified" is an exact match, we need a tiebreaker, so we use the _id field from the cursor.
+        {
+          "sytem.modified": modified*1,
+          _id: {
+            $lt: id
+          }
+        }
+      ]
+    }
+
+    let intelligences = await find(COLLECTIONS_NAME.intelligences, query, options);
+    const lastItem = intelligences[intelligences.length-1];
+    let nextCursor = utils.btoa(`${lastItem.system.modified}:_:_:_${lastItem._id}`);
+    if(nextCursor === cursor){
+      nextCursor = null;
+    }
+    return {
+      previousCursor: cursor,
+      nextCursor: nextCursor,
+      intelligences: intelligences
+    }
+  } catch (err) {
+    throw err;
+  }
+}
+
+//================================================================
+// Following APIs are designed for Agent CRUD Intelligences
 /**
  * Create intelligences
  *
@@ -351,18 +412,18 @@ async function updateIntelligences(content, securityKey) {
         "system.state",
         INTELLIGENCE_STATE.finished
       );
-      
+
       // If this intelligence was failed, then increase **failuresNuber**
-      if(item.system.state === INTELLIGENCE_STATE.failed){
-        if(!item.system.failuresNumber){
+      if (item.system.state === INTELLIGENCE_STATE.failed) {
+        if (!item.system.failuresNumber) {
           item.system.failuresNumber = 1;
-        }else{
+        } else {
           item.system.failuresNumber += 1;
         }
       }
 
-      if(!item.system.agent){
-        item.system.agent = {}
+      if (!item.system.agent) {
+        item.system.agent = {};
       }
       let passedAgent = contentMap[item.globalId].system.agent;
       item.system.agent.globalId = passedAgent.globalId;
@@ -391,6 +452,7 @@ async function deleteIntelligences(gids, securityKey) {
 }
 
 module.exports = {
+  getIntelligencesForManagement,
   addIntelligences,
   getIntelligences,
   updateIntelligences,

@@ -8,6 +8,23 @@ const {
 
 function registerRouter(router) {
     if (!_registered) {
+        router.get('/manangement/intelligences', async (req, res, next) => {
+            try{
+                let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+                // default return 50 items
+                let intelligences = await helpers.getIntelligencesForManagement(_.get(req, 'query.cursor'), _.get(req, 'query.limit', 50), securityKey);
+                res.send(intelligences);
+            }catch(err){
+                // Already HTTPError, then throw it
+                if (err instanceof HTTPError) {
+                    next(err);
+                } else {
+                    // Otherwise create a HTTPError
+                    next(new HTTPError(500, err, {}, 'dia_00055000001'));
+                }
+            }
+        });
+
         router.get('/intelligences', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
