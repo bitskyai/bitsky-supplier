@@ -4,6 +4,7 @@ const {
   remove,
   insertMany,
   find,
+  count,
   bulkUpdate,
   updateMany
 } = require("../../util/db");
@@ -58,6 +59,12 @@ async function getIntelligencesForManagement(cursor, limit, securityKey) {
     if(securityKey){
       query["system.securityKey"] = securityKey;
     }
+    if(securityKey){
+      query["system.securityKey"] = securityKey;
+    }
+
+    let total = await count(COLLECTIONS_NAME.intelligences, query);
+
     if (modified && id) {
       query['$or'] = [
         {
@@ -88,7 +95,8 @@ async function getIntelligencesForManagement(cursor, limit, securityKey) {
     return {
       previousCursor: cursor,
       nextCursor: nextCursor,
-      intelligences: intelligences
+      intelligences: intelligences,
+      total: total
     }
   } catch (err) {
     throw err;

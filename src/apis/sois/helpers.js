@@ -115,6 +115,8 @@ async function registerSOI(soi, securityKey) {
       COLLECTIONS_NAME.sois,
       soi
     );
+    // After update SOI, need to update SOI state
+    await updateSOIState(soi.globalId, soi);
     return {
       _id: insertOneWriteOpResultObject.insertedId,
       globalId: soi.globalId

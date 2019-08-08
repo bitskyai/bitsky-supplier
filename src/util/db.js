@@ -87,6 +87,17 @@ async function find(collectionName, query, options) {
     }
 }
 
+async function count(collectionName, query, options) {
+    try {
+        let db = await DB();
+        const collection = db.collection(collectionName);
+        let count = await collection.count(query, options || {});
+        return count;
+    } catch (err) {
+        throw err;
+    }
+}
+
 async function findOne(collectionName, query, options) {
     try {
         let db = await DB();
@@ -298,6 +309,7 @@ module.exports = {
     mongodbConnectionURL,
     DB,
     find,
+    count,
     findOne,
     findOneByGlobalId,
     insertOne,
