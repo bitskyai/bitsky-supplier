@@ -77,7 +77,11 @@ async function getIntelligencesForManagement(cursor, limit, securityKey) {
 
     let intelligences = await find(COLLECTIONS_NAME.intelligences, query, options);
     const lastItem = intelligences[intelligences.length-1];
-    let nextCursor = utils.btoa(`${lastItem.system.modified}:_:_:_${lastItem._id}`);
+    let nextCursor = null;
+    if(lastItem){
+      nextCursor = utils.btoa(`${lastItem.system.modified}:_:_:_${lastItem._id}`);
+    }
+    
     if(nextCursor === cursor){
       nextCursor = null;
     }

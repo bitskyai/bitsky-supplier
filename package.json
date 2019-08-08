@@ -5,7 +5,7 @@
   "migrationVersion": "1",
   "main": "./src/app.js",
   "engines": {
-    "node": "8.x.x"
+    "node": "10.x.x"
   },
   "dependencies": {
     "circular-json": "^0.5.9",
