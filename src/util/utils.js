@@ -329,6 +329,18 @@ function generateGlobalId(entityType){
   return id;
 }
 
+function convertStringToRegExp(inputstring){
+  var regParts = inputstring.match(/^\/(.*?)\/([gim]*)$/);
+  if (regParts) {
+      // the parsed pattern had delimiters and modifiers. handle them. 
+      var regex = new RegExp(regParts[1], regParts[2]);
+  } else {
+      // we got pattern string without delimiters
+      var regex = new RegExp(inputstring);
+  }
+  return regex;
+}
+
 module.exports = {
   getNumber,
   btoa,
@@ -341,5 +353,6 @@ module.exports = {
   validateAgentAndUpdateState,
   validateIntelligence,
   validateSOI,
-  validateSOIAndUpdateState
+  validateSOIAndUpdateState,
+  convertStringToRegExp
 };

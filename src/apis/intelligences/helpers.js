@@ -31,7 +31,7 @@ let __check_sois_status__ = {};
 
 //================================================================
 // Following APIs are designed for CRUD intelligences
-async function getIntelligencesForManagement(cursor, limit, securityKey) {
+async function getIntelligencesForManagement(cursor, url, limit, securityKey) {
   try {
     let modified, id;
     // formart of cursor
@@ -63,6 +63,12 @@ async function getIntelligencesForManagement(cursor, limit, securityKey) {
       query["system.securityKey"] = securityKey;
     }
 
+    if(url){
+      query.url = {
+        $regex: utils.convertStringToRegExp(url)
+      }
+    }
+
     let total = await count(COLLECTIONS_NAME.intelligences, query);
 
     if (modified && id) {
@@ -85,7 +91,7 @@ async function getIntelligencesForManagement(cursor, limit, securityKey) {
     let intelligences = await find(COLLECTIONS_NAME.intelligences, query, options);
     const lastItem = intelligences[intelligences.length-1];
     let nextCursor = null;
-    if(lastItem){
+    if(lastItem&&intelligences.length>=limit){
       nextCursor = utils.btoa(`${lastItem.system.modified}:_:_:_${lastItem._id}`);
     }
     

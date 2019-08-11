@@ -420,6 +420,11 @@ paths:
           schema:
             type: integer
             default: 50
+        - in: query
+          name: url
+          description: URL string want to search
+          schema:
+            type: string
       responses:
         200:
           description: Get intelligences successful
