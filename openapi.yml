@@ -446,6 +446,58 @@ paths:
                     type: array
                     items:
                       $ref: "./src/schemas/intelligence.json"
+  /apis/manangement/intelligences/pause:
+    post:
+      tags:
+        - intelligences
+      summary: Pause all matched intelligences
+      description: Operation Index - 0020
+      operationId: pauseIntelligencesForManagement
+      parameters:
+        - in: query
+          name: url
+          description: URL string want to search
+          schema:
+            type: string
+      requestBody:
+        description: Pause all passed Intelligences
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                description: Intelligences Global Id
+      responses:
+        204:
+          description: Pasuse all intelligences successful
+  /apis/manangement/intelligences/resume:
+    post:
+      tags:
+        - intelligences
+      summary: Get intelligences
+      description: Operation Index - 0021
+      operationId: resumeIntelligences
+      parameters:
+        - in: query
+          name: url
+          description: URL string want to search
+          schema:
+            type: string
+      requestBody:
+        description: Resume all passed Intelligences
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                description: Intelligences Global Id
+      responses:
+        204:
+          description: Resume all intelligences successful
   /apis/intelligences:
     get:
       tags:

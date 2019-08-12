@@ -1,4 +1,5 @@
 const _ = require("lodash");
+const ObjectId = require('mongodb').ObjectID;
 const { HTTPError } = require("../../util/error");
 const {
   remove,
@@ -43,8 +44,8 @@ async function getIntelligencesForManagement(cursor, url, limit, securityKey) {
       id = parseCursor[2];
     }
 
-    if(limit){
-      limit = limit*1;
+    if (limit) {
+      limit = limit * 1;
     }
 
     let options = {
@@ -56,46 +57,49 @@ async function getIntelligencesForManagement(cursor, url, limit, securityKey) {
     };
 
     let query = {};
-    if(securityKey){
-      query["system.securityKey"] = securityKey;
-    }
-    if(securityKey){
+    if (securityKey) {
       query["system.securityKey"] = securityKey;
     }
 
-    if(url){
+    if (url) {
       query.url = {
         $regex: utils.convertStringToRegExp(url)
-      }
+      };
     }
 
     let total = await count(COLLECTIONS_NAME.intelligences, query);
 
     if (modified && id) {
-      query['$or'] = [
+      query["$or"] = [
         {
           "system.modified": {
-            $lt: modified*1
+            $lt: modified * 1
           }
         },
         // If the "sytem.modified" is an exact match, we need a tiebreaker, so we use the _id field from the cursor.
         {
-          "sytem.modified": modified*1,
+          "sytem.modified": modified * 1,
           _id: {
-            $lt: id
+            $lt: new ObjectId(id)
           }
         }
-      ]
+      ];
     }
 
-    let intelligences = await find(COLLECTIONS_NAME.intelligences, query, options);
-    const lastItem = intelligences[intelligences.length-1];
+    let intelligences = await find(
+      COLLECTIONS_NAME.intelligences,
+      query,
+      options
+    );
+    const lastItem = intelligences[intelligences.length - 1];
     let nextCursor = null;
-    if(lastItem&&intelligences.length>=limit){
-      nextCursor = utils.btoa(`${lastItem.system.modified}:_:_:_${lastItem._id}`);
+    if (lastItem && intelligences.length >= limit) {
+      nextCursor = utils.btoa(
+        `${lastItem.system.modified}:_:_:_${lastItem._id}`
+      );
     }
-    
-    if(nextCursor === cursor){
+
+    if (nextCursor === cursor) {
       nextCursor = null;
     }
     return {
@@ -103,12 +107,56 @@ async function getIntelligencesForManagement(cursor, url, limit, securityKey) {
       nextCursor: nextCursor,
       intelligences: intelligences,
       total: total
-    }
+    };
   } catch (err) {
     throw err;
   }
 }
 
+async function pauseIntelligencesForManagement(url, ids, securityKey) {
+  try {    
+    // Don't change RUNNING intelligences
+    let query = {
+      'system.state': {
+        $ne: INTELLIGENCE_STATE.running
+      }
+    };
+    if (securityKey) {
+      query["system.securityKey"] = securityKey;
+    }
+    // Step 1: run query first
+    // if url and other query exist, then run it first, then run ids
+    let tmpQuery = {...query};
+    if (url) {
+      tmpQuery.url = {
+        $regex: utils.convertStringToRegExp(url)
+      };
+    }
+
+    await updateMany(COLLECTIONS_NAME.intelligences, tmpQuery, {
+      $set: {
+        'system.modified': Date.now(),
+        'system.state': INTELLIGENCE_STATE.paused
+      }
+    });
+
+    // Step 2: run ids
+    if(ids&&ids.length){
+      query.globalId = {
+        $in: ids
+      }
+
+      await updateMany(COLLECTIONS_NAME.intelligences, query, {
+        $set: {
+          'system.modified': Date.now(),
+          'system.state': INTELLIGENCE_STATE.paused
+        }
+      });
+    }    
+  } catch (err) {
+    throw err;
+  }
+}
 //================================================================
 // Following APIs are designed for Agent CRUD Intelligences
 /**
@@ -474,6 +522,7 @@ async function deleteIntelligences(gids, securityKey) {
 }
 
 module.exports = {
+  pauseIntelligencesForManagement,
   getIntelligencesForManagement,
   addIntelligences,
   getIntelligences,
