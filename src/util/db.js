@@ -157,6 +157,17 @@ async function updateMany(collectionName, filter, update, options) {
     }
 }
 
+async function deleteMany(collectionName, filter, options) {
+    try {
+        let db = await DB();
+        const collection = db.collection(collectionName);
+        const result = await collection.deleteMany(filter, options || {});
+        return result;
+    } catch (err) {
+        throw err;
+    }
+}
+
 async function bulkUpdate(collectionName, docs, upsert, dbURL) {
     try {
         const db = await DB(dbURL);
@@ -316,6 +327,7 @@ module.exports = {
     insertMany,
     updateOne,
     updateMany,
+    deleteMany,
     bulkUpdate,
     remove,
     findOneById,

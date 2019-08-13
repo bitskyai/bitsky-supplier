@@ -446,6 +446,31 @@ paths:
                     type: array
                     items:
                       $ref: "./src/schemas/intelligence.json"
+    delete:
+      tags:
+        - intelligences
+      summary: Delete intelligences from database
+      description: Operation Index - 0022
+      operationId: deleteIntelligencesForManagement
+      parameters:
+        - in: query
+          name: url
+          description: URL string want to search
+          schema:
+            type: string
+      requestBody:
+        description: Pause all passed Intelligences
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                description: Intelligences Global Id
+      responses:
+        204:
+          description: Delete successful
   /apis/manangement/intelligences/pause:
     post:
       tags:

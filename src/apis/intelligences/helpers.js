@@ -7,7 +7,8 @@ const {
   find,
   count,
   bulkUpdate,
-  updateMany
+  updateMany,
+  deleteMany
 } = require("../../util/db");
 const {
   CONFIG,
@@ -200,6 +201,55 @@ async function resumeIntelligencesForManagement(url, ids, securityKey) {
       }
 
       await updateMany(COLLECTIONS_NAME.intelligences, query, {
+        $set: {
+          "system.modified": Date.now(),
+          "system.state": INTELLIGENCE_STATE.configured
+        }
+      });
+    }
+  } catch (err) {
+    throw err;
+  }
+}
+
+/**
+ * ids priority high then url, if you pass both then only ids will be executed
+ * @param {string} url - url for filter
+ * @param {array} ids - Intelligences Global Id
+ * @param {string} securityKey - security key string
+ */
+async function deleteIntelligencesForManagement(url, ids, securityKey) {
+  try {
+    // Don't change RUNNING or draft intelligences
+    let query = {
+      "system.state": {
+        $nin: [INTELLIGENCE_STATE.running]
+      }
+    };
+    if (securityKey) {
+      query["system.securityKey"] = securityKey;
+    }
+
+    // run ids. If ids exists then url don't need to execute
+    if (ids && ids.length) {
+      query.globalId = {
+        $in: ids
+      };
+
+      await deleteMany(COLLECTIONS_NAME.intelligences, query, {
+        $set: {
+          "system.modified": Date.now(),
+          "system.state": INTELLIGENCE_STATE.configured
+        }
+      });
+    } else {
+      if (url) {
+        query.url = {
+          $regex: utils.convertStringToRegExp(url)
+        };
+      }
+
+      await deleteMany(COLLECTIONS_NAME.intelligences, query, {
         $set: {
           "system.modified": Date.now(),
           "system.state": INTELLIGENCE_STATE.configured
@@ -578,6 +628,7 @@ async function deleteIntelligences(gids, securityKey) {
 module.exports = {
   pauseIntelligencesForManagement,
   resumeIntelligencesForManagement,
+  deleteIntelligencesForManagement,
   getIntelligencesForManagement,
   addIntelligences,
   getIntelligences,
