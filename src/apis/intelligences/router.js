@@ -41,6 +41,22 @@ function registerRouter(router) {
             }
         });
 
+        router.post('/manangement/intelligences/resume', async (req, res, next) => {
+            try{
+                let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+                await helpers.resumeIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'body'), securityKey);
+                res.status(204).send();
+            }catch(err){
+                // Already HTTPError, then throw it
+                if (err instanceof HTTPError) {
+                    next(err);
+                } else {
+                    // Otherwise create a HTTPError
+                    next(new HTTPError(500, err, {}, 'dia_00055000001'));
+                }
+            }
+        });
+
         router.get('/intelligences', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);

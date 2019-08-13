@@ -1,5 +1,5 @@
 const _ = require("lodash");
-const ObjectId = require('mongodb').ObjectID;
+const ObjectId = require("mongodb").ObjectID;
 const { HTTPError } = require("../../util/error");
 const {
   remove,
@@ -113,50 +113,104 @@ async function getIntelligencesForManagement(cursor, url, limit, securityKey) {
   }
 }
 
+/**
+ * ids priority high then url, if you pass both then only ids will be executed
+ * @param {string} url - url for filter
+ * @param {array} ids - Intelligences Global Id
+ * @param {string} securityKey - security key string
+ */
 async function pauseIntelligencesForManagement(url, ids, securityKey) {
-  try {    
-    // Don't change RUNNING intelligences
+  try {
+    // Don't change RUNNING or Draft intelligences
     let query = {
-      'system.state': {
-        $ne: INTELLIGENCE_STATE.running
+      "system.state": {
+        $nin: [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft]
       }
     };
     if (securityKey) {
       query["system.securityKey"] = securityKey;
     }
-    // Step 1: run query first
-    // if url and other query exist, then run it first, then run ids
-    let tmpQuery = {...query};
-    if (url) {
-      tmpQuery.url = {
-        $regex: utils.convertStringToRegExp(url)
-      };
-    }
 
-    await updateMany(COLLECTIONS_NAME.intelligences, tmpQuery, {
-      $set: {
-        'system.modified': Date.now(),
-        'system.state': INTELLIGENCE_STATE.paused
-      }
-    });
-
-    // Step 2: run ids
-    if(ids&&ids.length){
+    // run ids. If ids exists then url don't need to execute
+    if (ids && ids.length) {
       query.globalId = {
         $in: ids
+      };
+
+      await updateMany(COLLECTIONS_NAME.intelligences, query, {
+        $set: {
+          "system.modified": Date.now(),
+          "system.state": INTELLIGENCE_STATE.paused
+        }
+      });
+    } else {
+      if (url) {
+        query.url = {
+          $regex: utils.convertStringToRegExp(url)
+        };
       }
 
       await updateMany(COLLECTIONS_NAME.intelligences, query, {
         $set: {
-          'system.modified': Date.now(),
-          'system.state': INTELLIGENCE_STATE.paused
+          "system.modified": Date.now(),
+          "system.state": INTELLIGENCE_STATE.paused
         }
       });
-    }    
+    }
   } catch (err) {
     throw err;
   }
 }
+
+/**
+ * ids priority high then url, if you pass both then only ids will be executed
+ * @param {string} url - url for filter
+ * @param {array} ids - Intelligences Global Id
+ * @param {string} securityKey - security key string
+ */
+async function resumeIntelligencesForManagement(url, ids, securityKey) {
+  try {
+    // Don't change RUNNING or draft intelligences
+    let query = {
+      "system.state": {
+        $nin: [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft]
+      }
+    };
+    if (securityKey) {
+      query["system.securityKey"] = securityKey;
+    }
+
+    // run ids. If ids exists then url don't need to execute
+    if (ids && ids.length) {
+      query.globalId = {
+        $in: ids
+      };
+
+      await updateMany(COLLECTIONS_NAME.intelligences, query, {
+        $set: {
+          "system.modified": Date.now(),
+          "system.state": INTELLIGENCE_STATE.configured
+        }
+      });
+    } else {
+      if (url) {
+        query.url = {
+          $regex: utils.convertStringToRegExp(url)
+        };
+      }
+
+      await updateMany(COLLECTIONS_NAME.intelligences, query, {
+        $set: {
+          "system.modified": Date.now(),
+          "system.state": INTELLIGENCE_STATE.configured
+        }
+      });
+    }
+  } catch (err) {
+    throw err;
+  }
+}
+
 //================================================================
 // Following APIs are designed for Agent CRUD Intelligences
 /**
@@ -523,6 +577,7 @@ async function deleteIntelligences(gids, securityKey) {
 
 module.exports = {
   pauseIntelligencesForManagement,
+  resumeIntelligencesForManagement,
   getIntelligencesForManagement,
   addIntelligences,
   getIntelligences,

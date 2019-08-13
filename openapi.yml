@@ -450,8 +450,8 @@ paths:
     post:
       tags:
         - intelligences
-      summary: Pause all matched intelligences
-      description: Operation Index - 0020
+      summary: Pause all matched intelligences.
+      description: Operation Index - 0020. **ids** priority high than **query parameters(`url`)**, if you pass both, only **ids** will be executed
       operationId: pauseIntelligencesForManagement
       parameters:
         - in: query
@@ -477,8 +477,8 @@ paths:
       tags:
         - intelligences
       summary: Get intelligences
-      description: Operation Index - 0021
-      operationId: resumeIntelligences
+      description: Operation Index - 0021. **ids** priority high than **query parameters(`url`)**, if you pass both, only **ids** will be executed
+      operationId: resumeIntelligencesForManagement
       parameters:
         - in: query
           name: url
