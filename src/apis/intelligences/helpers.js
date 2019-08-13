@@ -78,9 +78,9 @@ async function getIntelligencesForManagement(cursor, url, limit, securityKey) {
         },
         // If the "sytem.modified" is an exact match, we need a tiebreaker, so we use the _id field from the cursor.
         {
-          "sytem.modified": modified * 1,
+          "system.modified": modified * 1,
           _id: {
-            $lt: new ObjectId(id)
+            $lt: ObjectId(id)
           }
         }
       ];
