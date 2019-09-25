@@ -116,6 +116,35 @@
       "type": "integer",
       "description": "Max retry time if send collected intelligences fail, if retried max time, then it will send back to DIA and mark those intelligences fail",
       "default": 3
+    },
+    "baseURL": {
+      "$ref": "#/definitions/url"
+    },
+    "health": {
+      "type": "object",
+      "required": ["method", "path"],
+      "properties": {
+        "method": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/method"
+            },
+            {
+              "default": "GET"
+            }
+          ]
+        },
+        "path": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/path"
+            },
+            {
+              "default": "/apis/health"
+            }
+          ]
+        }
+      }
     }
   },
   "definitions": {
@@ -180,6 +209,17 @@
       "format": "uri",
       "description": "Target URL for this intelligence.",
       "examples": ["https://json-schema.org"]
+    },
+    "method": {
+      "type": "string",
+      "title": "HTTP Request Method",
+      "description": "HTTP Request Method",
+      "enum": ["GET", "POST", "PUT", "DELETE"]
+    },
+    "path": {
+      "type": "string",
+      "title": "URL Path",
+      "description": "RESTFul path"
     },
     "name": {
       "title": "Name",
