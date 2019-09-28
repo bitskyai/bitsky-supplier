@@ -411,7 +411,7 @@ paths:
       parameters:
         - in: query
           name: cursor
-          description: Current 
+          description: Current
           schema:
             $ref: "#/components/schemas/Cursor"
         - in: query
@@ -425,6 +425,13 @@ paths:
           description: URL string want to search
           schema:
             type: string
+        - in: query
+          name: state
+          description: search intelligence's state that is contained state.
+          schema:
+            type: string
+            example:
+              - PAUSED,TIMEOUT
       responses:
         200:
           description: Get intelligences successful

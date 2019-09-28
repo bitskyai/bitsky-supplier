@@ -12,7 +12,7 @@ function registerRouter(router) {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
                 // default return 50 items
-                let intelligences = await helpers.getIntelligencesForManagement(_.get(req, 'query.cursor'),  _.get(req, 'query.url'), _.get(req, 'query.limit', 50), securityKey);
+                let intelligences = await helpers.getIntelligencesForManagement(_.get(req, 'query.cursor'),  _.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'query.limit', 50), securityKey);
                 res.send(intelligences);
             }catch(err){
                 // Already HTTPError, then throw it

@@ -33,7 +33,7 @@ let __check_sois_status__ = {};
 
 //================================================================
 // Following APIs are designed for CRUD intelligences
-async function getIntelligencesForManagement(cursor, url, limit, securityKey) {
+async function getIntelligencesForManagement(cursor, url, state, limit, securityKey) {
   try {
     let modified, id;
     // formart of cursor
@@ -65,6 +65,13 @@ async function getIntelligencesForManagement(cursor, url, limit, securityKey) {
     if (url) {
       query.url = {
         $regex: utils.convertStringToRegExp(url)
+      };
+    }
+
+    if(state){
+      state = state.split(',');
+      query['system.state'] = {
+        $in: state
       };
     }
 
