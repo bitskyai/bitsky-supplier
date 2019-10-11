@@ -228,11 +228,13 @@ async function resumeIntelligencesForManagement(url, ids, securityKey) {
 async function deleteIntelligencesForManagement(url, ids, securityKey) {
   try {
     // Don't change RUNNING or draft intelligences
-    let query = {
-      "system.state": {
-        $nin: [INTELLIGENCE_STATE.running]
-      }
-    };
+    // Allow user to delete running intelligence
+    // let query = {
+    //   "system.state": {
+    //     $nin: [INTELLIGENCE_STATE.running]
+    //   }
+    // };
+    let query = {};
     if (securityKey) {
       query["system.securityKey"] = securityKey;
     }
