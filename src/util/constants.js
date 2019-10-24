@@ -20,6 +20,16 @@ const CONFIG = {
   DEFAULT_INTELLIGENCES_PATH: "/apis/intelligences"
 };
 
+const DEFAULT_SQLITE = {
+  "type": "sqlite",
+  "database": `${packageJson.name}.sql`
+}
+
+const DEFAULT_MONGODB = {
+  "type": "mongodb",
+  "url": `mongodb://localhost:27017/${packageJson.name}`
+}
+
 const COLLECTIONS_NAME = {
   sois: "sois",
   agents: "agents",
@@ -110,5 +120,7 @@ module.exports = {
   SOI_STATE,
   PERMISSIONS,
   DEFAULT_INTELLIGENCE,
-  DEFAULT_AGENT
+  DEFAULT_AGENT,
+  DEFAULT_SQLITE,
+  DEFAULT_MONGODB
 };
