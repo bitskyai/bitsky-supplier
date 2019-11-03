@@ -47,6 +47,9 @@ export default function getDBConfiguration() {
         configuration.database = process.env.TYPEORM_DATABASE;
       }
 
+      configuration.useNewUrlParser = true;
+      configuration.useUnifiedTopology = true;
+
       configuration.entities = [
         path.join(__dirname, "../entity/**/*.common.js"),
         path.join(__dirname, `../entity/**/*.${dbType}.js`),

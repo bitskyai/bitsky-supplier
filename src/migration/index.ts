@@ -4,7 +4,7 @@ const { find, insertOne, updateOne } = require("../util/db");
 const { COLLECTIONS_NAME } = require("../util/constants");
 const logger = require("../util/logger");
 // const ServerInformation = require("../data_models/ServerInformation");
-import ServerInformation from '../entity/ServerInformation';
+import ServerInformation from "../entity/ServerInformation";
 const migration1 = require("./migration1");
 
 import {
@@ -68,7 +68,7 @@ async function migration() {
         //     $set: doc
         // });
 
-        let info:any = await getServerInfo();
+        let info: any = await getServerInfo();
         info.migration_version = 1;
         _server_info = info;
         await updateServerInfo(info.global_id, { migration_version: 1 });
@@ -93,14 +93,16 @@ async function migration() {
 // check whether need to do migration
 async function checkMigration(req, res, next) {
   try {
+    logger.debug(`[checkMigration] Starting, _server_info: %o`, _server_info);
     // didn't cache, need to get system information from server
     if (!_server_info) {
       // Get all server inform
       // let serverInfo = await find(COLLECTIONS_NAME.serverInfo, {});
       // _server_info = serverInfo && serverInfo[0];
       // if doesn't exist, then init server information
+      logger.debug('[checkMigration], start getServerInfo');
       _server_info = await getServerInfo();
-
+      logger.debug('[checkMigration] _server_info: %o', _server_info);
       if (!_server_info || !_server_info.global_id) {
         logger.debug(
           `[checkMigration] *_server_info* doesn't exist in DB, init a serverInfo and insert to DB, collection name: ${COLLECTIONS_NAME.serverInfo}.`

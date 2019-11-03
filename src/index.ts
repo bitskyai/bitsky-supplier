@@ -11,14 +11,14 @@ const createApp = require("./app");
 // const dbConfig = require("./util/dbConfiguration")();
 import getDBConfiguration from "./util/dbConfiguration";
 const dbConfig = getDBConfiguration();
-logger.info(`dbConfiguration: %o`, dbConfig);
+logger.debug(`dbConfig: %o `, dbConfig);
 
 typeorm
   .createConnection(dbConfig)
   .then(async connection => {
     logger.info("Create DB connection successfully.");
 
-    const app = createApp();
+    const app = await createApp();
     const server = app.listen(config.PORT, function() {
       logger.info(
         "Express server listening on http://localhost:%d/ in %s mode",

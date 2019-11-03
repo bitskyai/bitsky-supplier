@@ -1,12 +1,15 @@
 import { getRepository } from "typeorm";
 import ServerInformation from "../entity/ServerInformation";
+const logger = require('../util/logger');
 
 export async function getServerInfo() {
   try {
     const serverInfoRepo = getRepository(ServerInformation);
-    const serverInfo = await serverInfoRepo.find({});
+    const serverInfo = await serverInfoRepo.find();
+    logger.debug("[getServerInfo], serverInfo: %o", serverInfo);
     return serverInfo&&serverInfo[0];
   } catch (err) {
+    logger.error('getServerInfo, err:', err);
     throw err;
   }
 }
@@ -25,8 +28,10 @@ export async function addServerInfo(
     serverInfo.version = version;
     serverInfo.migration_version = migrationVersion;
     await serverInfoRepo.save(serverInfo);
+    logger.debug("[addServerInfo], serverInfo: %o", serverInfo);
     return serverInfo;
   } catch (err) {
+    logger.error('addServerInfo, err:', err);
     throw err;
   }
 }
@@ -34,8 +39,11 @@ export async function addServerInfo(
 export async function updateServerInfo(globalId:string, serverInfo:object){
   try{
     const serverInfoRepo = getRepository(ServerInformation);
-    return await serverInfoRepo.update({global_id: globalId}, serverInfo);
+    const result = await serverInfoRepo.update({global_id: globalId}, serverInfo);
+    logger.debug("[updateServerInfo], result: %o", result);
+    return result;
   }catch(err){
+    logger.error('updateServerInfo, err:', err);
     throw err;
   }
 }

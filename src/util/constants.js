@@ -23,7 +23,9 @@ const CONFIG = {
 };
 
 const DEFAULT_DB_CONFIG = {
+  autoSave: true,
   logging: true,
+  autoSchemaSync: true,
   synchronize: true,
   entities: [path.join(__dirname, "../entity/*.ts")],
   // migrations: ["./migration/**/*.ts"],

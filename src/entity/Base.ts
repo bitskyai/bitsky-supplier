@@ -9,11 +9,7 @@ import {
 const uuidv4 = require("uuid/v4");
 
 export abstract class Base {
-  @Column(
-    {
-      default: uuidv4()
-    }
-  )
+  @Column()
   global_id: string;
 
   @CreateDateColumn()
@@ -21,6 +17,9 @@ export abstract class Base {
 
   @UpdateDateColumn()
   modified_at: string;
+  constructor(){
+    this.global_id = uuidv4();
+  }
 }
 
 export abstract class BaseMongo extends Base {
