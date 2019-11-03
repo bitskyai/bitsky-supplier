@@ -1,3 +1,5 @@
+const path = require('path');
+
 const packageJson = require("../../package.json");
 
 const CONFIG = {
@@ -5,7 +7,7 @@ const CONFIG = {
   DIA_UI: "x_munew_dia_ui",
   X_SECURITY_KEY_HEADER: "x-munew-security-key", // This is an http request header, used for follow service to identify who send this request
   SECURITY_KEY_IN_DB: "securityKey",
-  SOI_STATE_CHECK_TIME: 1 * 60 * 1000,           // How frequently to check SOI state
+  SOI_STATE_CHECK_TIME: 1 * 60 * 1000, // How frequently to check SOI state
   TIMEOUT_VALUE_FOR_INTELLIGENCE: 5 * 60 * 1000,
   LOG_FILES_PATH: "./public/log",
   NODE_ENV: "development",
@@ -20,15 +22,23 @@ const CONFIG = {
   DEFAULT_INTELLIGENCES_PATH: "/apis/intelligences"
 };
 
+const DEFAULT_DB_CONFIG = {
+  logging: true,
+  synchronize: true,
+  entities: [path.join(__dirname, "../entity/*.ts")],
+  // migrations: ["./migration/**/*.ts"],
+  subscribers: [path.join(__dirname, "../subscriber/*.ts")]
+};
+
 const DEFAULT_SQLITE = {
-  "type": "sqlite",
-  "database": `${packageJson.name}.sql`
-}
+  type: "sqlite",
+  database: `${packageJson.name}.sql`
+};
 
 const DEFAULT_MONGODB = {
-  "type": "mongodb",
-  "url": `mongodb://localhost:27017/${packageJson.name}`
-}
+  type: "mongodb",
+  url: `mongodb://localhost:27017/${packageJson.name}`
+};
 
 const COLLECTIONS_NAME = {
   sois: "sois",
@@ -121,6 +131,7 @@ module.exports = {
   PERMISSIONS,
   DEFAULT_INTELLIGENCE,
   DEFAULT_AGENT,
+  DEFAULT_DB_CONFIG,
   DEFAULT_SQLITE,
   DEFAULT_MONGODB
 };

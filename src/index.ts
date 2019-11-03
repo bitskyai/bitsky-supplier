@@ -2,18 +2,20 @@
  * Created by Shaoke Xu on 4/29/18.
  */
 require("./util/extendNativeJavaScript");
+import "reflect-metadata";
 const typeorm = require("typeorm");
 const enableDestroy = require("server-destroy");
 const logger = require("./util/logger");
 const config = require("./config");
 const createApp = require("./app");
-const dbConfig = require("./util/dbConfiguration")();
-
-logger.info(`dbConfiguration: %s`, dbConfig);
+// const dbConfig = require("./util/dbConfiguration")();
+import getDBConfiguration from "./util/dbConfiguration";
+const dbConfig = getDBConfiguration();
+logger.info(`dbConfiguration: %o`, dbConfig);
 
 typeorm
   .createConnection(dbConfig)
-  .then(connection => {
+  .then(async connection => {
     logger.info("Create DB connection successfully.");
 
     const app = createApp();
@@ -39,7 +41,7 @@ typeorm
 
     server.on("close", () => {
       logger.info("Server closed");
-      process.emit("cleanup");
+      // process.emit("cleanup");
 
       logger.info("Giving 100ms time to cleanup..");
       // Give a small time frame to clean up
