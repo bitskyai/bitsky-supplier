@@ -6,9 +6,14 @@ import {
   ObjectID,
   PrimaryGeneratedColumn
 } from "typeorm";
+const uuidv4 = require("uuid/v4");
 
 export abstract class Base {
-  @Column()
+  @Column(
+    {
+      default: uuidv4()
+    }
+  )
   global_id: string;
 
   @CreateDateColumn()

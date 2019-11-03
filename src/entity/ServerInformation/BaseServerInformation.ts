@@ -19,5 +19,5 @@ export abstract class BaseServerInformation extends Base {
   description: string;
 
   @Column()
-  migration_version: string;
+  migration_version: number;
 }

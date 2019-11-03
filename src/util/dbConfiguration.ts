@@ -48,9 +48,9 @@ export default function getDBConfiguration() {
       }
 
       configuration.entities = [
-        path.join(__dirname, "./entity/**/*.common.js"),
-        path.join(__dirname, `./entity/**/*.${dbType}.js`),
-        path.join(__dirname, `./entity/**/*.${configuration.type}.js`)
+        path.join(__dirname, "../entity/**/*.common.js"),
+        path.join(__dirname, `../entity/**/*.${dbType}.js`),
+        path.join(__dirname, `../entity/**/*.${configuration.type}.js`)
       ];
     }
   }
