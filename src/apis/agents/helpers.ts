@@ -16,7 +16,7 @@ const {
   updateMany,
   remove
 } = require("../../util/db");
-import { addAgent } from '../../dbController/Agent.ctrl';
+import { addAgentDB, getAgentsDB } from '../../dbController/Agent.ctrl';
 const { validateAgentAndUpdateState, generateGlobalId } = require('../../util/utils');
 // const config = require("../../config");
 // const logger = require("../../util/logger");
@@ -123,12 +123,12 @@ async function registerAgent(agent, securityKey) {
     // Validate agent, based on validate result to update agent state, don't allow user to direct change agent state
     agent = validateAgentAndUpdateState(agent);
     
-    let insertOneWriteOpResultObject = await insertOne(
-      COLLECTIONS_NAME.agents,
-      agent
-    );
+    // let insertOneWriteOpResultObject = await insertOne(
+    //   COLLECTIONS_NAME.agents,
+    //   agent
+    // );
     
-    let result = await addAgent(agent);
+    let result = await addAgentDB(agent);
     console.log('result: ', result);
     return result;
     // return {
@@ -187,14 +187,15 @@ async function getAgent(gid, securityKey) {
  */
 async function getAgents(securityKey) {
   try {
-    let query = {};
-    if (securityKey) {
-      query[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
-        $eq: securityKey
-      };
-    }
+    // let query = {};
+    // if (securityKey) {
+    //   query[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
+    //     $eq: securityKey
+    //   };
+    // }
 
-    let agents = await find(COLLECTIONS_NAME.agents, query);
+    // let agents = await find(COLLECTIONS_NAME.agents, query);
+    let agents = await getAgentsDB(securityKey);
     return agents;
   } catch (err) {
     throw err;
