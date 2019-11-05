@@ -4,45 +4,6 @@ import Agent from "../entity/Agent";
 const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
 
-function flattenAgent(agent){
-  if(_.get(agent, 'health.method')){
-    agent.healthMethod = agent.health.method;
-  }
-
-  if(_.get(agent, 'health.path')){
-    agent.healthPath = agent.health.path;
-  }
-
-  if(_.get(agent, 'system.state')){
-    agent.systemState = agent.system.state;
-  }
-
-  if(_.get(agent, 'system.version')){
-    agent.systemVersion = agent.system.version;
-  }
-
-  if(_.get(agent, 'system.securityKey')){
-    agent.systemSecurityKey = agent.system.securityKey;
-  }
-
-  if(_.get(agent, 'system.created')){
-    agent.systemCreatedAt = agent.system.created;
-  }
-
-  if(_.get(agent, 'system.modified')){
-    agent.systemModifiedAt = agent.system.modified;
-  }
-
-  if(_.get(agent, 'system.lastPing')){
-    agent.systemLastPing = agent.system.lastPing;
-  }
-
-  delete agent.system;
-  delete agent.health;
-
-  return agent;
-}
-
 export async function addAgent(agent) {
   try {
     const repo = getRepository(Agent);
@@ -53,44 +14,44 @@ export async function addAgent(agent) {
     agentInstance.description = agent.description;
     agentInstance.permission = agent.permission;
     agentInstance.concurrent = agent.concurrent;
-    agentInstance.pollingInterval = agent.pollingInterval;
-    agentInstance.maxWaitingTime = agent.maxWaitingTime;
-    agentInstance.maxCollect = agent.maxCollect;
-    agentInstance.idelTime = agent.idelTime;
+    agentInstance.polling_interval = agent.pollingInterval;
+    agentInstance.max_waiting_time = agent.maxWaitingTime;
+    agentInstance.max_collect = agent.maxCollect;
+    agentInstance.idel_time = agent.idelTime;
     agentInstance.timeout = agent.timeout;
-    agentInstance.maxRetry = agent.maxRetry;
-    agentInstance.baseURL = agent.baseURL;
+    agentInstance.max_retry = agent.maxRetry;
+    agentInstance.base_url = agent.baseURL;
 
     if(_.get(agent, 'health.method')){
-      agentInstance.healthMethod = agent.health.method;
+      agentInstance.health_method = agent.health.method;
     }
   
     if(_.get(agent, 'health.path')){
-      agentInstance.healthPath = agent.health.path;
+      agentInstance.health_path = agent.health.path;
     }
   
     if(_.get(agent, 'system.state')){
-      agentInstance.systemState = agent.system.state;
+      agentInstance.system_state = agent.system.state;
     }
   
     if(_.get(agent, 'system.version')){
-      agentInstance.systemVersion = agent.system.version;
+      agentInstance.system_version = agent.system.version;
     }
   
     if(_.get(agent, 'system.securityKey')){
-      agentInstance.systemSecurityKey = agent.system.securityKey;
+      agentInstance.system_security_key = agent.system.securityKey;
     }
   
     if(_.get(agent, 'system.created')){
-      agentInstance.systemCreatedAt = agent.system.created;
+      agentInstance.system_created_at = agent.system.created;
     }
   
     if(_.get(agent, 'system.modified')){
-      agentInstance.systemModifiedAt = agent.system.modified;
+      agentInstance.system_modified_at = agent.system.modified;
     }
   
     if(_.get(agent, 'system.lastPing')){
-      agentInstance.systemLastPing = agent.system.lastPing;
+      agentInstance.system_last_ping = agent.system.lastPing;
     }
 
     console.log('agentInstance: ', agentInstance);

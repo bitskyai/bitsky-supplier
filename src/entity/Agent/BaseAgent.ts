@@ -34,86 +34,67 @@ export abstract class BaseAgent extends Base {
   concurrent: number
 
   @Column({
-    name: 'polling_interval',
     default: 30
   })
-  pollingInterval: number
+  polling_interval: number
 
   @Column({
-    name: 'max_waiting_time',
     default: 5
   })
-  maxWaitingTime: number
+  max_waiting_time: number
 
-  @Column({
-    name: 'max_collect'
-  })
-  maxCollect: number
+  @Column()
+  max_collect: number
 
-  @Column({
-    name: 'idel_time'
-  })
-  idelTime: number
+  @Column()
+  idel_time: number
 
   @Column({
     default: 90
   })
   timeout: number;
 
-  @Column({
-    name: 'max_retry'
-  })
-  maxRetry: number;
+  @Column()
+  max_retry: number;
 
   @Column({
-    name: 'base_url',
     nullable: true
   })
-  baseURL: string;
+  base_url: string;
 
   @Column({
-    name: 'health_method',
     nullable: true
   })
-  healthMethod: string
+  health_method: string
 
   @Column({
-    name: 'healthPath',
     nullable: true
   })
-  healthPath: string
+  health_path: string
+
+  @Column()
+  system_state: string
+
+  @Column()
+  system_version: string
 
   @Column({
-    name: 'system_state'
-  })
-  systemState: string
-
-  @Column({
-    name: 'system_version'
-  })
-  systemVersion: string
-
-  @Column({
-    name: 'system_security_key',
     nullable: true
   })
-  systemSecurityKey: string
+  system_security_key: string
 
   @Column({
-    name: 'system_created_at',
     nullable: true
   })
-  systemCreatedAt: 'timestamp'
+  system_created_at: 'timestamp'
 
   @Column({
-    name: 'system_modified_at',
     nullable: true
   })
-  systemModifiedAt: 'timestamp'
+  system_modified_at: 'timestamp'
 
   @Column({
-    name: 'system_last_ping',
     nullable: true
   })
-  systemLastPing: 'timestamp'
+  system_last_ping: 'timestamp'
 }
