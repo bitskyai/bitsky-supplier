@@ -353,7 +353,7 @@ async function addIntelligences(intelligences, securityKey) {
         400,
         validationError,
         validationError,
-        "dia_00064000001"
+        "00064000001"
       );
     }
 
@@ -405,7 +405,7 @@ async function getIntelligences(agentGid, securityKey) {
         400,
         null,
         { agentGlobalId: agentGid, securityKey },
-        "dia_00054000001",
+        "00054000001",
         agentGid,
         securityKey
       );
@@ -423,7 +423,7 @@ async function getIntelligences(agentGid, securityKey) {
         {
           agent: agentConfig
         },
-        "dia_00054000002",
+        "00054000002",
         agentGid
       );
     }

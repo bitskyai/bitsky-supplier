@@ -16,6 +16,7 @@ const {
   updateMany,
   remove
 } = require("../../util/db");
+import { addAgent } from '../../dbController/Agent.ctrl';
 const { validateAgentAndUpdateState, generateGlobalId } = require('../../util/utils');
 // const config = require("../../config");
 // const logger = require("../../util/logger");
@@ -47,7 +48,7 @@ async function checkAgentExistByGlobalID(gid, securityKey) {
         404,
         null,
         { globalId: gid },
-        "dia_00004040002",
+        "00004040002",
         gid,
         securityKey
       );
@@ -72,7 +73,7 @@ async function registerAgent(agent, securityKey) {
     // validate agent
     // TODO: change to validate based on schema
     if (!_.get(agent, "name")) {
-      throw new HTTPError(400, null, {}, "dia_00134000001");
+      throw new HTTPError(400, null, {}, "00134000001");
     }
 
     // TODO: Think about whether we need to support Dynamic Generate **globalId**.
@@ -96,7 +97,7 @@ async function registerAgent(agent, securityKey) {
     //     {
     //       globalId: agent.globalId
     //     },
-    //     "dia_00134000001",
+    //     "00134000001",
     //     agent.globalId
     //   );
     // }
@@ -126,10 +127,14 @@ async function registerAgent(agent, securityKey) {
       COLLECTIONS_NAME.agents,
       agent
     );
-    return {
-      _id: insertOneWriteOpResultObject.insertedId,
-      globalId: agent.globalId
-    };
+    
+    let result = await addAgent(agent);
+    console.log('result: ', result);
+    return result;
+    // return {
+    //   _id: insertOneWriteOpResultObject.insertedId,
+    //   globalId: agent.globalId
+    // };
   } catch (err) {
     // Already HTTPError, then throw it
     throw err;
@@ -152,7 +157,7 @@ async function getAgent(gid, securityKey) {
         {
           globalId: gid
         },
-        "dia_00024000001"
+        "00024000001"
       );
     }
     let agent = await checkAgentExistByGlobalID(gid, securityKey);
@@ -163,7 +168,7 @@ async function getAgent(gid, securityKey) {
         {
           globalId: gid
         },
-        "dia_00024040001",
+        "00024040001",
         gid
       );
     }
@@ -208,7 +213,7 @@ async function updateAgent(gid, agent, securityKey) {
       delete agent.system.created;
     }
 
-    let originalAgent = await getAgent(gid);
+    let originalAgent = await getAgent(gid, null);
     let obj = _.merge({}, originalAgent, agent);
     obj.system.modified = Date.now();
     
@@ -219,7 +224,7 @@ async function updateAgent(gid, agent, securityKey) {
 
     // if agent state is **active** or **deleted**, then return error
     if(_.toUpper(obj.system.state) === _.toUpper(AGENT_STATE.active) || _.toUpper(obj.system.state) === _.toUpper(AGENT_STATE.deleted)){
-      throw new HTTPError(400, null, {globalId:obj.globalId, state: obj.system.state, name: obj.name}, 'dia_00015400001', obj.system.state, obj.globalId);
+      throw new HTTPError(400, null, {globalId:obj.globalId, state: obj.system.state, name: obj.name}, '00015400001', obj.system.state, obj.globalId);
     }
 
     // if state change, then we need to update minor version, otherwise only need to update patch version
@@ -260,10 +265,10 @@ async function activateAgent(gid, securityKey) {
     
     // if it is draft state then throw an error
     if(originalAgent.system.state === AGENT_STATE.draft){
-      throw new HTTPError(400, null, {globalId: gid}, 'dia_0017400001');
+      throw new HTTPError(400, null, {globalId: gid}, '0017400001');
     }else if(originalAgent.system.state === AGENT_STATE.deleted){
       // **delete** then tell user cannot find, since we didn't show deleted agent in user's agent list
-      throw new HTTPError(404, null, {globalId: gid}, 'dia_00004040001', gid, securityKey);
+      throw new HTTPError(404, null, {globalId: gid}, '00004040001', gid, securityKey);
     }else if(originalAgent.system.state === AGENT_STATE.active){
       // If an agent's state is active, don't need to update it again
       return {
@@ -274,7 +279,7 @@ async function activateAgent(gid, securityKey) {
     // change state to **active**
     originalAgent.system.state = _.toUpper(AGENT_STATE.active);
     originalAgent.system.version = semver.inc(originalAgent.system.version || '1.0.0', "minor");
-    result = await updateOne(
+    let result = await updateOne(
       COLLECTIONS_NAME.agents,
       {
         globalId: {
@@ -305,10 +310,10 @@ async function deactivateAgent(gid, securityKey) {
     
     // if it is draft state then throw an error
     if(originalAgent.system.state === AGENT_STATE.draft){
-      throw new HTTPError(400, null, {globalId: gid}, 'dia_0018400001');
+      throw new HTTPError(400, null, {globalId: gid}, '0018400001');
     }else if(originalAgent.system.state === AGENT_STATE.deleted){
       // **delete** then tell user cannot find, since we didn't show deleted agent in user's agent list
-      throw new HTTPError(404, null, {globalId: gid}, 'dia_00004040001', gid, securityKey);
+      throw new HTTPError(404, null, {globalId: gid}, '00004040001', gid, securityKey);
     }else if(originalAgent.system.state != AGENT_STATE.active){
       // If an agent's state isn't active, don't need to update it again
       return {
@@ -319,7 +324,7 @@ async function deactivateAgent(gid, securityKey) {
     // change state to **configured**
     originalAgent.system.state = _.toUpper(AGENT_STATE.configured);
     originalAgent.system.version = semver.inc(originalAgent.system.version || '1.0.0', "minor");
-    result = await updateOne(
+    let result = await updateOne(
       COLLECTIONS_NAME.agents,
       {
         globalId: {

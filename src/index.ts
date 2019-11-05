@@ -8,7 +8,6 @@ const enableDestroy = require("server-destroy");
 const logger = require("./util/logger");
 const config = require("./config");
 const createApp = require("./app");
-// const dbConfig = require("./util/dbConfiguration")();
 import getDBConfiguration from "./util/dbConfiguration";
 const dbConfig = getDBConfiguration();
 logger.debug(`dbConfig: %o `, dbConfig);

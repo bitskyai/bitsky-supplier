@@ -20,7 +20,7 @@ function registerRouter(router) {
                     next(err);
                 } else {
                     // Otherwise create a HTTPError
-                    next(new HTTPError(500, err, {}, 'dia_00055000001'));
+                    next(new HTTPError(500, err, {}, '00055000001'));
                 }
             }
         });
@@ -36,7 +36,7 @@ function registerRouter(router) {
                     next(err);
                 } else {
                     // Otherwise create a HTTPError
-                    next(new HTTPError(500, err, {}, 'dia_00055000001'));
+                    next(new HTTPError(500, err, {}, '00055000001'));
                 }
             }
         });
@@ -52,7 +52,7 @@ function registerRouter(router) {
                     next(err);
                 } else {
                     // Otherwise create a HTTPError
-                    next(new HTTPError(500, err, {}, 'dia_00055000001'));
+                    next(new HTTPError(500, err, {}, '00055000001'));
                 }
             }
         });
@@ -68,7 +68,7 @@ function registerRouter(router) {
                     next(err);
                 } else {
                     // Otherwise create a HTTPError
-                    next(new HTTPError(500, err, {}, 'dia_00055000001'));
+                    next(new HTTPError(500, err, {}, '00055000001'));
                 }
             }
         });
@@ -84,7 +84,7 @@ function registerRouter(router) {
                     next(err);
                 } else {
                     // Otherwise create a HTTPError
-                    next(new HTTPError(500, err, {}, 'dia_00055000001'));
+                    next(new HTTPError(500, err, {}, '00055000001'));
                 }
             }
         });
@@ -100,7 +100,7 @@ function registerRouter(router) {
                     next(err);
                 } else {
                     // Otherwise create a HTTPError
-                    next(new HTTPError(500, err, {}, 'dia_00065000001'));
+                    next(new HTTPError(500, err, {}, '00065000001'));
                 }
             }
         });
@@ -116,7 +116,7 @@ function registerRouter(router) {
                     next(err);
                 } else {
                     // Otherwise create a HTTPError
-                    next(new HTTPError(500, err, {}, 'dia_00075000001'));
+                    next(new HTTPError(500, err, {}, '00075000001'));
                 }
             }
         });
@@ -132,7 +132,7 @@ function registerRouter(router) {
                     next(err);
                 } else {
                     // Otherwise create a HTTPError
-                    next(new HTTPError(500, err, {}, 'dia_00075000001'));
+                    next(new HTTPError(500, err, {}, '00075000001'));
                 }
             }
         });

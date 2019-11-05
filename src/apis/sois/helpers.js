@@ -44,7 +44,7 @@ async function checkSOIExistByGlobalID(gid, securityKey) {
         404,
         null,
         { globalId: gid },
-        "dia_00004040001",
+        "00004040001",
         gid,
         securityKey
       );
@@ -87,7 +87,7 @@ async function registerSOI(soi, securityKey) {
         422,
         validateResult.errors,
         { soi },
-        "dia_00014000002"
+        "00014000002"
       );
     }
 
@@ -106,7 +106,7 @@ async function registerSOI(soi, securityKey) {
         {
           globalId: soi.globalId
         },
-        "dia_00014000001",
+        "00014000001",
         soi.globalId
       );
     }
@@ -143,7 +143,7 @@ async function getSOI(gid, securityKey) {
         {
           globalId: gid
         },
-        "dia_00024000001"
+        "00024000001"
       );
     }
     let soi = await checkSOIExistByGlobalID(gid, securityKey);
@@ -154,7 +154,7 @@ async function getSOI(gid, securityKey) {
         {
           globalId: gid
         },
-        "dia_00024040001",
+        "00024040001",
         gid
       );
     }

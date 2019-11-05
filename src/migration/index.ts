@@ -11,7 +11,7 @@ import {
   getServerInfo,
   addServerInfo,
   updateServerInfo
-} from "../dbController/ServerInformationCtr";
+} from "../dbController/ServerInformation.ctrl";
 
 // TODO: Use memory cache, like **memcached**. Cache system info in memory, since currently we only have master node, so it should be ok in memory.
 // instance of ServerInformation

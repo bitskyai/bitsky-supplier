@@ -1,16 +1,24 @@
 import { getRepository } from "typeorm";
 import ServerInformation from "../entity/ServerInformation";
-const logger = require('../util/logger');
+const logger = require("../util/logger");
+const { HTTPError } = require("../util/error");
 
 export async function getServerInfo() {
   try {
     const serverInfoRepo = getRepository(ServerInformation);
     const serverInfo = await serverInfoRepo.find();
     logger.debug("[getServerInfo], serverInfo: %o", serverInfo);
-    return serverInfo&&serverInfo[0];
+    return serverInfo && serverInfo[0];
   } catch (err) {
-    logger.error('getServerInfo, err:', err);
-    throw err;
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "ServerInformationCtr->getServerInfo"
+    );
+    logger.error("getServerInfo, error:", error);
+    throw error;
   }
 }
 
@@ -31,19 +39,36 @@ export async function addServerInfo(
     logger.debug("[addServerInfo], serverInfo: %o", serverInfo);
     return serverInfo;
   } catch (err) {
-    logger.error('addServerInfo, err:', err);
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "ServerInformationCtr->addServerInfo"
+    );
+    logger.error("addServerInfo, error:", error);
     throw err;
   }
 }
 
-export async function updateServerInfo(globalId:string, serverInfo:object){
-  try{
+export async function updateServerInfo(globalId: string, serverInfo: object) {
+  try {
     const serverInfoRepo = getRepository(ServerInformation);
-    const result = await serverInfoRepo.update({global_id: globalId}, serverInfo);
+    const result = await serverInfoRepo.update(
+      { global_id: globalId },
+      serverInfo
+    );
     logger.debug("[updateServerInfo], result: %o", result);
     return result;
-  }catch(err){
-    logger.error('updateServerInfo, err:', err);
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "ServerInformationCtr->updateServerInfo"
+    );
+    logger.error("updateServerInfo, error:", error);
     throw err;
   }
 }
