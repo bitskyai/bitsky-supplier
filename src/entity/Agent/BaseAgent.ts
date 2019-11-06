@@ -22,6 +22,11 @@ export abstract class BaseAgent extends Base {
   @Column()
   description: string;
 
+  @Column({
+    default: true
+  })
+  private: boolean
+
   // ["PRIVATE", "PUBLIC"]
   @Column({
     default: 'PRIVATE'

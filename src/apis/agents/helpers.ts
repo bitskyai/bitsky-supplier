@@ -20,7 +20,8 @@ import {
   addAgentDB,
   getAgentsDB,
   getAgentByGlobalIdDB,
-  updateAgentDB
+  updateAgentDB,
+  deleteAgentDB
 } from "../../dbController/Agent.ctrl";
 const {
   validateAgentAndUpdateState,
@@ -355,41 +356,44 @@ async function deactivateAgent(gid, securityKey) {
   }
 }
 
-async function unregisterAgent(gid, securityKey) {
+async function unregisterAgent(gid:string, securityKey:string) {
   try {
+    console.log('gid: ', gid, ' securityKey: ', securityKey);
     // Make sure can find Agent, if cannot, the it will throw 404 error
     await checkAgentExistByGlobalID(gid, securityKey);
+    let result = await deleteAgentDB(gid, securityKey);
+    return result;
+    // let query = {
+    //   "agent.globalId": {
+    //     $eq: gid
+    //   }
+    // };
 
-    let query = {
-      "agent.globalId": {
-        $eq: gid
-      }
-    };
+    // // if (securityKey) {
+    // //   query[CONFIG.SECURITY_KEY_IN_DB] = {
+    // //     $eq: securityKey
+    // //   };
+    // // }
+    // // remove all intelligences that this agent created
+    // await remove(COLLECTIONS_NAME.intelligences, {
+    //   query
+    // });
 
+    // let agentQuery = {
+    //   globalId: {
+    //     $eq: gid
+    //   }
+    // };
     // if (securityKey) {
-    //   query[CONFIG.SECURITY_KEY_IN_DB] = {
+    //   agentQuery[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
     //     $eq: securityKey
     //   };
     // }
-    // remove all intelligences that this agent created
-    await remove(COLLECTIONS_NAME.intelligences, {
-      query
-    });
 
-    let agentQuery = {
-      globalId: {
-        $eq: gid
-      }
-    };
-    if (securityKey) {
-      agentQuery[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
-        $eq: securityKey
-      };
-    }
+    // // remove this Agent in agents collection
+    // let result = await remove(COLLECTIONS_NAME.agents, agentQuery);
+    // return result;
 
-    // remove this Agent in agents collection
-    let result = await remove(COLLECTIONS_NAME.agents, agentQuery);
-    return result;
   } catch (err) {
     throw err;
   }

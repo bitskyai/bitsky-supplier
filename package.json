@@ -56,7 +56,7 @@
     "start-o": "node src/index.js",
     "start": "rimraf build && copyfiles -u 1 'src/*.js' 'src/**/*.html' 'src/**/*.png' 'src/**/*.css' 'src/**/*.ico' 'src/**/*.js' 'src/**/*.json' build && tsc && node build/index.js",
     "watch": "nodemon --watch ./src -e js src/index.js",
-    "debug": "ndb ts-node src/index.ts",
+    "debug": "ndb node build/index.js",
     "check-dependencies": "ncu",
     "update-dependencies": "ncu -u"
   },

@@ -11,6 +11,7 @@ function flattenToObject(agents) {
     obj.type = agent.type;
     obj.name = agent.name;
     obj.description = agent.description;
+    obj.private = agent.private;
     obj.permission = agent.permission;
     obj.concurrent = agent.concurrent;
     obj.pollingInterval = agent.polling_interval;
@@ -75,17 +76,18 @@ function flattenToObject(agents) {
 }
 
 /**
- * 
+ *
  * @param agent{object} - the agent object
  */
 function objectToAgent(agent, agentInstance) {
-  if(!agentInstance){
+  if (!agentInstance) {
     agentInstance = new Agent();
   }
   agentInstance.global_id = agent.globalId;
   agentInstance.type = agent.type;
   agentInstance.name = agent.name;
   agentInstance.description = agent.description;
+  agentInstance.private = agent.private;
   agentInstance.permission = agent.permission;
   agentInstance.concurrent = agent.concurrent;
   agentInstance.polling_interval = agent.pollingInterval;
@@ -212,7 +214,6 @@ export async function updateAgentDB(gid, securityKey, agent) {
     }
     const repo = getRepository(Agent);
     agent = objectToAgent(agent, {});
-    console.log('Agent: ', agent);
     let result = await repo.update(query, agent);
     return result;
   } catch (err) {
@@ -221,9 +222,33 @@ export async function updateAgentDB(gid, securityKey, agent) {
       err,
       {},
       "00005000001",
-      "Agent.ctrl->updateAgent"
+      "Agent.ctrl->updateAgentDB"
     );
-    logger.error("updateAgent, error:", error);
+    logger.error("updateAgentDB, error:", error);
+    throw error;
+  }
+}
+
+export async function deleteAgentDB(gid: string, securityKey: string) {
+  try {
+    let query: any = {
+      global_id: gid
+    };
+    if (securityKey) {
+      query.system_security_key = securityKey;
+    }
+    const repo = getRepository(Agent);
+    let result = await repo.delete(query);
+    return result;
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "Agent.ctrl->deleteAgentDB"
+    );
+    logger.error("deleteAgentDB, error:", error);
     throw error;
   }
 }
