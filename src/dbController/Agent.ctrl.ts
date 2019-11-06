@@ -1,5 +1,5 @@
 const _ = require("lodash");
-import { getRepository, FindOperator } from "typeorm";
+import { getRepository } from "typeorm";
 import Agent from "../entity/Agent";
 const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");

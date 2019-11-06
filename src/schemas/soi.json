@@ -152,7 +152,7 @@
       ]
     },
     "timestamp": {
-      "type": ["integer", "null"],
+      "type": ["integer", "null", "string"],
       "description": "Timestamp of when this intelligence was assigned to an agent",
       "examples": [1553974629109]
     },
