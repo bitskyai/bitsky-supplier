@@ -81,8 +81,6 @@ function flattenToObject(sois) {
 }
 
 function objectToSOI(soi, soiInstance) {
-  console.log('=====================');
-  console.log(soi);
   if (!soiInstance) {
     soiInstance = new SOI();
   }

@@ -1,3 +1,3 @@
-import { Agent } from "./SOI.common";
+import { SOI } from "./SOI.common";
 
-export default Agent;
+export default SOI;
