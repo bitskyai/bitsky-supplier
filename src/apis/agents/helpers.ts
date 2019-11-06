@@ -282,17 +282,21 @@ async function activateAgent(gid, securityKey) {
       originalAgent.system.version || "1.0.0",
       "minor"
     );
-    let result = await updateOne(
-      COLLECTIONS_NAME.agents,
-      {
-        globalId: {
-          $eq: gid
-        }
-      },
-      {
-        $set: originalAgent
-      }
-    );
+    // let result = await updateOne(
+    //   COLLECTIONS_NAME.agents,
+    //   {
+    //     globalId: {
+    //       $eq: gid
+    //     }
+    //   },
+    //   {
+    //     $set: originalAgent
+    //   }
+    // );
+    // return {
+    //   state: originalAgent.system.state
+    // };
+    let result = await updateAgentDB(gid, securityKey, originalAgent);
     return {
       state: originalAgent.system.state
     };
@@ -337,17 +341,21 @@ async function deactivateAgent(gid, securityKey) {
       originalAgent.system.version || "1.0.0",
       "minor"
     );
-    let result = await updateOne(
-      COLLECTIONS_NAME.agents,
-      {
-        globalId: {
-          $eq: gid
-        }
-      },
-      {
-        $set: originalAgent
-      }
-    );
+    // let result = await updateOne(
+    //   COLLECTIONS_NAME.agents,
+    //   {
+    //     globalId: {
+    //       $eq: gid
+    //     }
+    //   },
+    //   {
+    //     $set: originalAgent
+    //   }
+    // );
+    // return {
+    //   state: originalAgent.system.state
+    // };
+    let result = await updateAgentDB(gid, securityKey, originalAgent);
     return {
       state: originalAgent.system.state
     };
