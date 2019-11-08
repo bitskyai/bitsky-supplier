@@ -25,6 +25,7 @@ const soisHelpers = require("../sois/helpers");
 const agentsHelpers = require("../agents/helpers");
 const logger = require("../../util/logger");
 const utils = require("../../util/utils");
+import { addIntelligencesDB } from "../../dbController/Intelligence.ctrl";
 
 // To avoid running check soi status multiple times
 // next check will not be started if previous job doesn't finish
@@ -33,7 +34,13 @@ let __check_sois_status__ = {};
 
 //================================================================
 // Following APIs are designed for CRUD intelligences
-async function getIntelligencesForManagement(cursor, url, state, limit, securityKey) {
+async function getIntelligencesForManagement(
+  cursor,
+  url,
+  state,
+  limit,
+  securityKey
+) {
   try {
     let modified, id;
     // formart of cursor
@@ -57,7 +64,7 @@ async function getIntelligencesForManagement(cursor, url, state, limit, security
       limit: limit || 50
     };
 
-    let query = {};
+    let query: any = {};
     if (securityKey) {
       query["system.securityKey"] = securityKey;
     }
@@ -68,9 +75,9 @@ async function getIntelligencesForManagement(cursor, url, state, limit, security
       };
     }
 
-    if(state){
-      state = state.split(',');
-      query['system.state'] = {
+    if (state) {
+      state = state.split(",");
+      query["system.state"] = {
         $in: state
       };
     }
@@ -130,7 +137,7 @@ async function getIntelligencesForManagement(cursor, url, state, limit, security
 async function pauseIntelligencesForManagement(url, ids, securityKey) {
   try {
     // Don't change RUNNING or Draft intelligences
-    let query = {
+    let query: any = {
       "system.state": {
         $nin: [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft]
       }
@@ -179,7 +186,7 @@ async function pauseIntelligencesForManagement(url, ids, securityKey) {
 async function resumeIntelligencesForManagement(url, ids, securityKey) {
   try {
     // Don't change RUNNING or draft intelligences
-    let query = {
+    let query: any = {
       "system.state": {
         $nin: [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft]
       }
@@ -234,7 +241,7 @@ async function deleteIntelligencesForManagement(url, ids, securityKey) {
     //     $nin: [INTELLIGENCE_STATE.running]
     //   }
     // };
-    let query = {};
+    let query: any = {};
     if (securityKey) {
       query["system.securityKey"] = securityKey;
     }
@@ -349,12 +356,7 @@ async function addIntelligences(intelligences, securityKey) {
     });
 
     if (validationError.length) {
-      throw new HTTPError(
-        400,
-        validationError,
-        validationError,
-        "00064000001"
-      );
+      throw new HTTPError(400, validationError, validationError, "00064000001");
     }
 
     // make sure soi existed
@@ -363,12 +365,14 @@ async function addIntelligences(intelligences, securityKey) {
     }
     logger.debug("SOIs exist!", { soiGlobalIds });
     // let result = await insertMany(COLLECTIONS_NAME.intelligences, intelligences);
-    let result = await bulkUpdate(
-      COLLECTIONS_NAME.intelligences,
-      intelligences,
-      true
-    );
-    return (result && result.upsertedIds) || [];
+    // let result = await bulkUpdate(
+    //   COLLECTIONS_NAME.intelligences,
+    //   intelligences,
+    //   true
+    // );
+    // return (result && result.upsertedIds) || [];
+    let result = await addIntelligencesDB(intelligences);
+    return result;
   } catch (err) {
     throw err;
   }
@@ -434,7 +438,7 @@ async function getIntelligences(agentGid, securityKey) {
       concurrent = config.EACH_TIME_INTELLIGENCES_NUMBER;
     }
 
-    let query = {
+    let query: any = {
       "system.state": {
         $nin: [
           INTELLIGENCE_STATE.draft,
