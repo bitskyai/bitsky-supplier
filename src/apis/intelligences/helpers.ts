@@ -25,7 +25,7 @@ const soisHelpers = require("../sois/helpers");
 const agentsHelpers = require("../agents/helpers");
 const logger = require("../../util/logger");
 const utils = require("../../util/utils");
-import { addIntelligencesDB } from "../../dbController/Intelligence.ctrl";
+import { addIntelligencesDB, getIntelligencesForManagementDB } from "../../dbController/Intelligence.ctrl";
 
 // To avoid running check soi status multiple times
 // next check will not be started if previous job doesn't finish
@@ -42,87 +42,88 @@ async function getIntelligencesForManagement(
   securityKey
 ) {
   try {
-    let modified, id;
+    // let modified, id;
     // formart of cursor
     // {modified}:_:_:_{_id}
-    if (cursor) {
-      let parseCursor = utils.atob(cursor);
-      parseCursor = /^(.*):_:_:_(.*)$/.exec(parseCursor);
-      modified = parseCursor[1];
-      id = parseCursor[2];
-    }
+    // if (cursor) {
+    //   let parseCursor = utils.atob(cursor);
+    //   parseCursor = /^(.*):_:_:_(.*)$/.exec(parseCursor);
+    //   modified = parseCursor[1];
+    //   id = parseCursor[2];
+    // }
 
-    if (limit) {
-      limit = limit * 1;
-    }
+    // if (limit) {
+    //   limit = limit * 1;
+    // }
 
-    let options = {
-      sort: {
-        "system.modified": -1,
-        _id: -1
-      },
-      limit: limit || 50
-    };
+    // let options = {
+    //   sort: {
+    //     "system.modified": -1,
+    //     _id: -1
+    //   },
+    //   limit: limit || 50
+    // };
 
-    let query: any = {};
-    if (securityKey) {
-      query["system.securityKey"] = securityKey;
-    }
+    // let query: any = {};
+    // if (securityKey) {
+    //   query["system.securityKey"] = securityKey;
+    // }
 
-    if (url) {
-      query.url = {
-        $regex: utils.convertStringToRegExp(url)
-      };
-    }
+    // if (url) {
+    //   query.url = {
+    //     $regex: utils.convertStringToRegExp(url)
+    //   };
+    // }
 
-    if (state) {
-      state = state.split(",");
-      query["system.state"] = {
-        $in: state
-      };
-    }
+    // if (state) {
+    //   state = state.split(",");
+    //   query["system.state"] = {
+    //     $in: state
+    //   };
+    // }
 
-    let total = await count(COLLECTIONS_NAME.intelligences, query);
+    // let total = await count(COLLECTIONS_NAME.intelligences, query);
+    return await getIntelligencesForManagementDB(cursor, url, state, limit, securityKey);
 
-    if (modified && id) {
-      query["$or"] = [
-        {
-          "system.modified": {
-            $lt: modified * 1
-          }
-        },
-        // If the "sytem.modified" is an exact match, we need a tiebreaker, so we use the _id field from the cursor.
-        {
-          "system.modified": modified * 1,
-          _id: {
-            $lt: ObjectId(id)
-          }
-        }
-      ];
-    }
+    // if (modified && id) {
+    //   query["$or"] = [
+    //     {
+    //       "system.modified": {
+    //         $lt: modified * 1
+    //       }
+    //     },
+    //     // If the "sytem.modified" is an exact match, we need a tiebreaker, so we use the _id field from the cursor.
+    //     {
+    //       "system.modified": modified * 1,
+    //       _id: {
+    //         $lt: ObjectId(id)
+    //       }
+    //     }
+    //   ];
+    // }
 
-    let intelligences = await find(
-      COLLECTIONS_NAME.intelligences,
-      query,
-      options
-    );
-    const lastItem = intelligences[intelligences.length - 1];
-    let nextCursor = null;
-    if (lastItem && intelligences.length >= limit) {
-      nextCursor = utils.btoa(
-        `${lastItem.system.modified}:_:_:_${lastItem._id}`
-      );
-    }
+    // let intelligences = await find(
+    //   COLLECTIONS_NAME.intelligences,
+    //   query,
+    //   options
+    // );
+    // const lastItem = intelligences[intelligences.length - 1];
+    // let nextCursor = null;
+    // if (lastItem && intelligences.length >= limit) {
+    //   nextCursor = utils.btoa(
+    //     `${lastItem.system.modified}:_:_:_${lastItem._id}`
+    //   );
+    // }
 
-    if (nextCursor === cursor) {
-      nextCursor = null;
-    }
-    return {
-      previousCursor: cursor,
-      nextCursor: nextCursor,
-      intelligences: intelligences,
-      total: total
-    };
+    // if (nextCursor === cursor) {
+    //   nextCursor = null;
+    // }
+    // return {
+    //   previousCursor: cursor,
+    //   nextCursor: nextCursor,
+    //   intelligences: intelligences,
+    //   total: total
+    // };
   } catch (err) {
     throw err;
   }
