@@ -5,8 +5,18 @@ import Intelligence from "../entity/Intelligence";
 const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
 const utils = require("../util/utils");
-const { INTELLIGENCE_STATE } = require("../util/constants");
+const config = require("../config");
+const {
+  INTELLIGENCE_STATE,
+  SOI_STATE,
+  PERMISSIONS,
+  DEFAULT_SOI,
+  
+} = require("../util/constants");
 import { isMongo } from "../util/dbConfiguration";
+const soisHelpers = require('../apis/sois/helpers');
+import { updateAgentDB } from '../dbController/Agent.ctrl';
+
 
 function flattenToObject(intelligences) {
   function toObject(intelligence) {
@@ -272,157 +282,172 @@ export async function getIntelligencesForManagementDB(
   limit: number,
   securityKey: string
 ) {
-  let modified: any, id: string, intelligences: object[], total: number;
-  if (limit) {
-    limit = limit * 1;
-  }
-  if (isMongo()) {
-    if (cursor) {
-      let parseCursor = utils.atob(cursor);
-      parseCursor = /^(.*):_:_:_(.*)$/.exec(parseCursor);
-      modified = parseCursor[1];
-      id = parseCursor[2];
-    }
-
-    let query: any = {};
-    if (securityKey) {
-      query["system_security_key"] = securityKey;
-    }
-
-    if (url) {
-      query.url = {
-        $regex: utils.convertStringToRegExp(url)
-      };
-    }
-
-    if (state) {
-      query["system_state"] = {
-        $in: state.split(",")
-      };
-    }
-
-    // Query Build doesn't support for Mongo
-    const repo = await getMongoRepository(Intelligence);
-    total = await repo.count(query);
-    let nQuery: any = {
-      where: query
-    };
-    if (modified && id) {
-      nQuery.where.$or = [
-        {
-          system_modified_at: {
-            $lt: modified * 1
-          }
-        },
-        // If the "sytem.modified" is an exact match, we need a tiebreaker, so we use the _id field from the cursor.
-        {
-          system_modified_at: modified * 1,
-          _id: {
-            $lt: ObjectId(id)
-          }
-        }
-      ];
-    }
-    nQuery.take = limit || 50;
-    nQuery.order = {
-      system_modified_at: "DESC",
-      _id: "DESC"
-    };
-    intelligences = await repo.find(nQuery);
-  } else {
-    const intelligenceQuery = await getRepository(
-      Intelligence
-    ).createQueryBuilder("intelligence");
-    // After use *where*, then need to use *andWhere*
-    let andWhere = false;
-    if (securityKey) {
-      let funName;
-      if (andWhere) {
-        funName = "andWhere";
-      } else {
-        funName = "where";
-        andWhere = true;
-      }
-      intelligenceQuery[funName](
-        "intelligence.system_security_key = :securityKey",
-        { securityKey }
-      );
-    }
-
-    if (url) {
-      let funName;
-      if (andWhere) {
-        funName = "andWhere";
-      } else {
-        funName = "where";
-        andWhere = true;
-      }
-      intelligenceQuery[funName]("intelligence.url LIKE :url", {
-        url: `%${url}%`
-      });
-    }
-
-    if (state) {
-      let states = state.split(",");
-      let funName;
-      if (andWhere) {
-        funName = "andWhere";
-      } else {
-        funName = "where";
-        andWhere = true;
-      }
-      intelligenceQuery[funName]("intelligence.system_state IN (:...states)", {
-        states
-      });
-    }
-
-    total = await intelligenceQuery.getCount();
-    if (cursor) {
-      let parseCursor = utils.atob(cursor);
-      parseCursor = /^(.*):_:_:_(.*)$/.exec(parseCursor);
-      modified = parseCursor[1];
-      id = parseCursor[2];
-    }
-
+  try {
+    let modified: any, id: string, intelligences: object[], total: number;
     if (limit) {
       limit = limit * 1;
-      intelligenceQuery.limit(limit);
     }
-    intelligenceQuery.orderBy({ system_modified_at: "DESC", id: "DESC" });
-    if (modified && id) {
-      modified = modified * 1;
-      let funName;
-      if (andWhere) {
-        funName = "andWhere";
-      } else {
-        funName = "where";
-        andWhere = true;
+    if (isMongo()) {
+      if (cursor) {
+        let parseCursor = utils.atob(cursor);
+        parseCursor = /^(.*):_:_:_(.*)$/.exec(parseCursor);
+        modified = parseCursor[1];
+        id = parseCursor[2];
       }
-      intelligenceQuery[funName](
-        "intelligence.system_modified_at < :modified OR (intelligence.system_modified_at = :modified AND intelligence.id < :id)",
-        { modified, id }
+
+      let query: any = {};
+      if (securityKey) {
+        query["system_security_key"] = securityKey;
+      }
+
+      if (url) {
+        query.url = {
+          $regex: utils.convertStringToRegExp(url)
+        };
+      }
+
+      if (state) {
+        query["system_state"] = {
+          $in: state.split(",")
+        };
+      }
+
+      // Query Build doesn't support for Mongo
+      const repo = await getMongoRepository(Intelligence);
+      total = await repo.count(query);
+      let nQuery: any = {
+        where: query
+      };
+      if (modified && id) {
+        nQuery.where.$or = [
+          {
+            system_modified_at: {
+              $lt: modified * 1
+            }
+          },
+          // If the "sytem.modified" is an exact match, we need a tiebreaker, so we use the _id field from the cursor.
+          {
+            system_modified_at: modified * 1,
+            _id: {
+              $lt: ObjectId(id)
+            }
+          }
+        ];
+      }
+      nQuery.take = limit || 50;
+      nQuery.order = {
+        system_modified_at: "DESC",
+        _id: "DESC"
+      };
+      intelligences = await repo.find(nQuery);
+    } else {
+      const intelligenceQuery = await getRepository(
+        Intelligence
+      ).createQueryBuilder("intelligence");
+      // After use *where*, then need to use *andWhere*
+      let andWhere = false;
+      if (securityKey) {
+        let funName;
+        if (andWhere) {
+          funName = "andWhere";
+        } else {
+          funName = "where";
+          andWhere = true;
+        }
+        intelligenceQuery[funName](
+          "intelligence.system_security_key = :securityKey",
+          { securityKey }
+        );
+      }
+
+      if (url) {
+        let funName;
+        if (andWhere) {
+          funName = "andWhere";
+        } else {
+          funName = "where";
+          andWhere = true;
+        }
+        intelligenceQuery[funName]("intelligence.url LIKE :url", {
+          url: `%${url}%`
+        });
+      }
+
+      if (state) {
+        let states = state.split(",");
+        let funName;
+        if (andWhere) {
+          funName = "andWhere";
+        } else {
+          funName = "where";
+          andWhere = true;
+        }
+        intelligenceQuery[funName](
+          "intelligence.system_state IN (:...states)",
+          {
+            states
+          }
+        );
+      }
+
+      total = await intelligenceQuery.getCount();
+      if (cursor) {
+        let parseCursor = utils.atob(cursor);
+        parseCursor = /^(.*):_:_:_(.*)$/.exec(parseCursor);
+        modified = parseCursor[1];
+        id = parseCursor[2];
+      }
+
+      if (limit) {
+        limit = limit * 1;
+        intelligenceQuery.limit(limit);
+      }
+      intelligenceQuery.orderBy({ system_modified_at: "DESC", id: "DESC" });
+      if (modified && id) {
+        modified = modified * 1;
+        let funName;
+        if (andWhere) {
+          funName = "andWhere";
+        } else {
+          funName = "where";
+          andWhere = true;
+        }
+        intelligenceQuery[funName](
+          "intelligence.system_modified_at < :modified OR (intelligence.system_modified_at = :modified AND intelligence.id < :id)",
+          { modified, id }
+        );
+      }
+
+      intelligences = await intelligenceQuery.getMany();
+    }
+    const lastItem: any = intelligences[intelligences.length - 1];
+    let nextCursor = null;
+    if (lastItem && intelligences.length >= limit) {
+      nextCursor = utils.btoa(
+        `${lastItem.system_modified_at}:_:_:_${lastItem.id}`
       );
     }
 
-    intelligences = await intelligenceQuery.getMany();
-  }
-  const lastItem: any = intelligences[intelligences.length - 1];
-  let nextCursor = null;
-  if (lastItem && intelligences.length >= limit) {
-    nextCursor = utils.btoa(
-      `${lastItem.system_modified_at}:_:_:_${lastItem.id}`
+    if (nextCursor === cursor) {
+      nextCursor = null;
+    }
+    return {
+      previousCursor: cursor,
+      nextCursor: nextCursor,
+      intelligences: flattenToObject(intelligences),
+      total: total
+    };
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "Intelligence.ctrl->getIntelligencesForManagementDB"
     );
+    logger.error("getIntelligencesForManagementDB, error:", error);
+    throw error;
   }
-
-  if (nextCursor === cursor) {
-    nextCursor = null;
-  }
-  return {
-    previousCursor: cursor,
-    nextCursor: nextCursor,
-    intelligences: flattenToObject(intelligences),
-    total: total
-  };
 }
 
 export async function updateIntelligencesStateForManagementDB(
@@ -596,6 +621,166 @@ export async function deleteIntelligencesForManagementDB(
       "Intelligence.ctrl->deleteIntelligencesForManagementDB"
     );
     logger.error("deleteIntelligencesForManagementDB, error:", error);
+    throw error;
+  }
+}
+
+export async function getIntelligencesForAgentDB(
+  agentConfig: any,
+  securityKey: string
+) {
+  try {
+    let intelligences = [];
+    if (isMongo()) {
+      const repo = await getMongoRepository(Intelligence);
+      let concurrent = Number(agentConfig.concurrent);
+      if (isNaN(concurrent)) {
+        // if concurrent isn't a number, then use default value
+        concurrent = config.EACH_TIME_INTELLIGENCES_NUMBER;
+      }
+      let query: any = {
+        where: {}
+      };
+      query.where.system_state = {
+        $nin: [
+          INTELLIGENCE_STATE.draft,
+          INTELLIGENCE_STATE.running,
+          INTELLIGENCE_STATE.finished,
+          INTELLIGENCE_STATE.paused
+        ]
+      };
+      query.where.soi_state = {
+        $eq: SOI_STATE.active
+      };
+      query.where.suitable_agents = {
+        $elemMatch: {
+          $eq: _.toUpper(agentConfig.type)
+        }
+      };
+
+      query.take = concurrent;
+      query.order = {
+        soi_global_id: "DESC",
+        priority: "ASC"
+      };
+
+      // if security key provide, get all intelligences for this security key first
+      if (securityKey) {
+        query.where.system_security_key = securityKey;
+        intelligences = await repo.find(query);
+      }
+      let permission = PERMISSIONS.private;
+      if (!agentConfig.private) {
+        permission = PERMISSIONS.public;
+      }
+
+      // if permission doesn't exit or agent is public then try to see any public intelligences need to collect
+      if (
+        (!permission || _.upperCase(permission) === PERMISSIONS.public) &&
+        (!intelligences || !intelligences.length)
+      ) {
+        // if no intelligences for this securityKey and if this agent's permission is public then, get other intelligences that is public
+        delete query.where.system_security_key;
+        query.where.permission = {
+          $nin: [PERMISSIONS.private]
+        };
+
+        intelligences = await repo.find(query);
+      }
+      intelligences = flattenToObject(intelligences);
+
+      let gids = [];
+      let sois = {};
+      for (let i = 0; i < intelligences.length; i++) {
+        let item = intelligences[i] || {};
+        gids.push(item.globalId);
+        if (sois[item.soi.globalId]) {
+          item.soi = sois[item.soi.globalId];
+        } else {
+          let soi = await soisHelpers.getSOI(item.soi.globalId);
+          soi = _.merge({}, DEFAULT_SOI, soi);
+          // remove unnecessary data
+          soi = utils.omit(
+            soi,
+            ["_id", "securityKey", "created", "modified"],
+            ["system"]
+          );
+          sois[item.soi.globalId] = soi;
+          item.soi = sois[item.soi.globalId];
+        }
+
+        // Comment: 07/30/2019
+        // Reason: Since this intelligence is reassigned, so it always need to update agent information
+        // if (!item.agent) {
+        //   item.agent = {
+        //     globalId: agentGid,
+        //     type: _.toUpper(agentConfig.type),
+        //     started_at: Date.now()
+        //   };
+        // }
+        item.system.agent = {
+          globalId: agentConfig.globalId,
+          type: _.toUpper(agentConfig.type)
+        };
+      }
+
+      // Update intelligences that return to agent
+      await repo.updateMany({
+        global_id: {
+          $in:gids
+        }
+      }, {
+        $set: {
+          system_started_at: Date.now(),
+          system_ended_at: Date.now(),
+          system_modified_at: Date.now(),
+          system_state: INTELLIGENCE_STATE.running,
+          system_agent_global_id: agentConfig.globalId,
+          system_agent_type: _.toUpper(agentConfig.type)
+        }
+      });
+
+      // Update Agent Last Ping
+      // Don't need to wait agent update finish
+      updateAgentDB(agentConfig.globalId, securityKey, {
+        system:{
+          modified: Date.now(), 
+          lastPing: Date.now()
+        }
+      });
+
+      // TODO: 2019/11/10 need to rethink about this logic, since intelligences already send back to agents
+      //        if we check for now, it is meaningless, better way is let agent to tell. For example, if collect
+      //        intelligences fail, then check SOI or direct know soi is inactive
+
+      // Check SOI status in parallel
+      // // After get intelligences that need to collect, during sametime to check whether this SOI is active.
+      // for (let gid in sois) {
+      //   let soi = sois[gid];
+      //   // if this soi isn't in check status progress, then check it
+      //   if (!__check_sois_status__[gid]) {
+      //     (async () => {
+      //       // change soi status to true to avoid duplicate check in same time
+      //       __check_sois_status__[gid] = true;
+      //       await soisHelpers.updateSOIState(gid, soi);
+      //       // after finish, delete its value in hashmap
+      //       delete __check_sois_status__[gid];
+      //     })();
+      //   }
+      // }
+      return intelligences;
+    } else {  
+      // SQL
+    }
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "Intelligence.ctrl->getIntelligencesForAgentDB"
+    );
+    logger.error("getIntelligencesForAgentDB, error:", error);
     throw error;
   }
 }

@@ -83,21 +83,48 @@ function objectToAgent(agent, agentInstance) {
   if (!agentInstance) {
     agentInstance = new Agent();
   }
-  agentInstance.global_id = agent.globalId;
-  agentInstance.type = agent.type;
-  agentInstance.name = agent.name;
-  agentInstance.description = agent.description;
-  agentInstance.private = agent.private;
-  agentInstance.permission = agent.permission;
-  agentInstance.concurrent = agent.concurrent;
-  agentInstance.polling_interval = agent.pollingInterval;
-  agentInstance.max_waiting_time = agent.maxWaitingTime;
-  agentInstance.max_collect = agent.maxCollect;
-  agentInstance.idel_time = agent.idelTime;
-  agentInstance.timeout = agent.timeout;
-  agentInstance.max_retry = agent.maxRetry;
-  agentInstance.base_url = agent.baseURL;
-
+  if (_.get(agent, "globalId")) {
+    agentInstance.global_id = agent.globalId;
+  }
+  if (_.get(agent, "type")) {
+    agentInstance.type = agent.type;
+  }
+  if (_.get(agent, "name")) {
+    agentInstance.name = agent.name;
+  }
+  if (_.get(agent, "description")) {
+    agentInstance.description = agent.description;
+  }
+  if (_.get(agent, "private")) {
+    agentInstance.private = agent.private;
+  }
+  if (_.get(agent, "permission")) {
+    agentInstance.permission = agent.permission;
+  }
+  if (_.get(agent, "concurrent")) {
+    agentInstance.concurrent = agent.concurrent;
+  }
+  if (_.get(agent, "pollingInterval")) {
+    agentInstance.polling_interval = agent.pollingInterval;
+  }
+  if (_.get(agent, "maxWaitingTime")) {
+    agentInstance.max_waiting_time = agent.maxWaitingTime;
+  }
+  if (_.get(agent, "maxCollect")) {
+    agentInstance.max_collect = agent.maxCollect;
+  }
+  if (_.get(agent, "idelTime")) {
+    agentInstance.idel_time = agent.idelTime;
+  }
+  if (_.get(agent, "timeout")) {
+    agentInstance.timeout = agent.timeout;
+  }
+  if (_.get(agent, "maxRetry")) {
+    agentInstance.max_retry = agent.maxRetry;
+  }
+  if (_.get(agent, "baseURL")) {
+    agentInstance.base_url = agent.baseURL;
+  }
   if (_.get(agent, "health.method")) {
     agentInstance.health_method = agent.health.method;
   }

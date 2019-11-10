@@ -1,7 +1,6 @@
 import { Column } from "typeorm";
 import { isMongo } from "../../util/dbConfiguration";
 import { BaseMongo, BaseSQL } from "../Base";
-import { CONNREFUSED } from "dns";
 let Base: any;
 if (isMongo()) {
   Base = BaseMongo;

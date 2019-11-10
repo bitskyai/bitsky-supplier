@@ -29,9 +29,8 @@ import {
   addIntelligencesDB,
   getIntelligencesForManagementDB,
   updateIntelligencesStateForManagementDB,
-  // pauseIntelligencesForManagementDB,
-  // resumeIntelligencesForManagementDB,
-  deleteIntelligencesForManagementDB
+  deleteIntelligencesForManagementDB,
+  getIntelligencesForAgentDB
 } from "../../dbController/Intelligence.ctrl";
 
 // To avoid running check soi status multiple times
@@ -251,7 +250,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
  *
  * @returns {IntelligencesAndConfig}
  */
-async function getIntelligences(agentGid, securityKey) {
+async function getIntelligences(agentGid:string, securityKey:string) {
   try {
     // TODO: need to improve intelligences schedule
     // 1. Think about if a lot of intelligences, how to schedule them
@@ -289,139 +288,7 @@ async function getIntelligences(agentGid, securityKey) {
         agentGid
       );
     }
-
-    let concurrent = Number(agentConfig.concurrent);
-    if (isNaN(concurrent)) {
-      // if concurrent isn't a number, then use default value
-      concurrent = config.EACH_TIME_INTELLIGENCES_NUMBER;
-    }
-
-    let query: any = {
-      "system.state": {
-        $nin: [
-          INTELLIGENCE_STATE.draft,
-          INTELLIGENCE_STATE.running,
-          INTELLIGENCE_STATE.finished,
-          INTELLIGENCE_STATE.paused
-        ]
-      },
-      "soi.state": {
-        $eq: "ACTIVE"
-      },
-      suitableAgents: {
-        $elemMatch: {
-          $eq: _.toUpper(agentConfig.type)
-        }
-      }
-    };
-
-    // if security key provide, get all intelligences for this security key first
-    if (securityKey) {
-      query[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
-        $eq: securityKey
-      };
-      // only return items that soi.status is ACTIVE
-      // for this case, get intelligences that created by this securitykey
-      intelligences = await find(COLLECTIONS_NAME.intelligences, query, {
-        sort: ["soi.globalId", "priority"],
-        limit: concurrent
-      });
-    }
-    let permission = PERMISSIONS.private;
-    if (!agentConfig.private) {
-      permission = PERMISSIONS.public;
-    }
-
-    // if permission doesn't exit or agent is public then try to see any public intelligences need to collect
-    if (
-      (!permission || _.upperCase(permission) === PERMISSIONS.public) &&
-      (!intelligences || !intelligences.length)
-    ) {
-      // if no intelligences for this securityKey and if this agent's permission is public then, get other intelligences that is public
-      delete query[`system.${CONFIG.SECURITY_KEY_IN_DB}`];
-      query.permission = {
-        $nin: [PERMISSIONS.private]
-      };
-
-      intelligences = await find(COLLECTIONS_NAME.intelligences, query, {
-        sort: ["soi.globalId", "priority"],
-        limit: concurrent
-      });
-    }
-
-    let gids = [];
-    let sois = {};
-    for (let i = 0; i < intelligences.length; i++) {
-      let item = intelligences[i] || {};
-      gids.push(item.globalId);
-      if (sois[item.soi.globalId]) {
-        item.soi = sois[item.soi.globalId];
-      } else {
-        let soi = await soisHelpers.getSOI(item.soi.globalId);
-        soi = _.merge({}, DEFAULT_SOI, soi);
-        // remove unnecessary data
-        soi = utils.omit(
-          soi,
-          ["_id", "securityKey", "created", "modified"],
-          ["system"]
-        );
-        sois[item.soi.globalId] = soi;
-        item.soi = sois[item.soi.globalId];
-      }
-
-      // Comment: 07/30/2019
-      // Reason: Since this intelligence is reassigned, so it always need to update agent information
-      // if (!item.agent) {
-      //   item.agent = {
-      //     globalId: agentGid,
-      //     type: _.toUpper(agentConfig.type),
-      //     started_at: Date.now()
-      //   };
-      // }
-      item.system.agent = {
-        globalId: agentGid,
-        type: _.toUpper(agentConfig.type)
-      };
-    }
-
-    // Update intelligences that return to agent
-    await updateMany(
-      COLLECTIONS_NAME.intelligences,
-      {
-        globalId: {
-          $in: gids
-        }
-      },
-      {
-        $set: {
-          "system.startedAt": Date.now(),
-          "system.endedAt": null,
-          "system.state": INTELLIGENCE_STATE.running,
-          "system.agent.globalId": agentGid,
-          "system.agent.status": "ACTIVE",
-          "system.agent.type": _.toUpper(agentConfig.type)
-        }
-      }
-    );
-
-    // TODO: Also need to update agent **lastPing**
-
-    // Check SOI status in parallel
-    // After get intelligences that need to collect, during sametime to check whether this SOI is active.
-    for (let gid in sois) {
-      let soi = sois[gid];
-      // if this soi isn't in check status progress, then check it
-      if (!__check_sois_status__[gid]) {
-        (async () => {
-          // change soi status to true to avoid duplicate check in same time
-          __check_sois_status__[gid] = true;
-          await soisHelpers.updateSOIState(gid, soi);
-          // after finish, delete its value in hashmap
-          delete __check_sois_status__[gid];
-        })();
-      }
-    }
-
+    intelligences = await getIntelligencesForAgentDB(agentConfig, securityKey);
     return intelligences;
   } catch (err) {
     throw err;
@@ -492,9 +359,6 @@ async function updateIntelligences(content, securityKey) {
   }
 }
 
-async function deleteIntelligences(gids, securityKey) {
-  // TODO: implement logic
-}
 
 module.exports = {
   pauseIntelligencesForManagement,
@@ -503,6 +367,5 @@ module.exports = {
   getIntelligencesForManagement,
   addIntelligences,
   getIntelligences,
-  updateIntelligences,
-  deleteIntelligences
+  updateIntelligences
 };

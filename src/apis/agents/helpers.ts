@@ -1,21 +1,12 @@
 const _ = require("lodash");
-// const uuidv4 = require("uuid/v4");
-// const axios = require("axios");
 const semver = require("semver");
 const {
   CONFIG,
-  // COLLECTIONS_NAME,
   AGENT_STATE,
   DEFAULT_AGENT
 } = require("../../util/constants");
 const { HTTPError } = require("../../util/error");
-// const {
-//   find,
-//   insertOne,
-//   updateOne,
-//   updateMany,
-//   remove
-// } = require("../../util/db");
+
 import {
   addAgentDB,
   getAgentsDB,
