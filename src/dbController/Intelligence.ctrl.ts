@@ -1,9 +1,20 @@
 const _ = require("lodash");
-import { getRepository, getMongoRepository, ObjectID } from "typeorm";
+import { getRepository, getMongoRepository } from "typeorm";
+const ObjectId = require("mongodb").ObjectID;
 import Intelligence from "../entity/Intelligence";
 const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
 const utils = require("../util/utils");
+const {
+  CONFIG,
+  COLLECTIONS_NAME,
+  DEFAULT_SOI,
+  INTELLIGENCE_STATE,
+  PERMISSIONS,
+  AGENT_STATE,
+  SOI_STATE,
+  DEFAULT_INTELLIGENCE
+} = require("../util/constants");
 import { isMongo } from "../util/dbConfiguration";
 
 function flattenToObject(intelligences) {
@@ -302,7 +313,7 @@ export async function getIntelligencesForManagementDB(
     // Query Build doesn't support for Mongo
     const repo = await getMongoRepository(Intelligence);
     total = await repo.count(query);
-    let nQuery:any = {
+    let nQuery: any = {
       where: query
     };
     if (modified && id) {
@@ -316,7 +327,7 @@ export async function getIntelligencesForManagementDB(
         {
           system_modified_at: modified * 1,
           _id: {
-            $lt: id
+            $lt: ObjectId(id)
           }
         }
       ];
@@ -422,4 +433,149 @@ export async function getIntelligencesForManagementDB(
     intelligences: flattenToObject(intelligences),
     total: total
   };
+}
+
+export async function pauseIntelligencesForManagementDB(
+  url: string,
+  ids: string[],
+  securityKey: string
+) {
+  try {
+    if (isMongo()) {
+      const repo = await getMongoRepository(Intelligence);
+      let query: any = {};
+
+      // Don't Draft intelligences
+      query.system_state = {
+        // $nin: [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft]
+        $nin: [INTELLIGENCE_STATE.draft]
+      };
+      if (securityKey) {
+        query.system_security_key = securityKey;
+      }
+
+      if (ids && ids.length) {
+        query.global_id = {
+          $in: ids
+        };
+      } else {
+        if (url) {
+          query.url = {
+            $regex: utils.convertStringToRegExp(url)
+          };
+        }
+      }
+      return await repo.updateMany(query, {
+        $set: {
+          system_modified_at: Date.now(),
+          system_state: INTELLIGENCE_STATE.paused
+        }
+      });
+    } else {
+      // SQL
+    }
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "Intelligence.ctrl->pauseIntelligencesForManagement"
+    );
+    logger.error("pauseIntelligencesForManagement, error:", error);
+    throw error;
+  }
+}
+
+export async function resumeIntelligencesForManagementDB(
+  url: string,
+  ids: string[],
+  securityKey: string
+) {
+  try {
+    if (isMongo()) {
+      const repo = await getMongoRepository(Intelligence);
+      let query: any = {};
+
+      // Don't Running and Draft intelligences
+      query.system_state = {
+        $nin: [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft]
+      };
+      if (securityKey) {
+        query.system_security_key = securityKey;
+      }
+
+      if (ids && ids.length) {
+        query.global_id = {
+          $in: ids
+        };
+      } else {
+        if (url) {
+          query.url = {
+            $regex: utils.convertStringToRegExp(url)
+          };
+        }
+      }
+      return await repo.updateMany(query, {
+        $set: {
+          system_modified_at: Date.now(),
+          system_state: INTELLIGENCE_STATE.configured
+        }
+      });
+    } else {
+      // SQL
+    }
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "Intelligence.ctrl->resumeIntelligencesForManagementDB"
+    );
+    logger.error("resumeIntelligencesForManagementDB, error:", error);
+    throw error;
+  }
+}
+
+export async function deleteIntelligencesForManagementDB(
+  url: string,
+  ids: string[],
+  securityKey: string
+) {
+  try {
+    if (isMongo()) {
+      const repo = await getMongoRepository(Intelligence);
+      let query: any = {};
+
+      if (securityKey) {
+        query.system_security_key = securityKey;
+      }
+
+      if (ids && ids.length) {
+        query.global_id = {
+          $in: ids
+        };
+      } else {
+        if (url) {
+          query.url = {
+            $regex: utils.convertStringToRegExp(url)
+          };
+        }
+      }
+      return await repo.deleteMany(query);
+    } else {
+      // SQL
+    }
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "Intelligence.ctrl->deleteIntelligencesForManagementDB"
+    );
+    logger.error("deleteIntelligencesForManagementDB, error:", error);
+    throw error;
+  }
 }

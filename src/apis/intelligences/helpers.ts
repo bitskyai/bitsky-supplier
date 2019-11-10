@@ -25,7 +25,13 @@ const soisHelpers = require("../sois/helpers");
 const agentsHelpers = require("../agents/helpers");
 const logger = require("../../util/logger");
 const utils = require("../../util/utils");
-import { addIntelligencesDB, getIntelligencesForManagementDB } from "../../dbController/Intelligence.ctrl";
+import {
+  addIntelligencesDB,
+  getIntelligencesForManagementDB,
+  pauseIntelligencesForManagementDB,
+  resumeIntelligencesForManagementDB,
+  deleteIntelligencesForManagementDB
+} from "../../dbController/Intelligence.ctrl";
 
 // To avoid running check soi status multiple times
 // next check will not be started if previous job doesn't finish
@@ -42,7 +48,13 @@ async function getIntelligencesForManagement(
   securityKey: string
 ) {
   try {
-    return await getIntelligencesForManagementDB(cursor, url, state, limit, securityKey);
+    return await getIntelligencesForManagementDB(
+      cursor,
+      url,
+      state,
+      limit,
+      securityKey
+    );
   } catch (err) {
     throw err;
   }
@@ -54,44 +66,15 @@ async function getIntelligencesForManagement(
  * @param {array} ids - Intelligences Global Id
  * @param {string} securityKey - security key string
  */
-async function pauseIntelligencesForManagement(url, ids, securityKey) {
+async function pauseIntelligencesForManagement(
+  url: string,
+  ids: string[],
+  securityKey: string
+) {
   try {
-    // Don't change RUNNING or Draft intelligences
-    let query: any = {
-      "system.state": {
-        $nin: [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft]
-      }
-    };
-    if (securityKey) {
-      query["system.securityKey"] = securityKey;
-    }
-
-    // run ids. If ids exists then url don't need to execute
-    if (ids && ids.length) {
-      query.globalId = {
-        $in: ids
-      };
-
-      await updateMany(COLLECTIONS_NAME.intelligences, query, {
-        $set: {
-          "system.modified": Date.now(),
-          "system.state": INTELLIGENCE_STATE.paused
-        }
-      });
-    } else {
-      if (url) {
-        query.url = {
-          $regex: utils.convertStringToRegExp(url)
-        };
-      }
-
-      await updateMany(COLLECTIONS_NAME.intelligences, query, {
-        $set: {
-          "system.modified": Date.now(),
-          "system.state": INTELLIGENCE_STATE.paused
-        }
-      });
-    }
+    let result = await pauseIntelligencesForManagementDB(url, ids, securityKey);
+    console.log(result.result);
+    return result && result.result;
   } catch (err) {
     throw err;
   }
@@ -103,44 +86,19 @@ async function pauseIntelligencesForManagement(url, ids, securityKey) {
  * @param {array} ids - Intelligences Global Id
  * @param {string} securityKey - security key string
  */
-async function resumeIntelligencesForManagement(url, ids, securityKey) {
+async function resumeIntelligencesForManagement(
+  url: string,
+  ids: string[],
+  securityKey: string
+) {
   try {
-    // Don't change RUNNING or draft intelligences
-    let query: any = {
-      "system.state": {
-        $nin: [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft]
-      }
-    };
-    if (securityKey) {
-      query["system.securityKey"] = securityKey;
-    }
-
-    // run ids. If ids exists then url don't need to execute
-    if (ids && ids.length) {
-      query.globalId = {
-        $in: ids
-      };
-
-      await updateMany(COLLECTIONS_NAME.intelligences, query, {
-        $set: {
-          "system.modified": Date.now(),
-          "system.state": INTELLIGENCE_STATE.configured
-        }
-      });
-    } else {
-      if (url) {
-        query.url = {
-          $regex: utils.convertStringToRegExp(url)
-        };
-      }
-
-      await updateMany(COLLECTIONS_NAME.intelligences, query, {
-        $set: {
-          "system.modified": Date.now(),
-          "system.state": INTELLIGENCE_STATE.configured
-        }
-      });
-    }
+    let result = await resumeIntelligencesForManagementDB(
+      url,
+      ids,
+      securityKey
+    );
+    console.log(result.result);
+    return result && result.result;
   } catch (err) {
     throw err;
   }
@@ -152,46 +110,19 @@ async function resumeIntelligencesForManagement(url, ids, securityKey) {
  * @param {array} ids - Intelligences Global Id
  * @param {string} securityKey - security key string
  */
-async function deleteIntelligencesForManagement(url, ids, securityKey) {
+async function deleteIntelligencesForManagement(
+  url: string,
+  ids: string[],
+  securityKey: string
+) {
   try {
-    // Don't change RUNNING or draft intelligences
-    // Allow user to delete running intelligence
-    // let query = {
-    //   "system.state": {
-    //     $nin: [INTELLIGENCE_STATE.running]
-    //   }
-    // };
-    let query: any = {};
-    if (securityKey) {
-      query["system.securityKey"] = securityKey;
-    }
-
-    // run ids. If ids exists then url don't need to execute
-    if (ids && ids.length) {
-      query.globalId = {
-        $in: ids
-      };
-
-      await deleteMany(COLLECTIONS_NAME.intelligences, query, {
-        $set: {
-          "system.modified": Date.now(),
-          "system.state": INTELLIGENCE_STATE.configured
-        }
-      });
-    } else {
-      if (url) {
-        query.url = {
-          $regex: utils.convertStringToRegExp(url)
-        };
-      }
-
-      await deleteMany(COLLECTIONS_NAME.intelligences, query, {
-        $set: {
-          "system.modified": Date.now(),
-          "system.state": INTELLIGENCE_STATE.configured
-        }
-      });
-    }
+    let result = await deleteIntelligencesForManagementDB(
+      url,
+      ids,
+      securityKey
+    );
+    console.log(result.result);
+    return result && result.result;
   } catch (err) {
     throw err;
   }
@@ -205,7 +136,7 @@ async function deleteIntelligencesForManagement(url, ids, securityKey) {
  * @param {array} intelligences
  * @param {string} securityKey
  */
-async function addIntelligences(intelligences, securityKey) {
+async function addIntelligences(intelligences: object[], securityKey: string) {
   try {
     // Comment: 07/30/2019
     // let defaultIntelligence = {
@@ -224,7 +155,7 @@ async function addIntelligences(intelligences, securityKey) {
     let validationError = [];
     // hash table for soi globalId
     let soiGlobalIds = {};
-    intelligences = intelligences.map(intelligence => {
+    intelligences = intelligences.map((intelligence: any) => {
       // remove data that cannot set by user
       // Comment: 07/30/2019
       // delete intelligence.created_at;
