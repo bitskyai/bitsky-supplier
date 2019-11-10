@@ -1,5 +1,5 @@
 const _ = require("lodash");
-import { getRepository } from "typeorm";
+import { getRepository, getMongoRepository, ObjectID } from "typeorm";
 import Intelligence from "../entity/Intelligence";
 const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
@@ -270,9 +270,63 @@ export async function getIntelligencesForManagementDB(
   limit: number,
   securityKey: string
 ) {
-  let modified: any, id: string;
+  let modified: any, id: string, intelligences: object[], total: number;
+  if (limit) {
+    limit = limit * 1;
+  }
   if (isMongo()) {
-    // TODO add for mongodb
+    if (cursor) {
+      let parseCursor = utils.atob(cursor);
+      parseCursor = /^(.*):_:_:_(.*)$/.exec(parseCursor);
+      modified = parseCursor[1];
+      id = parseCursor[2];
+    }
+
+    let query: any = {};
+    if (securityKey) {
+      query["system_security_key"] = securityKey;
+    }
+
+    if (url) {
+      query.url = {
+        $regex: utils.convertStringToRegExp(url)
+      };
+    }
+
+    if (state) {
+      query["system_state"] = {
+        $in: state.split(",")
+      };
+    }
+
+    // Query Build doesn't support for Mongo
+    const repo = await getMongoRepository(Intelligence);
+    total = await repo.count(query);
+    let nQuery:any = {
+      where: query
+    };
+    if (modified && id) {
+      nQuery.where.$or = [
+        {
+          system_modified_at: {
+            $lt: modified * 1
+          }
+        },
+        // If the "sytem.modified" is an exact match, we need a tiebreaker, so we use the _id field from the cursor.
+        {
+          system_modified_at: modified * 1,
+          _id: {
+            $lt: id
+          }
+        }
+      ];
+    }
+    nQuery.take = limit || 50;
+    nQuery.order = {
+      system_modified_at: "DESC",
+      _id: "DESC"
+    };
+    intelligences = await repo.find(nQuery);
   } else {
     const intelligenceQuery = await getRepository(
       Intelligence
@@ -315,12 +369,13 @@ export async function getIntelligencesForManagementDB(
         funName = "where";
         andWhere = true;
       }
-      intelligenceQuery[funName]("intelligence.system_state IN (:...states)", { states });
+      intelligenceQuery[funName]("intelligence.system_state IN (:...states)", {
+        states
+      });
       // intelligenceQuery[funName]("intelligence.system_state IN ('TIMEOUT', 'CONFIGURED')");
     }
 
-    let total = await intelligenceQuery
-      .getCount();
+    total = await intelligenceQuery.getCount();
     if (cursor) {
       let parseCursor = utils.atob(cursor);
       parseCursor = /^(.*):_:_:_(.*)$/.exec(parseCursor);
@@ -334,7 +389,7 @@ export async function getIntelligencesForManagementDB(
     }
     intelligenceQuery.orderBy({ system_modified_at: "DESC", id: "DESC" });
     if (modified && id) {
-      modified = modified*1;
+      modified = modified * 1;
       let funName;
       if (andWhere) {
         funName = "andWhere";
@@ -342,26 +397,29 @@ export async function getIntelligencesForManagementDB(
         funName = "where";
         andWhere = true;
       }
-      intelligenceQuery[funName]("intelligence.system_modified_at < :modified OR (intelligence.system_modified_at < :modified AND intelligence.id < :id)", {modified, id});
-    }
-
-    let intelligences = await intelligenceQuery.getMany();
-    const lastItem = intelligences[intelligences.length - 1];
-    let nextCursor = null;
-    if (lastItem && intelligences.length >= limit) {
-      nextCursor = utils.btoa(
-        `${lastItem.system_modified_at}:_:_:_${lastItem.id}`
+      intelligenceQuery[funName](
+        "intelligence.system_modified_at < :modified OR (intelligence.system_modified_at < :modified AND intelligence.id < :id)",
+        { modified, id }
       );
     }
 
-    if (nextCursor === cursor) {
-      nextCursor = null;
-    }
-    return {
-      previousCursor: cursor,
-      nextCursor: nextCursor,
-      intelligences: flattenToObject(intelligences),
-      total: total
-    };
+    intelligences = await intelligenceQuery.getMany();
   }
+  const lastItem: any = intelligences[intelligences.length - 1];
+  let nextCursor = null;
+  if (lastItem && intelligences.length >= limit) {
+    nextCursor = utils.btoa(
+      `${lastItem.system_modified_at}:_:_:_${lastItem.id}`
+    );
+  }
+
+  if (nextCursor === cursor) {
+    nextCursor = null;
+  }
+  return {
+    previousCursor: cursor,
+    nextCursor: nextCursor,
+    intelligences: flattenToObject(intelligences),
+    total: total
+  };
 }
