@@ -76,7 +76,7 @@ export abstract class BaseIntelligence extends Base {
   @Column({
     nullable: true
   })
-  system_created_at: "timestamp";
+  system_created_at: number;
 
   @Column({
     nullable: true

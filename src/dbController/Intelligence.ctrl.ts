@@ -5,16 +5,7 @@ import Intelligence from "../entity/Intelligence";
 const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
 const utils = require("../util/utils");
-const {
-  CONFIG,
-  COLLECTIONS_NAME,
-  DEFAULT_SOI,
-  INTELLIGENCE_STATE,
-  PERMISSIONS,
-  AGENT_STATE,
-  SOI_STATE,
-  DEFAULT_INTELLIGENCE
-} = require("../util/constants");
+const { INTELLIGENCE_STATE } = require("../util/constants");
 import { isMongo } from "../util/dbConfiguration";
 
 function flattenToObject(intelligences) {
@@ -383,7 +374,6 @@ export async function getIntelligencesForManagementDB(
       intelligenceQuery[funName]("intelligence.system_state IN (:...states)", {
         states
       });
-      // intelligenceQuery[funName]("intelligence.system_state IN ('TIMEOUT', 'CONFIGURED')");
     }
 
     total = await intelligenceQuery.getCount();
@@ -409,7 +399,7 @@ export async function getIntelligencesForManagementDB(
         andWhere = true;
       }
       intelligenceQuery[funName](
-        "intelligence.system_modified_at < :modified OR (intelligence.system_modified_at < :modified AND intelligence.id < :id)",
+        "intelligence.system_modified_at < :modified OR (intelligence.system_modified_at = :modified AND intelligence.id < :id)",
         { modified, id }
       );
     }
@@ -435,20 +425,24 @@ export async function getIntelligencesForManagementDB(
   };
 }
 
-export async function pauseIntelligencesForManagementDB(
+export async function updateIntelligencesStateForManagementDB(
+  state: any,
   url: string,
   ids: string[],
   securityKey: string
 ) {
   try {
+    state = _.toUpper(state);
+    let states = [INTELLIGENCE_STATE.draft];
+    if (state === INTELLIGENCE_STATE.configured) {
+      states = [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft];
+    }
     if (isMongo()) {
       const repo = await getMongoRepository(Intelligence);
       let query: any = {};
-
-      // Don't Draft intelligences
+      // Don't Running or Draft intelligences
       query.system_state = {
-        // $nin: [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft]
-        $nin: [INTELLIGENCE_STATE.draft]
+        $nin: states
       };
       if (securityKey) {
         query.system_security_key = securityKey;
@@ -468,62 +462,42 @@ export async function pauseIntelligencesForManagementDB(
       return await repo.updateMany(query, {
         $set: {
           system_modified_at: Date.now(),
-          system_state: INTELLIGENCE_STATE.paused
+          system_state: state
         }
       });
     } else {
       // SQL
-    }
-  } catch (err) {
-    let error = new HTTPError(
-      500,
-      err,
-      {},
-      "00005000001",
-      "Intelligence.ctrl->pauseIntelligencesForManagement"
-    );
-    logger.error("pauseIntelligencesForManagement, error:", error);
-    throw error;
-  }
-}
+      const intelligenceQuery = await getRepository(Intelligence)
+        .createQueryBuilder("intelligence")
+        .update(Intelligence)
+        .set({
+          system_modified_at: () => Date.now().toString(),
+          system_state: state
+        });
 
-export async function resumeIntelligencesForManagementDB(
-  url: string,
-  ids: string[],
-  securityKey: string
-) {
-  try {
-    if (isMongo()) {
-      const repo = await getMongoRepository(Intelligence);
-      let query: any = {};
+      intelligenceQuery.where("intelligence.system_state NOT IN (:...states)", {
+        states
+      });
 
-      // Don't Running and Draft intelligences
-      query.system_state = {
-        $nin: [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft]
-      };
       if (securityKey) {
-        query.system_security_key = securityKey;
+        intelligenceQuery.andWhere(
+          "intelligence.system_security_key = :securityKey",
+          { securityKey }
+        );
       }
 
       if (ids && ids.length) {
-        query.global_id = {
-          $in: ids
-        };
+        intelligenceQuery.where("intelligence.global_id IN (:...ids)", {
+          ids
+        });
       } else {
         if (url) {
-          query.url = {
-            $regex: utils.convertStringToRegExp(url)
-          };
+          intelligenceQuery.andWhere("intelligence.url LIKE :url", {
+            url: `%${url}%`
+          });
         }
       }
-      return await repo.updateMany(query, {
-        $set: {
-          system_modified_at: Date.now(),
-          system_state: INTELLIGENCE_STATE.configured
-        }
-      });
-    } else {
-      // SQL
+      return await intelligenceQuery.execute();
     }
   } catch (err) {
     let error = new HTTPError(
@@ -531,9 +505,9 @@ export async function resumeIntelligencesForManagementDB(
       err,
       {},
       "00005000001",
-      "Intelligence.ctrl->resumeIntelligencesForManagementDB"
+      "Intelligence.ctrl->updateIntelligencesStateForManagementDB"
     );
-    logger.error("resumeIntelligencesForManagementDB, error:", error);
+    logger.error("updateIntelligencesStateForManagementDB, error:", error);
     throw error;
   }
 }
@@ -566,6 +540,52 @@ export async function deleteIntelligencesForManagementDB(
       return await repo.deleteMany(query);
     } else {
       // SQL
+      const intelligenceQuery = await getRepository(Intelligence)
+        .createQueryBuilder("intelligence")
+        .delete()
+        .from(Intelligence);
+      // After use *where*, then need to use *andWhere*
+      let andWhere = false;
+      if (securityKey) {
+        let funName;
+        if (andWhere) {
+          funName = "andWhere";
+        } else {
+          funName = "where";
+          andWhere = true;
+        }
+        intelligenceQuery[funName](
+          "intelligence.system_security_key = :securityKey",
+          { securityKey }
+        );
+      }
+
+      if (ids && ids.length) {
+        let funName;
+        if (andWhere) {
+          funName = "andWhere";
+        } else {
+          funName = "where";
+          andWhere = true;
+        }
+        intelligenceQuery[funName]("intelligence.global_id IN (:...ids)", {
+          ids
+        });
+      } else {
+        if (url) {
+          let funName;
+          if (andWhere) {
+            funName = "andWhere";
+          } else {
+            funName = "where";
+            andWhere = true;
+          }
+          intelligenceQuery[funName]("intelligence.url LIKE :url", {
+            url: `%${url}%`
+          });
+        }
+      }
+      return await intelligenceQuery.execute();
     }
   } catch (err) {
     let error = new HTTPError(

@@ -28,8 +28,9 @@ const utils = require("../../util/utils");
 import {
   addIntelligencesDB,
   getIntelligencesForManagementDB,
-  pauseIntelligencesForManagementDB,
-  resumeIntelligencesForManagementDB,
+  updateIntelligencesStateForManagementDB,
+  // pauseIntelligencesForManagementDB,
+  // resumeIntelligencesForManagementDB,
   deleteIntelligencesForManagementDB
 } from "../../dbController/Intelligence.ctrl";
 
@@ -72,9 +73,14 @@ async function pauseIntelligencesForManagement(
   securityKey: string
 ) {
   try {
-    let result = await pauseIntelligencesForManagementDB(url, ids, securityKey);
-    console.log(result.result);
-    return result && result.result;
+    let result = await updateIntelligencesStateForManagementDB(
+      INTELLIGENCE_STATE.paused,
+      url,
+      ids,
+      securityKey
+    );
+    console.log(result);
+    return result;
   } catch (err) {
     throw err;
   }
@@ -92,13 +98,14 @@ async function resumeIntelligencesForManagement(
   securityKey: string
 ) {
   try {
-    let result = await resumeIntelligencesForManagementDB(
+    let result = await updateIntelligencesStateForManagementDB(
+      INTELLIGENCE_STATE.configured,
       url,
       ids,
       securityKey
     );
-    console.log(result.result);
-    return result && result.result;
+    console.log(result);
+    return result;
   } catch (err) {
     throw err;
   }
@@ -121,8 +128,8 @@ async function deleteIntelligencesForManagement(
       ids,
       securityKey
     );
-    console.log(result.result);
-    return result && result.result;
+    console.log(result);
+    return result;
   } catch (err) {
     throw err;
   }
