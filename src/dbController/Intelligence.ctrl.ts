@@ -248,6 +248,7 @@ function objectsToIntelligences(intelligences, intelligenceInstances) {
 
 export async function addIntelligencesDB(intelligences) {
   try {
+    console.log("addIntelligencesDB: ", intelligences);
     const repo = getRepository(Intelligence);
     let intelligenceInstances: any = objectsToIntelligences(
       intelligences,
@@ -658,13 +659,18 @@ export async function getIntelligencesForAgentDB(
 ) {
   try {
     let intelligences = [];
+    let concurrent = Number(agentConfig.concurrent);
+    if (isNaN(concurrent)) {
+      // if concurrent isn't a number, then use default value
+      concurrent = config.EACH_TIME_INTELLIGENCES_NUMBER;
+    }
+    let permission = PERMISSIONS.private;
+    if (!agentConfig.private) {
+      permission = PERMISSIONS.public;
+    }
+    let repo;
     if (isMongo()) {
-      const repo = await getMongoRepository(Intelligence);
-      let concurrent = Number(agentConfig.concurrent);
-      if (isNaN(concurrent)) {
-        // if concurrent isn't a number, then use default value
-        concurrent = config.EACH_TIME_INTELLIGENCES_NUMBER;
-      }
+      repo = await getMongoRepository(Intelligence);
       let query: any = {
         where: {}
       };
@@ -696,10 +702,6 @@ export async function getIntelligencesForAgentDB(
         query.where.system_security_key = securityKey;
         intelligences = await repo.find(query);
       }
-      let permission = PERMISSIONS.private;
-      if (!agentConfig.private) {
-        permission = PERMISSIONS.public;
-      }
 
       // if permission doesn't exit or agent is public then try to see any public intelligences need to collect
       if (
@@ -714,43 +716,136 @@ export async function getIntelligencesForAgentDB(
 
         intelligences = await repo.find(query);
       }
-      intelligences = flattenToObject(intelligences);
+    } else {
+      // SQL
+      const intelligenceQuery = await getRepository(
+        Intelligence
+      ).createQueryBuilder("intelligence");
 
-      let gids = [];
-      let sois = {};
-      for (let i = 0; i < intelligences.length; i++) {
-        let item = intelligences[i] || {};
-        gids.push(item.globalId);
-        if (sois[item.soi.globalId]) {
-          item.soi = sois[item.soi.globalId];
-        } else {
-          let soi = await soisHelpers.getSOI(item.soi.globalId);
-          soi = _.merge({}, DEFAULT_SOI, soi);
-          // remove unnecessary data
-          soi = utils.omit(
-            soi,
-            ["_id", "securityKey", "created", "modified"],
-            ["system"]
-          );
-          sois[item.soi.globalId] = soi;
-          item.soi = sois[item.soi.globalId];
+      const intelligenceQueryNoSecurityKey = await getRepository(
+        Intelligence
+      ).createQueryBuilder("intelligence");
+
+      intelligenceQuery.where("intelligence.system_state NOT IN (:...states)", {
+        states: [
+          INTELLIGENCE_STATE.draft,
+          INTELLIGENCE_STATE.running,
+          INTELLIGENCE_STATE.finished,
+          INTELLIGENCE_STATE.paused
+        ]
+      });
+      intelligenceQuery.andWhere("intelligence.soi_state = :state", {
+        state: SOI_STATE.active
+      });
+      intelligenceQuery.andWhere(
+        "intelligence.suitable_agents LIKE :agentType",
+        { agentType: `%${_.toUpper(agentConfig.type)}%` }
+      );
+      intelligenceQuery.orderBy({
+        soi_global_id: "DESC",
+        priority: "ASC"
+      });
+      intelligenceQuery.limit(concurrent);
+
+      intelligenceQueryNoSecurityKey.where(
+        "intelligence.system_state NOT IN (:...states)",
+        {
+          states: [
+            INTELLIGENCE_STATE.draft,
+            INTELLIGENCE_STATE.running,
+            INTELLIGENCE_STATE.finished,
+            INTELLIGENCE_STATE.paused
+          ]
         }
+      );
+      intelligenceQueryNoSecurityKey.andWhere(
+        "intelligence.soi_state = :state",
+        {
+          state: SOI_STATE.active
+        }
+      );
+      intelligenceQueryNoSecurityKey.andWhere(
+        "intelligence.suitable_agents LIKE :agentType",
+        { agentType: `%${_.toUpper(agentConfig.type)}%` }
+      );
+      intelligenceQueryNoSecurityKey.orderBy({
+        soi_global_id: "DESC",
+        priority: "ASC"
+      });
+      intelligenceQueryNoSecurityKey.limit(concurrent);
 
-        // Comment: 07/30/2019
-        // Reason: Since this intelligence is reassigned, so it always need to update agent information
-        // if (!item.agent) {
-        //   item.agent = {
-        //     globalId: agentGid,
-        //     type: _.toUpper(agentConfig.type),
-        //     started_at: Date.now()
-        //   };
-        // }
-        item.system.agent = {
-          globalId: agentConfig.globalId,
-          type: _.toUpper(agentConfig.type)
-        };
+      // if security key provide, get all intelligences for this security key first
+      if (securityKey) {
+        intelligenceQuery.andWhere(
+          "intelligence.system_security_key = :securityKey",
+          { securityKey }
+        );
+        intelligences = await intelligenceQuery.getMany();
+      }
+      // if permission doesn't exit or agent is public then try to see any public intelligences need to collect
+      if (
+        (!permission || _.upperCase(permission) === PERMISSIONS.public) &&
+        (!intelligences || !intelligences.length)
+      ) {
+        // if no intelligences for this securityKey and if this agent's permission is public then, get other intelligences that is public
+        intelligenceQueryNoSecurityKey.andWhere(
+          "intelligence.permission NOT IN (:...permissions)",
+          {
+            permissions: [PERMISSIONS.private]
+          }
+        );
+        intelligences = await intelligenceQueryNoSecurityKey.getMany();
+      }
+    }
+
+    intelligences = flattenToObject(intelligences);
+
+    let gids = [];
+    let sois = {};
+    for (let i = 0; i < intelligences.length; i++) {
+      let item = intelligences[i] || {};
+      gids.push(item.globalId);
+      if (sois[item.soi.globalId]) {
+        item.soi = sois[item.soi.globalId];
+      } else {
+        console.log('soi: ', item.soi);
+        let soi = await soisHelpers.getSOI(item.soi.globalId);
+        soi = _.merge({}, DEFAULT_SOI, soi);
+        // remove unnecessary data
+        soi = utils.omit(
+          soi,
+          ["_id", "securityKey", "created", "modified"],
+          ["system"]
+        );
+        sois[item.soi.globalId] = soi;
+        item.soi = sois[item.soi.globalId];
       }
 
+      // Comment: 07/30/2019
+      // Reason: Since this intelligence is reassigned, so it always need to update agent information
+      // if (!item.agent) {
+      //   item.agent = {
+      //     globalId: agentGid,
+      //     type: _.toUpper(agentConfig.type),
+      //     started_at: Date.now()
+      //   };
+      // }
+      item.system.agent = {
+        globalId: agentConfig.globalId,
+        type: _.toUpper(agentConfig.type)
+      };
+    }
+
+    let updateData: any = {
+      system_started_at: Date.now(),
+      system_ended_at: Date.now(),
+      system_modified_at: Date.now(),
+      system_state: INTELLIGENCE_STATE.running,
+      system_agent_global_id: agentConfig.globalId,
+      system_agent_type: _.toUpper(agentConfig.type)
+    };
+
+    if (isMongo()) {
       // Update intelligences that return to agent
       await repo.updateMany(
         {
@@ -759,49 +854,50 @@ export async function getIntelligencesForAgentDB(
           }
         },
         {
-          $set: {
-            system_started_at: Date.now(),
-            system_ended_at: Date.now(),
-            system_modified_at: Date.now(),
-            system_state: INTELLIGENCE_STATE.running,
-            system_agent_global_id: agentConfig.globalId,
-            system_agent_type: _.toUpper(agentConfig.type)
-          }
+          $set: updateData
         }
       );
-
-      // Update Agent Last Ping
-      // Don't need to wait agent update finish
-      updateAgentDB(agentConfig.globalId, securityKey, {
-        system: {
-          modified: Date.now(),
-          lastPing: Date.now()
-        }
-      });
-
-      // TODO: 2019/11/10 need to rethink about this logic, since intelligences already send back to agents
-      //        if we check for now, it is meaningless, better way is let agent to tell. For example, if collect
-      //        intelligences fail, then check SOI or direct know soi is inactive
-
-      // Check SOI status in parallel
-      // // After get intelligences that need to collect, during sametime to check whether this SOI is active.
-      // for (let gid in sois) {
-      //   let soi = sois[gid];
-      //   // if this soi isn't in check status progress, then check it
-      //   if (!__check_sois_status__[gid]) {
-      //     (async () => {
-      //       // change soi status to true to avoid duplicate check in same time
-      //       __check_sois_status__[gid] = true;
-      //       await soisHelpers.updateSOIState(gid, soi);
-      //       // after finish, delete its value in hashmap
-      //       delete __check_sois_status__[gid];
-      //     })();
-      //   }
-      // }
-      return intelligences;
     } else {
       // SQL
+      let query = await getRepository(Intelligence)
+        .createQueryBuilder("intelligence")
+        .update(Intelligence)
+        .set(updateData);
+      query.where("intelligence.global_id IN (:...gids)", {
+        gids
+      });
+      await query.execute();
     }
+
+    // Update Agent Last Ping
+    // Don't need to wait agent update finish
+    updateAgentDB(agentConfig.globalId, securityKey, {
+      system: {
+        modified: Date.now(),
+        lastPing: Date.now()
+      }
+    });
+
+    // TODO: 2019/11/10 need to rethink about this logic, since intelligences already send back to agents
+    //        if we check for now, it is meaningless, better way is let agent to tell. For example, if collect
+    //        intelligences fail, then check SOI or direct know soi is inactive
+
+    // Check SOI status in parallel
+    // // After get intelligences that need to collect, during sametime to check whether this SOI is active.
+    // for (let gid in sois) {
+    //   let soi = sois[gid];
+    //   // if this soi isn't in check status progress, then check it
+    //   if (!__check_sois_status__[gid]) {
+    //     (async () => {
+    //       // change soi status to true to avoid duplicate check in same time
+    //       __check_sois_status__[gid] = true;
+    //       await soisHelpers.updateSOIState(gid, soi);
+    //       // after finish, delete its value in hashmap
+    //       delete __check_sois_status__[gid];
+    //     })();
+    //   }
+    // }
+    return intelligences;
   } catch (err) {
     let error = new HTTPError(
       500,
@@ -874,7 +970,6 @@ export async function deleteIntelligencesDB(
   securityKey: string
 ) {
   try {
-    console.log('gids: ', gids);
     if (isMongo()) {
       let query: any = {};
       if (securityKey) {
@@ -911,16 +1006,33 @@ export async function deleteIntelligencesDB(
  */
 export async function updateEachIntelligencesDB(intelligences: any[]) {
   try {
-    const repo = await getMongoRepository(Intelligence);
+    let repo;
     for (let i = 0; i < intelligences.length; i++) {
       let intelligence = intelligences[i];
       intelligence = objectsToIntelligences(intelligence, {});
-      await repo.updateOne(
-        {
-          global_id: intelligence.global_id
-        },
-        intelligence
-      );
+      if (isMongo()) {
+        if (!repo) {
+          repo = await getMongoRepository(Intelligence);
+        }
+        await repo.updateOne(
+          {
+            global_id: intelligence.global_id
+          },
+          intelligence
+        );
+      } else {
+        if (!repo) {
+          repo = await getRepository(Intelligence);
+        }
+        await repo
+          .createQueryBuilder("intelligence")
+          .update(Intelligence)
+          .set(intelligence)
+          .where("intelligence.global_id = :gloalId", {
+            gloalId: intelligence.global_id
+          })
+          .execute();
+      }
     }
   } catch (err) {
     let error = new HTTPError(
