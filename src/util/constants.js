@@ -9,6 +9,7 @@ const CONFIG = {
   SECURITY_KEY_IN_DB: "securityKey",
   SOI_STATE_CHECK_TIME: 1 * 60 * 1000, // How frequently to check SOI state
   TIMEOUT_VALUE_FOR_INTELLIGENCE: 5 * 60 * 1000,
+  MAX_FAIL_NUMBER_FOR_INTELLIGENCE: 3, // Max fail number for an intelligence, if more then this fail number, this intelligence will be moved to history
   LOG_FILES_PATH: "./public/log",
   NODE_ENV: "development",
   EACH_TIME_INTELLIGENCES_NUMBER: 2,

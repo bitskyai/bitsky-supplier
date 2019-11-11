@@ -2,6 +2,7 @@ const _ = require("lodash");
 import { getRepository, getMongoRepository } from "typeorm";
 const ObjectId = require("mongodb").ObjectID;
 import Intelligence from "../entity/Intelligence";
+import IntelligenceHistory from "../entity/IntelligenceHistory";
 const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
 const utils = require("../util/utils");
@@ -10,13 +11,11 @@ const {
   INTELLIGENCE_STATE,
   SOI_STATE,
   PERMISSIONS,
-  DEFAULT_SOI,
-  
+  DEFAULT_SOI
 } = require("../util/constants");
 import { isMongo } from "../util/dbConfiguration";
-const soisHelpers = require('../apis/sois/helpers');
-import { updateAgentDB } from '../dbController/Agent.ctrl';
-
+const soisHelpers = require("../apis/sois/helpers");
+import { updateAgentDB } from "../dbController/Agent.ctrl";
 
 function flattenToObject(intelligences) {
   function toObject(intelligence) {
@@ -271,6 +270,34 @@ export async function addIntelligencesDB(intelligences) {
       "Intelligence.ctrl->addIntelligencesDB"
     );
     logger.error("addIntelligencesDB, error:", error);
+    throw error;
+  }
+}
+
+export async function addIntelligenceHistoryDB(intelligences) {
+  try {
+    const repo = getRepository(IntelligenceHistory);
+    let intelligenceInstances: any = objectsToIntelligences(
+      intelligences,
+      null
+    );
+    let generatedMaps = [];
+    // everytime insert 5 items
+    while (intelligenceInstances.length) {
+      let insertData = intelligenceInstances.splice(0, 5);
+      let result = await repo.insert(insertData);
+      generatedMaps.push(result.generatedMaps);
+    }
+    return generatedMaps;
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "Intelligence.ctrl->addIntelligenceHistoryDB"
+    );
+    logger.error("addIntelligenceHistoryDB, error:", error);
     throw error;
   }
 }
@@ -725,26 +752,29 @@ export async function getIntelligencesForAgentDB(
       }
 
       // Update intelligences that return to agent
-      await repo.updateMany({
-        global_id: {
-          $in:gids
+      await repo.updateMany(
+        {
+          global_id: {
+            $in: gids
+          }
+        },
+        {
+          $set: {
+            system_started_at: Date.now(),
+            system_ended_at: Date.now(),
+            system_modified_at: Date.now(),
+            system_state: INTELLIGENCE_STATE.running,
+            system_agent_global_id: agentConfig.globalId,
+            system_agent_type: _.toUpper(agentConfig.type)
+          }
         }
-      }, {
-        $set: {
-          system_started_at: Date.now(),
-          system_ended_at: Date.now(),
-          system_modified_at: Date.now(),
-          system_state: INTELLIGENCE_STATE.running,
-          system_agent_global_id: agentConfig.globalId,
-          system_agent_type: _.toUpper(agentConfig.type)
-        }
-      });
+      );
 
       // Update Agent Last Ping
       // Don't need to wait agent update finish
       updateAgentDB(agentConfig.globalId, securityKey, {
-        system:{
-          modified: Date.now(), 
+        system: {
+          modified: Date.now(),
           lastPing: Date.now()
         }
       });
@@ -769,7 +799,7 @@ export async function getIntelligencesForAgentDB(
       //   }
       // }
       return intelligences;
-    } else {  
+    } else {
       // SQL
     }
   } catch (err) {
@@ -781,6 +811,126 @@ export async function getIntelligencesForAgentDB(
       "Intelligence.ctrl->getIntelligencesForAgentDB"
     );
     logger.error("getIntelligencesForAgentDB, error:", error);
+    throw error;
+  }
+}
+
+/**
+ * Get intelligences by globalIds
+ * @param gids - intelligences globalId
+ * @param securityKey - security key
+ */
+export async function getIntelligencesDB(gids: string[], securityKey: string) {
+  try {
+    if (!gids) {
+      return [];
+    }
+    if (isMongo()) {
+      let query: any = {
+        where: {}
+      };
+      if (securityKey) {
+        query.where["system_security_key"] = securityKey;
+      }
+      query.where.global_id = {
+        $in: gids
+      };
+      const repo = await getMongoRepository(Intelligence);
+      let intelligences = await repo.find(query);
+      intelligences = flattenToObject(intelligences);
+      return intelligences;
+    } else {
+      // sql
+      const intelligenceQuery = await getRepository(
+        Intelligence
+      ).createQueryBuilder("intelligence");
+      intelligenceQuery.where("intelligence.global_id IN (:...gids)", { gids });
+      if (securityKey) {
+        intelligenceQuery.andWhere(
+          "intelligence.system_security_key = :securityKey",
+          { securityKey }
+        );
+      }
+
+      let intelligences = await intelligenceQuery.getMany();
+      intelligences = flattenToObject(intelligences);
+      return intelligences;
+    }
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "Intelligence.ctrl->getIntelligencesDB"
+    );
+    logger.error("getIntelligencesDB, error:", error);
+    throw error;
+  }
+}
+
+export async function deleteIntelligencesDB(
+  gids: string[],
+  securityKey: string
+) {
+  try {
+    console.log('gids: ', gids);
+    if (isMongo()) {
+      let query: any = {};
+      if (securityKey) {
+        query.system_security_key = securityKey;
+      }
+      query.global_id = {
+        $in: gids
+      };
+      const repo = await getMongoRepository(Intelligence);
+      return await repo.deleteMany(query);
+    } else {
+      return await getRepository(Intelligence)
+        .createQueryBuilder("intelligence")
+        .delete()
+        .where("intelligence.global_id IN (:...gids)", { gids })
+        .execute();
+    }
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "Intelligence.ctrl->deleteIntelligencesDB"
+    );
+    logger.error("deleteIntelligencesDB, error:", error);
+    throw error;
+  }
+}
+/**
+ * Update intelligences one by one
+ * Used for the updating information for each intelligences is different
+ * @param intelligences{object[]}
+ */
+export async function updateEachIntelligencesDB(intelligences: any[]) {
+  try {
+    const repo = await getMongoRepository(Intelligence);
+    for (let i = 0; i < intelligences.length; i++) {
+      let intelligence = intelligences[i];
+      intelligence = objectsToIntelligences(intelligence, {});
+      await repo.updateOne(
+        {
+          global_id: intelligence.global_id
+        },
+        intelligence
+      );
+    }
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "Intelligence.ctrl->updateIntelligencesDB"
+    );
+    logger.error("updateIntelligencesDB, error:", error);
     throw error;
   }
 }

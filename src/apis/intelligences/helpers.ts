@@ -30,8 +30,13 @@ import {
   getIntelligencesForManagementDB,
   updateIntelligencesStateForManagementDB,
   deleteIntelligencesForManagementDB,
-  getIntelligencesForAgentDB
+  getIntelligencesForAgentDB,
+  getIntelligencesDB,
+  updateEachIntelligencesDB,
+  addIntelligenceHistoryDB,
+  deleteIntelligencesDB
 } from "../../dbController/Intelligence.ctrl";
+import { EventListenerTypes } from "typeorm/metadata/types/EventListenerTypes";
 
 // To avoid running check soi status multiple times
 // next check will not be started if previous job doesn't finish
@@ -250,7 +255,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
  *
  * @returns {IntelligencesAndConfig}
  */
-async function getIntelligences(agentGid:string, securityKey:string) {
+async function getIntelligences(agentGid: string, securityKey: string) {
   try {
     // TODO: need to improve intelligences schedule
     // 1. Think about if a lot of intelligences, how to schedule them
@@ -302,30 +307,20 @@ async function updateIntelligences(content, securityKey) {
       contentMap[item.globalId] = item;
       return item.globalId;
     });
-    // get intelligences by gids
-    let intelligences = await find(COLLECTIONS_NAME.intelligences, {
-      globalId: {
-        $in: gids
-      }
-    });
+
+    let intelligences = await getIntelligencesDB(gids, securityKey);
 
     if (!intelligences || !intelligences.length) {
       logger.warn("No intelligences found.", { intelligences: content });
       return {};
     }
 
-    // update modified, endedAt and state
-    intelligences = intelligences.map(item => {
-      delete item._id;
-      item.system.modified = Date.now();
-      item.system.endedAt = Date.now();
-      item.system.state = _.get(
-        contentMap[item.globalId],
-        "system.state",
-        INTELLIGENCE_STATE.finished
-      );
-
-      // If this intelligence was failed, then increase **failuresNuber**
+    let failedIntelligences = [];
+    let intelligenceHistory = [];
+    gids=[];
+    for (let i = 0; i < intelligences.length; i++) {
+      let item = intelligences[i];
+      // If this intelligence was failed, then increase **failuresNumber**
       if (item.system.state === INTELLIGENCE_STATE.failed) {
         if (!item.system.failuresNumber) {
           item.system.failuresNumber = 1;
@@ -334,31 +329,64 @@ async function updateIntelligences(content, securityKey) {
         }
       }
 
-      if (!item.system.agent) {
-        item.system.agent = {};
+      if (
+        item.system.failuresNumber <= CONFIG.MAX_FAIL_NUMBER_FOR_INTELLIGENCE
+      ) {
+        // This intelligence need continue to retry
+        failedIntelligences.push({
+          globalId: item.globalId,
+          system: {
+            modified: Date.now(),
+            endedAt: Date.now(),
+            state: INTELLIGENCE_STATE.failed,
+            failuresNumber: item.system.failuresNumber
+          }
+        });
+      } else {
+        // This intelligences need to move to intelligence_history
+        gids.push(item.globalId);
+
+        delete item.id;
+        delete item._id;
+        item.system.modified = Date.now();
+        item.system.endedAt = Date.now();
+        item.system.state = _.get(
+          contentMap[item.globalId],
+          "system.state",
+          INTELLIGENCE_STATE.finished
+        );
+        if (!item.system.agent) {
+          item.system.agent = {};
+        }
+        let passedAgent = contentMap[item.globalId].system.agent;
+        item.system.agent.globalId = passedAgent.globalId;
+        item.system.agent.type = passedAgent.type;
+        item.system.agent.startedAt = passedAgent.startedAt;
+        item.system.agent.endedAt = passedAgent.endedAt;
+
+        intelligenceHistory.push(item);
       }
-      let passedAgent = contentMap[item.globalId].system.agent;
-      item.system.agent.globalId = passedAgent.globalId;
-      item.system.agent.type = passedAgent.type;
-      item.system.agent.startedAt = passedAgent.startedAt;
-      item.system.agent.endedAt = passedAgent.endedAt;
-      return item;
-    });
+    }
+
+    if(failedIntelligences.length){
+      await updateEachIntelligencesDB(failedIntelligences);
+    }
 
     // add it to intelligences_history
-    await insertMany(COLLECTIONS_NAME.intelligencesHistory, intelligences);
+    // await insertMany(COLLECTIONS_NAME.intelligencesHistory, intelligences);
+    await addIntelligenceHistoryDB(intelligenceHistory);
 
-    let result = await remove(COLLECTIONS_NAME.intelligences, {
-      globalId: {
-        $in: gids
-      }
-    });
+    // let result = await remove(COLLECTIONS_NAME.intelligences, {
+    //   globalId: {
+    //     $in: gids
+    //   }
+    // });
+    let result = await deleteIntelligencesDB(gids, securityKey);
     return result;
   } catch (err) {
     throw err;
   }
 }
-
 
 module.exports = {
   pauseIntelligencesForManagement,
