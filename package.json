@@ -1,5 +1,5 @@
 {
-  "name": "dia",
+  "name": "dia-engine",
   "version": "0.1.0",
   "description": "Decentralized Intelligence Agency",
   "migrationVersion": "1",
@@ -8,15 +8,15 @@
     "node": "10.x.x"
   },
   "dependencies": {
-    "circular-json": "^0.5.9",
     "agenda": "^2.0.2",
     "agendash": "^1.0.0",
     "ajv": "^6.10.1",
     "axios": "^0.18.0",
     "body-parser": "^1.18.3",
     "cheerio": "^1.0.0-rc.2",
+    "circular-json": "^0.5.9",
     "compression": "^1.7.3",
-    "csv-parse": "^4.3.4",
+    "csv-parse": "^4.6.5",
     "express": "^4.16.4",
     "express-validator": "^5.3.1",
     "fs-extra": "^7.0.1",
@@ -25,15 +25,21 @@
     "moment": "^2.24.0",
     "mongodb": "^3.1.13",
     "morgan": "^1.9.1",
+    "reflect-metadata": "^0.1.13",
     "request": "^2.88.0",
     "semver": "^6.2.0",
     "server-destroy": "^1.0.1",
+    "sqlite3": "^4.1.0",
+    "typeorm": "^0.2.20",
     "uuid": "^3.3.2",
     "validator": "^10.11.0",
     "winston": "^3.2.1"
   },
   "devDependencies": {
+    "@types/lodash": "^4.14.144",
+    "@types/node": "^12.11.5",
     "chai": "^4.2.0",
+    "copyfiles": "^2.1.1",
     "eslint": "^5.15.2",
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.16.0",
@@ -41,15 +47,19 @@
     "ndb": "^1.0.44",
     "nodemon": "^1.18.10",
     "npm-check-updates": "^3.0.12",
-    "supertest": "^4.0.2"
+    "rimraf": "^3.0.0",
+    "supertest": "^4.0.2",
+    "ts-node": "^8.4.1",
+    "typescript": "^3.6.4"
   },
   "scripts": {
-    "start": "node src/index.js",
+    "start-o": "node src/index.js",
+    "start": "rimraf build && copyfiles -u 1 'src/*.js' 'src/**/*.html' 'src/**/*.png' 'src/**/*.css' 'src/**/*.ico' 'src/**/*.js' 'src/**/*.json' build && tsc && node build/index.js",
     "watch": "nodemon --watch ./src -e js src/index.js",
-    "debug": "ndb src/index.js",
+    "debug": "ndb node build/index.js",
     "check-dependencies": "ncu",
     "update-dependencies": "ncu -u"
   },
-  "author": "shaokexu@gmail.com",
+  "author": "help.munewio@gmail.com",
   "license": "Apache License 2.0"
 }

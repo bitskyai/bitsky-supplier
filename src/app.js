@@ -14,7 +14,7 @@ const config = require('./config');
 const security = require('./util/security');
 const checkMigration = require('./migration');
 
-function createApp() {
+async function createApp() {
   const app = express();
   logger.info("create app successful!");
 
@@ -56,7 +56,7 @@ function createApp() {
     checkMigration(req, res, next);
   });
 
-  checkMigration();
+  await checkMigration();
 
   createRouters(app)
 

@@ -270,7 +270,7 @@ function validateAgentAndUpdateState(agentData) {
   if(_.toUpper(agentData.system.state) === _.toUpper(AGENT_STATE.active)){
     if (!validateResult.valid) {
       // for active state, but it isn't valid, then this means something wrong, throw error
-      throw new CustomError(null, {agentData}, 'dia_00004000001', agentData.globalId);
+      throw new CustomError(null, {agentData}, '00004000001', agentData.globalId);
     }
     // if it is valid, then don't need to change state
   }else{
@@ -305,7 +305,7 @@ function validateSOIAndUpdateState(soiData) {
   if(_.toUpper(soiData.system.state) === _.toUpper(SOI_STATE.active)){
     if (!validateResult.valid) {
       // for active state, but it isn't valid, then this means something wrong, throw error
-      // throw new CustomError(null, {soiData}, 'dia_00004000001', soiData.globalId);
+      // throw new CustomError(null, {soiData}, '00004000001', soiData.globalId);
       soiData.system.state = _.toUpper(SOI_STATE.draft);
     }
     // if it is valid, then don't need to change state
