@@ -5,7 +5,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const compression = require('compression');
 const morgan = require('morgan');
-
+const path = require('path');
 const logger = require('./util/logger');
 const errorResponder = require('./middleware/error-responder');
 const errorLogger = require('./middleware/error-logger');
@@ -62,6 +62,11 @@ async function createApp() {
 
   app.use(errorLogger());
   app.use(errorResponder());
+
+  // To support SPA
+  app.get('*', (req, res, next) => {
+    res.sendFile((path.join(__dirname + '/public/index.html')))
+  });
 
   return app;
 }
