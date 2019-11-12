@@ -773,7 +773,6 @@ export async function getIntelligencesForAgentDB(
         priority: "ASC"
       });
       intelligenceQueryNoSecurityKey.limit(concurrent);
-
       // if security key provide, get all intelligences for this security key first
       if (securityKey) {
         intelligenceQuery.andWhere(
@@ -781,20 +780,24 @@ export async function getIntelligencesForAgentDB(
           { securityKey }
         );
         intelligences = await intelligenceQuery.getMany();
-      }
-      // if permission doesn't exit or agent is public then try to see any public intelligences need to collect
-      if (
-        (!permission || _.upperCase(permission) === PERMISSIONS.public) &&
-        (!intelligences || !intelligences.length)
-      ) {
-        // if no intelligences for this securityKey and if this agent's permission is public then, get other intelligences that is public
-        intelligenceQueryNoSecurityKey.andWhere(
-          "intelligence.permission NOT IN (:...permissions)",
-          {
-            permissions: [PERMISSIONS.private]
-          }
-        );
-        intelligences = await intelligenceQueryNoSecurityKey.getMany();
+        
+        if (
+          (!permission || _.upperCase(permission) === PERMISSIONS.public) &&
+          (!intelligences || !intelligences.length)
+        ) {
+          // if no intelligences for this securityKey and if this agent's permission is public then, get other intelligences that is public
+          intelligenceQueryNoSecurityKey.andWhere(
+            "intelligence.permission NOT IN (:...permissions)",
+            {
+              permissions: [PERMISSIONS.private]
+            }
+          );
+          intelligences = await intelligenceQueryNoSecurityKey.getMany();
+        }
+      }else{
+        // if securityKey is empty, this means it is on-primse mode, if a request was sent by UI Server, it always contains a securityKey, only if this request is directly sent to
+        // DIA-Engine, then it possible don't have securityKey, in this mode, then it should be able to get all permissions intelligences since they are belong to same user
+        intelligences = await intelligenceQuery.getMany();
       }
     }
 

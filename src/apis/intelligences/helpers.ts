@@ -36,7 +36,6 @@ import {
   addIntelligenceHistoryDB,
   deleteIntelligencesDB
 } from "../../dbController/Intelligence.ctrl";
-import { EventListenerTypes } from "typeorm/metadata/types/EventListenerTypes";
 
 // To avoid running check soi status multiple times
 // next check will not be started if previous job doesn't finish
@@ -266,7 +265,7 @@ async function getIntelligences(agentGid: string, securityKey: string) {
     let agentConfig = await agentsHelpers.getAgent(agentGid);
     // If security key doesn't match, then we assume this agnet doesn't belong to this user
     // For security issue, don't allow user do this
-    if (agentConfig.system.securityKey !== securityKey) {
+    if (_.trim(agentConfig.system.securityKey) !== _.trim(securityKey)) {
       throw new HTTPError(
         400,
         null,

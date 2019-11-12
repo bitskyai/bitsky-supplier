@@ -115,7 +115,7 @@
       "title": "Max Retry Time",
       "type": "integer",
       "description": "Max retry time if send collected intelligences fail, if retried max time, then it will send back to DIA and mark those intelligences fail",
-      "default": 3
+      "default": 1
     },
     "baseURL": {
       "$ref": "#/definitions/url"

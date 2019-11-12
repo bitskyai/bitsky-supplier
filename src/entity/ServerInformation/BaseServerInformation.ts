@@ -20,4 +20,7 @@ export abstract class BaseServerInformation extends Base {
 
   @Column()
   migration_version: number;
+
+  @Column()
+  security_key: string
 }

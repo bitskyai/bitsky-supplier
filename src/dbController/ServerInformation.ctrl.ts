@@ -1,4 +1,5 @@
 import { getRepository } from "typeorm";
+const uuidv4 = require('uuid/v4');
 import ServerInformation from "../entity/ServerInformation";
 const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
@@ -35,6 +36,7 @@ export async function addServerInfo(
     serverInfo.description = description;
     serverInfo.version = version;
     serverInfo.migration_version = migrationVersion;
+    serverInfo.security_key = uuidv4();
     await serverInfoRepo.save(serverInfo);
     logger.debug("[addServerInfo], serverInfo: %o", serverInfo);
     return serverInfo;
