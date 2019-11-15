@@ -49,7 +49,7 @@ async function createApp() {
     }
   })
 
-  app.use(express.static('public'));
+  app.use(express.static(path.join(__dirname + '/public')));
 
   // Check whether need to do data migration
   app.use((req, res, next)=>{
@@ -65,7 +65,7 @@ async function createApp() {
 
   // To support SPA
   app.get('*', (req, res, next) => {
-    res.sendFile((path.join(__dirname + '/public/index.html')))
+    res.sendFile(path.join(__dirname + '/public/index.html'))
   });
 
   return app;
