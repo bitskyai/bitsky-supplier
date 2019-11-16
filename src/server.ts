@@ -14,44 +14,40 @@ logger.debug(`dbConfig: %o `, dbConfig);
 
 export async function startServer() {
   try {
-    typeorm
-      .createConnection(dbConfig)
-      .then(async connection => {
-        logger.info("Create DB connection successfully.");
+    let connection = await typeorm.createConnection(dbConfig);
+    logger.info("Create DB connection successfully.");
 
-        const app = await createApp();
-        const server = app.listen(config.PORT, function() {
-          logger.info(
-            "Express server listening on http://localhost:%d/ in %s mode",
-            config.PORT,
-            app.get("env")
-          );
-        });
+    const app = await createApp();
+    const server = app.listen(config.PORT, function() {
+      logger.info(
+        "Express server listening on http://localhost:%d/ in %s mode",
+        config.PORT,
+        app.get("env")
+      );
+    });
 
-        enableDestroy(server);
+    enableDestroy(server);
 
-        function closeServer(signal) {
-          logger.info(`${signal} received`);
-          logger.info("Closing http.Server ..");
-          server.destroy();
-        }
+    // Handle signals gracefully. Heroku will send SIGTERM before idle.
+    process.on("SIGTERM", () => {
+      logger.info(`SIGTERM received`);
+      logger.info("Closing http.Server ..");
+      server.destroy();
+    });
+    process.on("SIGINT", () => {
+      logger.info(`SIGINT(Ctrl-C) received`);
+      logger.info("Closing http.Server ..");
+      server.destroy();
+    });
 
-        // Handle signals gracefully. Heroku will send SIGTERM before idle.
-        process.on("SIGTERM", closeServer.bind(this, "SIGTERM"));
-        process.on("SIGINT", closeServer.bind(this, "SIGINT(Ctrl-C)"));
+    server.on("close", () => {
+      logger.info("Server closed");
+      // process.emit("cleanup");
 
-        server.on("close", () => {
-          logger.info("Server closed");
-          // process.emit("cleanup");
-
-          logger.info("Giving 100ms time to cleanup..");
-          // Give a small time frame to clean up
-          setTimeout(process.exit, 100);
-        });
-      })
-      .catch(err => {
-        logger.error("Create DB Connection fail. Error: ", err);
-      });
+      logger.info("Giving 100ms time to cleanup..");
+      // Give a small time frame to clean up
+      setTimeout(process.exit, 100);
+    });
   } catch (err) {
     throw err;
   }
