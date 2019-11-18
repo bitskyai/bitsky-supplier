@@ -5,23 +5,27 @@ require("./util/extendNativeJavaScript");
 import "reflect-metadata";
 const typeorm = require("typeorm");
 const enableDestroy = require("server-destroy");
-const logger = require("./util/logger");
-const config = require("./config");
+let { getConfig, overwriteConfig } = require("./config");
 const createApp = require("./app");
 import getDBConfiguration from "./util/dbConfiguration";
-const dbConfig = getDBConfiguration();
-logger.debug(`dbConfig: %o `, dbConfig);
 
-export async function startServer() {
+export async function startServer(customConfig) {
   try {
+    if (customConfig) {
+      overwriteConfig(customConfig);
+    }
+    console.log("==========startServer->config: ", getConfig());
+    const logger = require("./util/logger");
+    const dbConfig = getDBConfiguration();
+    logger.debug(`dbConfig: %o `, dbConfig);
     let connection = await typeorm.createConnection(dbConfig);
     logger.info("Create DB connection successfully.");
 
     const app = await createApp();
-    const server = app.listen(config.PORT, function() {
+    const server = app.listen(getConfig('PORT'), function() {
       logger.info(
         "Express server listening on http://localhost:%d/ in %s mode",
-        config.PORT,
+        getConfig('PORT'),
         app.get("env")
       );
     });

@@ -1,11 +1,12 @@
 const path = require("path");
 // import config from "./config";
 const constants = require("./constants");
+const { getConfig } = require("../config");
 
 export default function getDBConfiguration() {
   let configuration: any;
   // Default use sqlite
-  if (!process.env.TYPEORM_CONNECTION) {
+  if (!getConfig('TYPEORM_CONNECTION')) {
     configuration = {
       ...constants.DEFAULT_DB_CONFIG,
       ...constants.DEFAULT_SQLITE
@@ -18,7 +19,7 @@ export default function getDBConfiguration() {
   } else {
     // This is a common configuration
     configuration = {
-      type: process.env.TYPEORM_CONNECTION,
+      type: getConfig('TYPEORM_CONNECTION'),
       synchronize: true
     };
 
@@ -27,24 +28,27 @@ export default function getDBConfiguration() {
     configuration = { ...constants.DEFAULT_DB_CONFIG, ...configuration };
 
     if (configuration.type == constants.DEFAULT_SQLITE.type) {
-      configuration.database =
-        process.env.TYPEORM_DATABASE || constants.DEFAULT_SQLITE.database;
+      configuration.database = getConfig('TYPEORM_DATABASE');
+      configuration.entities = [
+        path.join(__dirname, "../entity/**/*.common.js"),
+        path.join(__dirname, "../entity/**/*.sql.js"),
+        path.join(__dirname, "../entity/**/*.sqlite.js")
+      ];
     } else if (configuration.type == constants.DEFAULT_MONGODB.type) {
       dbType = "nosql";
       // https://typeorm.io/#/connection-options/mongodb-connection-options
-      configuration.url =
-        process.env.TYPEORM_URL || constants.DEFAULT_MONGODB.url;
+      configuration.url = getConfig('TYPEORM_URL');
       // Following set will overwrite parameters set from URL
-      if (process.env.TYPEORM_HOST) {
-        configuration.host = process.env.TYPEORM_HOST;
+      if (getConfig('TYPEORM_HOST')) {
+        configuration.host = getConfig('TYPEORM_HOST');
       }
 
-      if (process.env.TYPEORM_PORT) {
-        configuration.port = process.env.TYPEORM_PORT;
+      if (getConfig('TYPEORM_PORT')) {
+        configuration.port = getConfig('TYPEORM_PORT');
       }
 
-      if (process.env.TYPEORM_DATABASE) {
-        configuration.database = process.env.TYPEORM_DATABASE;
+      if (getConfig('TYPEORM_DATABASE')) {
+        configuration.database = getConfig('TYPEORM_DATABASE');
       }
 
       configuration.useNewUrlParser = true;
@@ -62,7 +66,7 @@ export default function getDBConfiguration() {
 }
 
 export function getDBType() {
-  return process.env.TYPEORM_CONNECTION || constants.DEFAULT_SQLITE.type;
+  return getConfig('TYPEORM_CONNECTION') || constants.DEFAULT_SQLITE.type;
 }
 
 export function isMongo() {

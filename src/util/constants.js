@@ -28,9 +28,9 @@ const DEFAULT_DB_CONFIG = {
   logging: true,
   autoSchemaSync: true,
   synchronize: true,
-  entities: [path.join(__dirname, "../entity/*.ts")],
+  entities: [],
   // migrations: ["./migration/**/*.ts"],
-  subscribers: [path.join(__dirname, "../subscriber/*.ts")]
+  subscribers: []
 };
 
 const DEFAULT_SQLITE = {

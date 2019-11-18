@@ -20,7 +20,6 @@ const {
   SOI_STATE,
   DEFAULT_INTELLIGENCE
 } = require("../../util/constants");
-const config = require("../../config");
 const soisHelpers = require("../sois/helpers");
 const agentsHelpers = require("../agents/helpers");
 const logger = require("../../util/logger");

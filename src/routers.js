@@ -12,7 +12,6 @@ const sois = require('./apis/sois');
 const intelligences = require('./apis/intelligences');
 const agents = require('./apis/agents');
 const health = require('./apis/health');
-// const agenda = require('./apis/agenda');
 
 function createAPIRouters(app){
   const router = express.Router();
@@ -29,7 +28,7 @@ function createAPIRouters(app){
   sois.router(router);
   intelligences.router(router);
   agents.router(router);
-  // agenda.router(null, app);
+
 
   return router;
 }

@@ -27,7 +27,6 @@ import {
   updateSOIDB,
   deleteSOIDB
 } from "../../dbController/SOI.ctrl";
-// const config = require("../../config");
 const logger = require("../../util/logger");
 
 async function checkSOIExistByGlobalID(gid, securityKey) {

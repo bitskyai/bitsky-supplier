@@ -6,7 +6,7 @@ import IntelligenceHistory from "../entity/IntelligenceHistory";
 const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
 const utils = require("../util/utils");
-const config = require("../config");
+const { getConfig } = require("../config");
 const {
   INTELLIGENCE_STATE,
   SOI_STATE,
@@ -382,10 +382,9 @@ export async function getIntelligencesForManagementDB(
           funName = "where";
           andWhere = true;
         }
-        intelligenceQuery[funName](
-          "intelligence.system_security_key = :securityKey",
-          { securityKey }
-        );
+        intelligenceQuery[
+          funName
+        ]("intelligence.system_security_key = :securityKey", { securityKey });
       }
 
       if (url) {
@@ -440,7 +439,9 @@ export async function getIntelligencesForManagementDB(
           funName = "where";
           andWhere = true;
         }
-        intelligenceQuery[funName](
+        intelligenceQuery[
+          funName
+        ](
           "intelligence.system_modified_at < :modified OR (intelligence.system_modified_at = :modified AND intelligence.id < :id)",
           { modified, id }
         );
@@ -607,10 +608,9 @@ export async function deleteIntelligencesForManagementDB(
           funName = "where";
           andWhere = true;
         }
-        intelligenceQuery[funName](
-          "intelligence.system_security_key = :securityKey",
-          { securityKey }
-        );
+        intelligenceQuery[
+          funName
+        ]("intelligence.system_security_key = :securityKey", { securityKey });
       }
 
       if (ids && ids.length) {
@@ -662,7 +662,7 @@ export async function getIntelligencesForAgentDB(
     let concurrent = Number(agentConfig.concurrent);
     if (isNaN(concurrent)) {
       // if concurrent isn't a number, then use default value
-      concurrent = config.EACH_TIME_INTELLIGENCES_NUMBER;
+      concurrent = getConfig('EACH_TIME_INTELLIGENCES_NUMBER');
     }
     let permission = PERMISSIONS.private;
     if (!agentConfig.private) {
@@ -780,7 +780,7 @@ export async function getIntelligencesForAgentDB(
           { securityKey }
         );
         intelligences = await intelligenceQuery.getMany();
-        
+
         if (
           (!permission || _.upperCase(permission) === PERMISSIONS.public) &&
           (!intelligences || !intelligences.length)
@@ -794,7 +794,7 @@ export async function getIntelligencesForAgentDB(
           );
           intelligences = await intelligenceQueryNoSecurityKey.getMany();
         }
-      }else{
+      } else {
         // if securityKey is empty, this means it is on-primse mode, if a request was sent by UI Server, it always contains a securityKey, only if this request is directly sent to
         // DIA-Engine, then it possible don't have securityKey, in this mode, then it should be able to get all permissions intelligences since they are belong to same user
         intelligences = await intelligenceQuery.getMany();
@@ -811,7 +811,7 @@ export async function getIntelligencesForAgentDB(
       if (sois[item.soi.globalId]) {
         item.soi = sois[item.soi.globalId];
       } else {
-        console.log('soi: ', item.soi);
+        console.log("soi: ", item.soi);
         let soi = await soisHelpers.getSOI(item.soi.globalId);
         soi = _.merge({}, DEFAULT_SOI, soi);
         // remove unnecessary data

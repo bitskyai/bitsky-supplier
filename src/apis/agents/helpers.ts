@@ -18,7 +18,6 @@ const {
   validateAgentAndUpdateState,
   generateGlobalId
 } = require("../../util/utils");
-// const config = require("../../config");
 // const logger = require("../../util/logger");
 
 /**
