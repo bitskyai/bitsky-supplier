@@ -18,8 +18,9 @@ export async function startServer(customConfig) {
     const logger = require("./util/logger");
     const dbConfig = getDBConfiguration();
     logger.debug(`dbConfig: %o `, dbConfig);
+    logger.debug(`typeorm: `, typeorm);
     let connection = await typeorm.createConnection(dbConfig);
-    logger.info("Create DB connection successfully.");
+    logger.debug("Create DB connection successfully.");
 
     const app = await createApp();
     const server = app.listen(getConfig('PORT'), function() {
