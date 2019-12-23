@@ -14,10 +14,10 @@ export abstract class BaseSOI extends Base {
   @Column()
   name: string;
 
-  @Column({
-    nullable: true
-  })
-  description: string;
+  // @Column({
+  //   nullable: true
+  // })
+  // description: string;
 
   @Column()
   base_url: string;

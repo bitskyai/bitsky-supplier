@@ -8,9 +8,8 @@ function flattenToObject(sois) {
   function toObject(soi) {
     let obj: any = {};
     obj.globalId = soi.global_id;
-    obj.type = soi.type;
     obj.name = soi.name;
-    obj.description = soi.description;
+    // obj.description = soi.description;
     obj.baseURL = soi.base_url;
     if (_.get(soi, "callback_method")) {
       !obj.callback ? (obj.callback = {}) : "";
@@ -92,9 +91,9 @@ function objectToSOI(soi, soiInstance) {
     soiInstance.name = soi.name;
   }
 
-  if (_.get(soi, "description")) {
-    soiInstance.description = soi.description;
-  }
+  // if (_.get(soi, "description")) {
+  //   soiInstance.description = soi.description;
+  // }
 
   if (_.get(soi, "baseURL")) {
     soiInstance.base_url = soi.baseURL;

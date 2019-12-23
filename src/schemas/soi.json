@@ -56,9 +56,6 @@
     "name": {
       "$ref": "#/definitions/name"
     },
-    "description": {
-      "$ref": "#/definitions/description"
-    },
     "baseURL": {
       "allOf": [
         {
@@ -201,7 +198,7 @@
       "title": "State",
       "type": "string",
       "description": "State of this entity",
-      "enum": ["DRAFT", "CONFIGURED", "ACTIVE", "FAILED"]
+      "enum": ["ACTIVE", "FAILED"]
     },
     "method": {
       "type": "string",

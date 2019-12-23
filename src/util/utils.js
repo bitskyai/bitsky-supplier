@@ -290,8 +290,8 @@ function validateAgentAndUpdateState(agentData) {
  * @returns {object} - return validate soi with state be updated to correct
  */
 function validateSOIAndUpdateState(soiData) {
-  // Default to set agent state to draft, since agent state is required.
-  // It is useful for new agent that need to be registered
+  // Default to set SOI state to draft, since SOI state is required.
+  // It is useful for new SOI that need to be registered
   if (!soiData.system.state) {
     soiData.system.state = SOI_STATE.draft;
   }
@@ -301,6 +301,8 @@ function validateSOIAndUpdateState(soiData) {
     return soiData;
   }
   let validateResult = validateSOI(soiData);
+  console.log("validateSOIAndUpdateState->soiData: ", JSON.stringify(soiData));
+  console.log("validateSOIAndUpdateState->validateResult: ", JSON.stringify(validateResult));
   // for active state, don't change its state
   if(_.toUpper(soiData.system.state) === _.toUpper(SOI_STATE.active)){
     if (!validateResult.valid) {

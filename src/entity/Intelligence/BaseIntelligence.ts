@@ -80,17 +80,17 @@ export abstract class BaseIntelligence extends Base {
   @Column({
     nullable: true
   })
-  system_modified_at: "timestamp";
+  system_modified_at: number;
 
   @Column({
     nullable: true
   })
-  system_started_at: "timestamp";
+  system_started_at: number;
 
   @Column({
     nullable: true
   })
-  system_ended_at: "timestamp";
+  system_ended_at: number;
 
   @Column({
     nullable: true
@@ -110,12 +110,12 @@ export abstract class BaseIntelligence extends Base {
   @Column({
     nullable: true
   })
-  system_agent_started_at: "timestamp";
+  system_agent_started_at: number;
 
   @Column({
     nullable: true
   })
-  system_agent_ended_at: "timestamp";
+  system_agent_ended_at: number;
 
   @Column({
     nullable: true
