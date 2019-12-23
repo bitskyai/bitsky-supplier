@@ -14,8 +14,8 @@ export async function startServer(customConfig) {
     if (customConfig) {
       overwriteConfig(customConfig);
     }
-    console.log("==========startServer->config: ", getConfig());
     const logger = require("./util/logger");
+    logger.debug("startServer->config: ", getConfig());
     const dbConfig = getDBConfiguration();
     logger.debug(`dbConfig: %o `, dbConfig);
     logger.debug(`typeorm: `, typeorm);

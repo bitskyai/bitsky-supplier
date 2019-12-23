@@ -1,6 +1,6 @@
 openapi: 3.0.1
 info:
-  title: DIA
+  title: DIA Engine
   description: Decentralized Intelligence Agency
   termsOfService: http://swagger.io/terms/
   contact:

@@ -7,6 +7,7 @@ const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
 const utils = require("../util/utils");
 const { getConfig } = require("../config");
+const soiHelpers = require("../apis/sois/helpers");
 const {
   INTELLIGENCE_STATE,
   SOI_STATE,
@@ -14,7 +15,6 @@ const {
   DEFAULT_SOI
 } = require("../util/constants");
 import { isMongo } from "../util/dbConfiguration";
-const soisHelpers = require("../apis/sois/helpers");
 import { updateAgentDB } from "../dbController/Agent.ctrl";
 
 function flattenToObject(intelligences) {
@@ -248,7 +248,6 @@ function objectsToIntelligences(intelligences, intelligenceInstances) {
 
 export async function addIntelligencesDB(intelligences) {
   try {
-    console.log("addIntelligencesDB: ", intelligences);
     const repo = getRepository(Intelligence);
     let intelligenceInstances: any = objectsToIntelligences(
       intelligences,
@@ -479,6 +478,54 @@ export async function getIntelligencesForManagementDB(
   }
 }
 
+// Update all matched intelligences' soi state
+export async function updateIntelligencesSOIStateForManagementDB(
+  soiGID: string,
+  state: string
+) {
+  try {
+    state = _.toUpper(state);
+    if (isMongo()) {
+      const repo = await getMongoRepository(Intelligence);
+      let query: any = {};
+      query.soi_global_id = {
+        $eq: soiGID
+      };
+      // update SOI state and modified_at
+      return await repo.updateMany(query, {
+        $set: {
+          system_modified_at: Date.now(),
+          soi_state: state
+        }
+      });
+    } else {
+      // SQL
+      let updateData: any = {
+        system_modified_at: Date.now(),
+        soi_state: state
+      };
+      const intelligenceQuery = await getRepository(Intelligence)
+        .createQueryBuilder("intelligence")
+        .update(Intelligence)
+        .set(updateData)
+        .where("intelligence.soi_global_id = :id", {
+          id: soiGID
+        });
+      return await intelligenceQuery.execute();
+    }
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "Intelligence.ctrl->updateIntelligencesSOIStateForManagementDB"
+    );
+    logger.error("updateIntelligencesSOIStateForManagementDB, error:", error);
+    throw error;
+  }
+}
+
 export async function updateIntelligencesStateForManagementDB(
   state: any,
   url: string,
@@ -653,6 +700,55 @@ export async function deleteIntelligencesForManagementDB(
   }
 }
 
+export async function deleteIntelligencesBySOIForManagementDB(
+  soiGID: string,
+  securityKey: string
+) {
+  try {
+    if (isMongo()) {
+      const repo = await getMongoRepository(Intelligence);
+      let query: any = {};
+
+      if (securityKey) {
+        query.system_security_key = securityKey;
+      }
+
+      query.soi_global_id = {
+        $in: [soiGID]
+      };
+      return await repo.deleteMany(query);
+    } else {
+      // SQL
+      const intelligenceQuery = await getRepository(Intelligence)
+        .createQueryBuilder("intelligence")
+        .delete()
+        .from(Intelligence)
+        .where("intelligence.soi_global_id = :id", {
+          id: soiGID
+        });
+
+      if (securityKey) {
+        intelligenceQuery.andWhere(
+          "intelligence.system_security_key = :securityKey",
+          { securityKey }
+        );
+      }
+
+      return await intelligenceQuery.execute();
+    }
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "Intelligence.ctrl->deleteIntelligencesBySOIForManagementDB"
+    );
+    logger.error("deleteIntelligencesBySOIForManagementDB, error:", error);
+    throw error;
+  }
+}
+
 export async function getIntelligencesForAgentDB(
   agentConfig: any,
   securityKey: string
@@ -662,7 +758,7 @@ export async function getIntelligencesForAgentDB(
     let concurrent = Number(agentConfig.concurrent);
     if (isNaN(concurrent)) {
       // if concurrent isn't a number, then use default value
-      concurrent = getConfig('EACH_TIME_INTELLIGENCES_NUMBER');
+      concurrent = getConfig("EACH_TIME_INTELLIGENCES_NUMBER");
     }
     let permission = PERMISSIONS.private;
     if (!agentConfig.private) {
@@ -811,8 +907,7 @@ export async function getIntelligencesForAgentDB(
       if (sois[item.soi.globalId]) {
         item.soi = sois[item.soi.globalId];
       } else {
-        console.log("soi: ", item.soi);
-        let soi = await soisHelpers.getSOI(item.soi.globalId);
+        let soi = await soiHelpers.getSOI(item.soi.globalId);
         soi = _.merge({}, DEFAULT_SOI, soi);
         // remove unnecessary data
         soi = utils.omit(

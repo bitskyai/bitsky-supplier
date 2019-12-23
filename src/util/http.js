@@ -17,13 +17,15 @@ function http(config) {
       })
       .catch(err => {
         let statusCode = _.get(err, "response.status") || 500;
-        let data = _.get(err, "response.data") || {};
+        let data = {
+          body: _.get(err, "response.data"),
+          request: _.get(err, "config")
+        };
         let error = new HTTPError(
           statusCode,
-          CircularJSON.stringify({
-            config: _.get(err, "response.config").config,
-            response: _.get(err, "response.response")
-          }),
+          {
+            message: _.get(err, "message")
+          },
           data
         );
         reject(error);

@@ -3,18 +3,9 @@ const { http } = require("../../util/http");
 const {
   CONFIG,
   DEFAULT_SOI,
-  COLLECTIONS_NAME,
   SOI_STATE
 } = require("../../util/constants");
 const { HTTPError } = require("../../util/error");
-const {
-  find,
-  findOneByGlobalId,
-  insertOne,
-  updateOne,
-  updateMany,
-  remove
-} = require("../../util/db");
 const {
   validateSOI,
   validateSOIAndUpdateState,
@@ -27,23 +18,14 @@ import {
   updateSOIDB,
   deleteSOIDB
 } from "../../dbController/SOI.ctrl";
+import {
+  updateIntelligencesSOIStateForManagementDB,
+  deleteIntelligencesBySOIForManagementDB
+} from '../../dbController/Intelligence.ctrl'
 const logger = require("../../util/logger");
 
 async function checkSOIExistByGlobalID(gid, securityKey) {
   try {
-    // let soiQuery = {
-    //   globalId: {
-    //     $eq: gid
-    //   }
-    // };
-    // if (securityKey) {
-    //   soiQuery[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
-    //     $eq: securityKey
-    //   };
-    // }
-
-    // let soi = await find(COLLECTIONS_NAME.sois, soiQuery);
-
     let soi = await getSOIByGlobalIdDB(gid, securityKey);
 
     // soi doesn't exist
@@ -73,7 +55,16 @@ async function checkSOIExistByGlobalID(gid, securityKey) {
  *
  * @returns {object}
  */
-async function registerSOI(soi, securityKey) {
+async function registerSOI(
+  soi,
+  securityKey
+): Promise<
+  | {
+      _id: string;
+      globalId: string;
+    }
+  | Error
+> {
   try {
     // Set default value
     soi = _.merge({}, DEFAULT_SOI, soi);
@@ -91,33 +82,10 @@ async function registerSOI(soi, securityKey) {
     // validate soi
     let validateResult = validateSOI(soi);
     if (!validateResult.valid) {
+      // Don't allow user to Create/Update an invalid SOI, this will reduce the complex of maintain intelligences
       throw new HTTPError(422, validateResult.errors, { soi }, "00014000002");
     }
 
-    // Use globalId to find SOI.
-    // let soiInDB = await findOneByGlobalId(COLLECTIONS_NAME.sois, soi.globalId, {
-    //   projection: {
-    //     globalId: 1
-    //   }
-    // });
-    // // globalId must be unique
-    // if (soiInDB) {
-    //   // globalId already exist
-    //   throw new HTTPError(
-    //     400,
-    //     null,
-    //     {
-    //       globalId: soi.globalId
-    //     },
-    //     "00014000001",
-    //     soi.globalId
-    //   );
-    // }
-
-    // let insertOneWriteOpResultObject = await insertOne(
-    //   COLLECTIONS_NAME.sois,
-    //   soi
-    // );
     let insertOneWriteOpResultObject = await addSOIDB(soi);
 
     // After update SOI, need to update SOI state
@@ -139,7 +107,7 @@ async function registerSOI(soi, securityKey) {
  *
  * @returns {object}
  */
-async function getSOI(gid, securityKey) {
+export async function getSOI(gid, securityKey) {
   try {
     if (!gid) {
       throw new HTTPError(
@@ -178,14 +146,6 @@ async function getSOI(gid, securityKey) {
  */
 async function getSOIs(securityKey) {
   try {
-    // let query = {};
-    // if (securityKey) {
-    //   query[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
-    //     $eq: securityKey
-    //   };
-    // }
-
-    // let sois = await find(COLLECTIONS_NAME.sois, query);
     let sois = await getSOIsDB(securityKey);
     return sois;
   } catch (err) {
@@ -210,17 +170,6 @@ async function updateSOI(gid, soi, securityKey) {
     let obj = _.merge({}, originalSoi, soi);
     obj.system.modified = Date.now();
     obj = validateSOIAndUpdateState(obj);
-    // let result = await updateOne(
-    //   COLLECTIONS_NAME.sois,
-    //   {
-    //     globalId: {
-    //       $eq: gid
-    //     }
-    //   },
-    //   {
-    //     $set: obj
-    //   }
-    // );
     let result = await updateSOIDB(gid, securityKey, obj);
 
     // After update SOI, need to update SOI state
@@ -273,74 +222,44 @@ async function updateSOIState(gid, originalSoi) {
 
     // check whether need to check SOI State. To avoid performance issue, don't allow user check SOI state too frequently
     // TODO: maybe we need to think about support **FORCE** update
-    let lastPing = originalSoi.system.lastPing;
-    if (Date.now() - lastPing < CONFIG.SOI_STATE_CHECK_TIME) {
-      // Don't need to check SOI state
-      return {
-        state: originalSoi.system.state
-      };
+    // 2019/12/21: comment to avoid sometimes ping SOI server return same state
+    // let lastPing = originalSoi.system.lastPing;
+    // if (Date.now() - lastPing < CONFIG.SOI_STATE_CHECK_TIME) {
+    //   // Don't need to check SOI state
+    //   return {
+    //     state: originalSoi.system.state
+    //   };
+    // }
+
+    // validate soi, SOI must be a valid SOI
+    let validateResult = validateSOI(originalSoi);
+    if (!validateResult.valid) {
+      // Don't allow user to Create/Update an invalid SOI, this will reduce the complex of maintain intelligences
+      throw new HTTPError(422, validateResult.errors, { originalSoi }, "00014000002");
     }
 
-    // First validate SOI, in case it was draft
-    originalSoi = validateSOIAndUpdateState(originalSoi);
-
-    let state = originalSoi.system.state;
-    let pingFailReason = "";
-    if (_.toUpper(state) !== _.toUpper(SOI_STATE.draft)) {
-      // if it isn't draft, then ping SOI
-      let result = await checkSOIHealth(
-        originalSoi.baseURL,
-        originalSoi.health.method,
-        originalSoi.health.path
-      );
-      if (result.status) {
-        // SOI is health
-        state = _.toUpper(SOI_STATE.active);
-        pingFailReason = "";
-      } else {
-        state = _.toUpper(SOI_STATE.failed);
-        if (typeof result.reason === "object") {
-          pingFailReason = JSON.stringify(result.reason);
-        } else {
-          pingFailReason = result.reason;
-        }
-      }
-    }
-
-    // Update all intelligences that reference to this SOI
-    // TODO: replace with Intelligence DB Function
-    let result = await updateMany(
-      COLLECTIONS_NAME.intelligences,
-      {
-        "soi.globalId": {
-          $eq: gid
-        }
-      },
-      {
-        $set: {
-          "soi.state": state
-        }
-      }
+    // default set to fail
+    let state = _.toUpper(SOI_STATE.failed);
+    let pingFailReason = '';
+    let soiHealth = await checkSOIHealth(
+      originalSoi.baseURL,
+      originalSoi.health.method,
+      originalSoi.health.path
     );
+    if (soiHealth.status) {
+      // SOI is health
+      state = _.toUpper(SOI_STATE.active);
+    } else {
+      state = _.toUpper(SOI_STATE.failed);
+      if (typeof soiHealth.reason === "object") {
+        pingFailReason = JSON.stringify(soiHealth.reason);
+      } else {
+        pingFailReason = soiHealth.reason;
+      }
+    }
 
-    // Update this SOI
-    // result = await updateOne(
-    //   COLLECTIONS_NAME.sois,
-    //   {
-    //     globalId: {
-    //       $eq: gid
-    //     }
-    //   },
-    //   {
-    //     $set: {
-    //       "system.state": state,
-    //       "system.modified": Date.now(),
-    //       "system.lastPing": Date.now(),
-    //       "system.pingFailReason": pingFailReason
-    //     }
-    //   }
-    // );
-    result = await updateSOIDB(gid, null, {
+    await updateIntelligencesSOIStateForManagementDB(gid, state);
+    await updateSOIDB(gid, null, {
       system: {
         state: state,
         modified: Date.now(),
@@ -349,7 +268,8 @@ async function updateSOIState(gid, originalSoi) {
       }
     });
     return {
-      state: state
+      state: state,
+      reason: soiHealth.reason
     };
   } catch (err) {
     throw err;
@@ -361,35 +281,8 @@ async function unregisterSOI(gid, securityKey) {
     // Make sure can find SOI, if cannot, the it will throw 404 error
     await checkSOIExistByGlobalID(gid, securityKey);
 
-    let query = {
-      "soi.globalId": {
-        $eq: gid
-      }
-    };
-
-    if (securityKey) {
-      query[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
-        $eq: securityKey
-      };
-    }
-    // remove all intelligences that this soi created
-    await remove(COLLECTIONS_NAME.intelligences, {
-      query
-    });
-
-    // let soiQuery = {
-    //   globalId: {
-    //     $eq: gid
-    //   }
-    // };
-    // if (securityKey) {
-    //   query[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
-    //     $eq: securityKey
-    //   };
-    // }
-
-    // // remove this SOI in sois collection
-    // let result = await remove(COLLECTIONS_NAME.sois, soiQuery);
+    await deleteIntelligencesBySOIForManagementDB(gid, securityKey);
+    // remove this SOI in sois collection
     let result = await deleteSOIDB(gid, securityKey);
     return result;
   } catch (err) {

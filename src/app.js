@@ -39,7 +39,6 @@ async function createApp() {
       limit: "10mb"
     })
   );
-
   app.use(
     compression({
       // Compress everything over 10 bytes
@@ -47,6 +46,7 @@ async function createApp() {
     })
   );
 
+  // Security check, if you don't want your server is public, then you can add `API_KEY` to protect your APIs
   app.use((req, res, next) => {
     if (security.verifyAPIKey(req, res)) {
       next();
@@ -55,6 +55,7 @@ async function createApp() {
     }
   });
 
+  // serve static files
   app.use(express.static(path.join(__dirname + "/public")));
 
   // Check whether need to do data migration
