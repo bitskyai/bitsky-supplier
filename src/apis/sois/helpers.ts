@@ -21,7 +21,7 @@ import {
 import {
   updateIntelligencesSOIStateForManagementDB,
   deleteIntelligencesBySOIForManagementDB
-} from '../../dbController/Intelligence.ctrl'
+} from '../../dbController/IntelligenceAndHistory.ctrl'
 const logger = require("../../util/logger");
 
 async function checkSOIExistByGlobalID(gid, securityKey) {

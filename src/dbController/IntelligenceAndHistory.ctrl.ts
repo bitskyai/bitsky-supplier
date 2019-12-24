@@ -15,9 +15,9 @@ const {
   DEFAULT_SOI
 } = require("../util/constants");
 import { isMongo } from "../util/dbConfiguration";
-import { updateAgentDB } from "../dbController/Agent.ctrl";
+import { updateAgentDB } from "./Agent.ctrl";
 
-function flattenToObject(intelligences) {
+export function flattenToObject(intelligences) {
   function toObject(intelligence) {
     let obj: any = {};
     if (_.get(intelligence, "global_id")) {
@@ -137,7 +137,7 @@ function flattenToObject(intelligences) {
   }
 }
 
-function objectsToIntelligences(intelligences, intelligenceInstances) {
+export function objectsToIntelligences(intelligences, intelligenceInstances) {
   function objectToIntelligences(intelligence, intelligenceInstance) {
     if (!intelligenceInstance) {
       intelligenceInstance = new Intelligence();
@@ -267,53 +267,31 @@ export async function addIntelligencesDB(intelligences) {
       err,
       {},
       "00005000001",
-      "Intelligence.ctrl->addIntelligencesDB"
+      "IntelligenceAndHistory.ctrl->addIntelligencesDB"
     );
     logger.error("addIntelligencesDB, error:", error);
     throw error;
   }
 }
 
-export async function addIntelligenceHistoryDB(intelligences) {
-  try {
-    const repo = getRepository(IntelligenceHistory);
-    let intelligenceInstances: any = objectsToIntelligences(
-      intelligences,
-      null
-    );
-    let generatedMaps = [];
-    // everytime insert 5 items
-    while (intelligenceInstances.length) {
-      let insertData = intelligenceInstances.splice(0, 5);
-      let result = await repo.insert(insertData);
-      generatedMaps.push(result.generatedMaps);
-    }
-    return generatedMaps;
-  } catch (err) {
-    let error = new HTTPError(
-      500,
-      err,
-      {},
-      "00005000001",
-      "Intelligence.ctrl->addIntelligenceHistoryDB"
-    );
-    logger.error("addIntelligenceHistoryDB, error:", error);
-    throw error;
-  }
-}
-
-export async function getIntelligencesForManagementDB(
+export async function getIntelligencesOrHistoryForManagementDB(
   cursor: string,
   url: string,
   state: string,
   limit: number,
-  securityKey: string
+  securityKey: string,
+  history?: boolean
 ) {
   try {
     let modified: any, id: string, intelligences: object[], total: number;
     if (limit) {
       limit = limit * 1;
     }
+    let repoName = Intelligence;
+    if (history) {
+      repoName = IntelligenceHistory;
+    }
+
     if (isMongo()) {
       if (cursor) {
         let parseCursor = utils.atob(cursor);
@@ -340,7 +318,7 @@ export async function getIntelligencesForManagementDB(
       }
 
       // Query Build doesn't support for Mongo
-      const repo = await getMongoRepository(Intelligence);
+      const repo = await getMongoRepository(repoName);
       total = await repo.count(query);
       let nQuery: any = {
         where: query
@@ -369,7 +347,7 @@ export async function getIntelligencesForManagementDB(
       intelligences = await repo.find(nQuery);
     } else {
       const intelligenceQuery = await getRepository(
-        Intelligence
+        repoName
       ).createQueryBuilder("intelligence");
       // After use *where*, then need to use *andWhere*
       let andWhere = false;
@@ -471,7 +449,7 @@ export async function getIntelligencesForManagementDB(
       err,
       {},
       "00005000001",
-      "Intelligence.ctrl->getIntelligencesForManagementDB"
+      "IntelligenceAndHistory.ctrl->getIntelligencesForManagementDB"
     );
     logger.error("getIntelligencesForManagementDB, error:", error);
     throw error;
@@ -519,7 +497,7 @@ export async function updateIntelligencesSOIStateForManagementDB(
       err,
       {},
       "00005000001",
-      "Intelligence.ctrl->updateIntelligencesSOIStateForManagementDB"
+      "IntelligenceAndHistory.ctrl->updateIntelligencesSOIStateForManagementDB"
     );
     logger.error("updateIntelligencesSOIStateForManagementDB, error:", error);
     throw error;
@@ -606,21 +584,26 @@ export async function updateIntelligencesStateForManagementDB(
       err,
       {},
       "00005000001",
-      "Intelligence.ctrl->updateIntelligencesStateForManagementDB"
+      "IntelligenceAndHistory.ctrl->updateIntelligencesStateForManagementDB"
     );
     logger.error("updateIntelligencesStateForManagementDB, error:", error);
     throw error;
   }
 }
 
-export async function deleteIntelligencesForManagementDB(
+export async function deleteIntelligencesOrHistoryForManagementDB(
   url: string,
   ids: string[],
-  securityKey: string
+  securityKey: string,
+  history?: boolean
 ) {
   try {
+    let repoName = Intelligence;
+    if (history) {
+      repoName = IntelligenceHistory;
+    }
     if (isMongo()) {
-      const repo = await getMongoRepository(Intelligence);
+      const repo = await getMongoRepository(repoName);
       let query: any = {};
 
       if (securityKey) {
@@ -641,10 +624,11 @@ export async function deleteIntelligencesForManagementDB(
       return await repo.deleteMany(query);
     } else {
       // SQL
-      const intelligenceQuery = await getRepository(Intelligence)
-        .createQueryBuilder("intelligence")
+      console.log('repoName: ', repoName);
+      const intelligenceQuery = await getRepository(repoName)
+        .createQueryBuilder()
         .delete()
-        .from(Intelligence);
+        .from(repoName);
       // After use *where*, then need to use *andWhere*
       let andWhere = false;
       if (securityKey) {
@@ -657,7 +641,7 @@ export async function deleteIntelligencesForManagementDB(
         }
         intelligenceQuery[
           funName
-        ]("intelligence.system_security_key = :securityKey", { securityKey });
+        ]("system_security_key = :securityKey", { securityKey });
       }
 
       if (ids && ids.length) {
@@ -668,7 +652,7 @@ export async function deleteIntelligencesForManagementDB(
           funName = "where";
           andWhere = true;
         }
-        intelligenceQuery[funName]("intelligence.global_id IN (:...ids)", {
+        intelligenceQuery[funName]("global_id IN (:...ids)", {
           ids
         });
       } else {
@@ -680,7 +664,7 @@ export async function deleteIntelligencesForManagementDB(
             funName = "where";
             andWhere = true;
           }
-          intelligenceQuery[funName]("intelligence.url LIKE :url", {
+          intelligenceQuery[funName]("url LIKE :url", {
             url: `%${url}%`
           });
         }
@@ -693,7 +677,7 @@ export async function deleteIntelligencesForManagementDB(
       err,
       {},
       "00005000001",
-      "Intelligence.ctrl->deleteIntelligencesForManagementDB"
+      "IntelligenceAndHistory.ctrl->deleteIntelligencesForManagementDB"
     );
     logger.error("deleteIntelligencesForManagementDB, error:", error);
     throw error;
@@ -742,7 +726,7 @@ export async function deleteIntelligencesBySOIForManagementDB(
       err,
       {},
       "00005000001",
-      "Intelligence.ctrl->deleteIntelligencesBySOIForManagementDB"
+      "IntelligenceAndHistory.ctrl->deleteIntelligencesBySOIForManagementDB"
     );
     logger.error("deleteIntelligencesBySOIForManagementDB, error:", error);
     throw error;
@@ -1002,7 +986,7 @@ export async function getIntelligencesForAgentDB(
       err,
       {},
       "00005000001",
-      "Intelligence.ctrl->getIntelligencesForAgentDB"
+      "IntelligenceAndHistory.ctrl->getIntelligencesForAgentDB"
     );
     logger.error("getIntelligencesForAgentDB, error:", error);
     throw error;
@@ -1056,7 +1040,7 @@ export async function getIntelligencesDB(gids: string[], securityKey: string) {
       err,
       {},
       "00005000001",
-      "Intelligence.ctrl->getIntelligencesDB"
+      "IntelligenceAndHistory.ctrl->getIntelligencesDB"
     );
     logger.error("getIntelligencesDB, error:", error);
     throw error;
@@ -1091,7 +1075,7 @@ export async function deleteIntelligencesDB(
       err,
       {},
       "00005000001",
-      "Intelligence.ctrl->deleteIntelligencesDB"
+      "IntelligenceAndHistory.ctrl->deleteIntelligencesDB"
     );
     logger.error("deleteIntelligencesDB, error:", error);
     throw error;
@@ -1138,9 +1122,37 @@ export async function updateEachIntelligencesDB(intelligences: any[]) {
       err,
       {},
       "00005000001",
-      "Intelligence.ctrl->updateIntelligencesDB"
+      "IntelligenceAndHistory.ctrl->updateIntelligencesDB"
     );
     logger.error("updateIntelligencesDB, error:", error);
+    throw error;
+  }
+}
+
+export async function addIntelligenceHistoryDB(intelligences) {
+  try {
+    const repo = getRepository(IntelligenceHistory);
+    let intelligenceInstances: any = objectsToIntelligences(
+      intelligences,
+      null
+    );
+    let generatedMaps = [];
+    // everytime insert 5 items
+    while (intelligenceInstances.length) {
+      let insertData = intelligenceInstances.splice(0, 5);
+      let result = await repo.insert(insertData);
+      generatedMaps.push(result.generatedMaps);
+    }
+    return generatedMaps;
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "IntelligenceHistory.ctrl->addIntelligenceHistoryDB"
+    );
+    logger.error("addIntelligenceHistoryDB, error:", error);
     throw error;
   }
 }

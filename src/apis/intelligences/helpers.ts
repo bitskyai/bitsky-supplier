@@ -1,18 +1,7 @@
 const _ = require("lodash");
-const ObjectId = require("mongodb").ObjectID;
 const { HTTPError } = require("../../util/error");
 const {
-  remove,
-  insertMany,
-  find,
-  count,
-  bulkUpdate,
-  updateMany,
-  deleteMany
-} = require("../../util/db");
-const {
   CONFIG,
-  COLLECTIONS_NAME,
   DEFAULT_SOI,
   INTELLIGENCE_STATE,
   PERMISSIONS,
@@ -26,20 +15,19 @@ const logger = require("../../util/logger");
 const utils = require("../../util/utils");
 import {
   addIntelligencesDB,
-  getIntelligencesForManagementDB,
+  getIntelligencesOrHistoryForManagementDB,
   updateIntelligencesStateForManagementDB,
-  deleteIntelligencesForManagementDB,
+  deleteIntelligencesOrHistoryForManagementDB,
   getIntelligencesForAgentDB,
   getIntelligencesDB,
   updateEachIntelligencesDB,
-  addIntelligenceHistoryDB,
-  deleteIntelligencesDB
-} from "../../dbController/Intelligence.ctrl";
+  deleteIntelligencesDB,
+  addIntelligenceHistoryDB
+} from "../../dbController/IntelligenceAndHistory.ctrl";
 
 // To avoid running check soi status multiple times
 // next check will not be started if previous job doesn't finish
 // TODO: when start thinking about load balance, then this data should be in memory cache, not inside service memory
-let __check_sois_status__ = {};
 
 //================================================================
 // Following APIs are designed for CRUD intelligences
@@ -51,7 +39,7 @@ async function getIntelligencesForManagement(
   securityKey: string
 ) {
   try {
-    return await getIntelligencesForManagementDB(
+    return await getIntelligencesOrHistoryForManagementDB(
       cursor,
       url,
       state,
@@ -125,7 +113,7 @@ async function deleteIntelligencesForManagement(
   securityKey: string
 ) {
   try {
-    let result = await deleteIntelligencesForManagementDB(
+    let result = await deleteIntelligencesOrHistoryForManagementDB(
       url,
       ids,
       securityKey

@@ -10,6 +10,7 @@ const apikey = require('./apis/apikey');
 const self = require('./apis/self');
 const sois = require('./apis/sois');
 const intelligences = require('./apis/intelligences');
+const intelligencesHistory = require('./apis/intelligenceshistory');
 const agents = require('./apis/agents');
 const health = require('./apis/health');
 
@@ -27,6 +28,7 @@ function createAPIRouters(app){
   self.router(router);
   sois.router(router);
   intelligences.router(router);
+  intelligencesHistory.router(router);
   agents.router(router);
 
 
