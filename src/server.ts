@@ -12,6 +12,7 @@ import getDBConfiguration from "./util/dbConfiguration";
 //
 let dbConnection = null;
 let server = null;
+let processExit = false;
 
 export async function startServer(customConfig) {
   try {
@@ -47,12 +48,14 @@ export async function startServer(customConfig) {
       logger.info(`SIGTERM received`);
       logger.info("Closing http.Server ..");
       // dbConnection.close();
+      processExit=true;
       server.destroy();
     });
     process.on("SIGINT", () => {
       logger.info(`SIGINT(Ctrl-C) received`);
       logger.info("Closing http.Server ..");
       // dbConnection.close();
+      processExit=true;
       server.destroy();
     });
 
@@ -62,7 +65,9 @@ export async function startServer(customConfig) {
 
       logger.info("Giving 100ms time to cleanup..");
       // Give a small time frame to clean up
-      // setTimeout(process.exit, 100);
+      if(processExit){
+        setTimeout(process.exit, 100);
+      }
     });
   } catch (err) {
     throw err;
