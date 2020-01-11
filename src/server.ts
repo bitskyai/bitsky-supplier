@@ -1,31 +1,31 @@
 /**
  * Created by Shaoke Xu on 4/29/18.
  */
-require("./util/extendNativeJavaScript");
+
 import "reflect-metadata";
 const typeorm = require("typeorm");
 const enableDestroy = require("server-destroy");
-let { getConfig, overwriteConfig } = require("./config");
-const createApp = require("./app");
-import getDBConfiguration from "./util/dbConfiguration";
 
-//
 let dbConnection = null;
 let server = null;
 let processExit = false;
 
 export async function startServer(customConfig) {
   try {
+    // Why move all require inside startServer:
+    // The reason is because when manually start server, if you required module before env variables were setting
+    // it will have issue. So require all modules after envs set
+    let { getConfig, overwriteConfig } = require("./config");
     if (customConfig) {
       overwriteConfig(customConfig);
     }
     const logger = require("./util/logger");
+    const createApp = require("./app");
+    require("./util/extendNativeJavaScript");
+    const getDBConfiguration  = require("./util/dbConfiguration").default;
     logger.debug("startServer->config: ", getConfig());
     const dbConfig = getDBConfiguration();
     logger.debug(`dbConfig: %o `, dbConfig);
-    // if (dbConnection) {
-    //   dbConnection.close();
-    // }
     dbConnection = await typeorm.createConnection(dbConfig);
     logger.debug("Create DB connection successfully.");
 
@@ -48,14 +48,14 @@ export async function startServer(customConfig) {
       logger.info(`SIGTERM received`);
       logger.info("Closing http.Server ..");
       // dbConnection.close();
-      processExit=true;
+      processExit = true;
       server.destroy();
     });
     process.on("SIGINT", () => {
       logger.info(`SIGINT(Ctrl-C) received`);
       logger.info("Closing http.Server ..");
       // dbConnection.close();
-      processExit=true;
+      processExit = true;
       server.destroy();
     });
 
@@ -65,7 +65,7 @@ export async function startServer(customConfig) {
 
       logger.info("Giving 100ms time to cleanup..");
       // Give a small time frame to clean up
-      if(processExit){
+      if (processExit) {
         setTimeout(process.exit, 100);
       }
     });
