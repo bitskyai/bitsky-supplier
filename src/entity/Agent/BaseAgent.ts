@@ -19,7 +19,9 @@ export abstract class BaseAgent extends Base {
   @Column()
   name: string;
 
-  @Column()
+  @Column({
+    nullable: true
+  })
   description: string;
 
   @Column({

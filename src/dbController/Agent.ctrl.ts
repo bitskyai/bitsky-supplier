@@ -164,7 +164,7 @@ export async function addAgentDB(agent) {
   try {
     const repo = getRepository(Agent);
     let agentInstance = objectToAgent(agent, null);
-
+    console.log('agentInstance: ', agentInstance);
     await repo.save(agentInstance);
     return {
       _id: agentInstance.id,
@@ -176,9 +176,9 @@ export async function addAgentDB(agent) {
       err,
       {},
       "00005000001",
-      "Agent.ctrl->addAgent"
+      "Agent.ctrl->addAgentDB"
     );
-    logger.error("addAgent, error:", error);
+    logger.error("addAgentDB, error:", error);
     throw error;
   }
 }
@@ -199,9 +199,9 @@ export async function getAgentsDB(securityKey: string) {
       err,
       {},
       "00005000001",
-      "Agent.ctrl->getAgents"
+      "Agent.ctrl->getAgentsDB"
     );
-    logger.error("getAgents, error:", error);
+    logger.error("getAgentsDB, error:", error);
     throw error;
   }
 }
