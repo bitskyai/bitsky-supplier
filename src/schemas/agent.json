@@ -232,7 +232,7 @@
     "description": {
       "title": "Description",
       "description": "description of this agent",
-      "type": "string",
+      "type": ["string", "null"],
       "minLength": 0,
       "maxLength": 200,
       "examples": ["My chrome extension used for test purpose"]
