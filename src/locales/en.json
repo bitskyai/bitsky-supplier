@@ -30,7 +30,7 @@
     "action": "Check the data you passed, both of them are required"
   },
   "00015000001": {
-    "message": "Register SOI fail, caused by unknown error!",
+    "message": "Register Analyst Service fail, caused by unknown error!",
     "reason": "Unknown error",
     "action": "Check log to find more detail"
   },
@@ -45,22 +45,22 @@
     "action": "Check the globalId you passed"
   },
   "00024040001": {
-    "message": "Cannot find SOI by globalId - %s",
-    "reason": "Cannot find SOI by globalId",
+    "message": "Cannot find Analyst Service by globalId - %s",
+    "reason": "Cannot find Analyst Service by globalId",
     "action": "Check whether you passed correct globalId"
   },
   "00025000001": {
-    "message": "Get SOI fail, caused by unknown error!",
+    "message": "Get Analyst Service fail, caused by unknown error!",
     "reason": "Unknown error",
     "action": "Check log to find more detail"
   },
   "00035000001": {
-    "message": "Update SOI fail, caused by unknown error!",
+    "message": "Update Analyst Service fail, caused by unknown error!",
     "reason": "Unknown error",
     "action": "Check log to find more detail"
   },
   "00045000001": {
-    "message": "Unregister SOI fail, caused by unknown error!",
+    "message": "Unregister Analyst Service fail, caused by unknown error!",
     "reason": "Unknown error",
     "action": "Check log to find more detail"
   },
@@ -90,9 +90,9 @@
     "action": "Check the data you passed"
   },
   "00064040001": {
-    "message": "Cannot find SOI by globalId %s, please make sure your register SOI",
-    "reason": "SOI doesn't exist by globalId, maybe user didn't register it",
-    "action": "Register SOI"
+    "message": "Cannot find Analyst Service by globalId %s, please make sure your register Analyst Service",
+    "reason": "Analyst Service doesn't exist by globalId, maybe user didn't register it",
+    "action": "Register Analyst Service"
   },
   "00075000001": {
     "message": "Update intelligences fail, caused by unknown error!",
