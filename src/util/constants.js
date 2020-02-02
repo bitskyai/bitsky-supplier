@@ -12,7 +12,7 @@ const CONFIG = {
   MAX_FAIL_NUMBER_FOR_INTELLIGENCE: 3, // Max fail number for an intelligence, if more then this fail number, this intelligence will be moved to history
   LOG_FILES_PATH: "./public/log",
   NODE_ENV: "development",
-  EACH_TIME_INTELLIGENCES_NUMBER: 2,
+  EACH_TIME_INTELLIGENCES_NUMBER: 1,
   SERVICE_NAME: packageJson.name,
   LOG_LEVEL: "debug",
   PORT: 9099, // server port number

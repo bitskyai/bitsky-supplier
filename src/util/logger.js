@@ -12,7 +12,6 @@ function createMyLogger() {
       // console.log('logger already created.');
       return __logger;
     }
-    console.log('******getConfig("LOG_FILES_PATH"): ', getConfig("LOG_FILES_PATH"));
     fs.ensureDirSync(getConfig("LOG_FILES_PATH"));
     // console.log('[createLogger] starting...');
     __logger = createLogger({
@@ -59,7 +58,7 @@ function createMyLogger() {
     // console.log('[createLogger] end');
     return __logger;
   } catch (err) {
-    console.log('error: ', err);
+    console.error('error: ', err);
     return console;
   }
 }

@@ -30,7 +30,7 @@ import {
 // TODO: when start thinking about load balance, then this data should be in memory cache, not inside service memory
 
 //================================================================
-// Following APIs are designed for CRUD intelligences
+// Following APIs are designed for CRUD intelligences for Management UI(Desktop or web app)
 async function getIntelligencesForManagement(
   cursor: string,
   url: string,
@@ -247,12 +247,15 @@ async function getIntelligences(agentGid: string, securityKey: string) {
     // 1. Think about if a lot of intelligences, how to schedule them
     // make them can be more efficient
     // 2. Think about the case that SOI is inactive
-
+    logger.debug('getIntelligences->agentGid: %s', agentGid);
+    logger.debug('getIntelligences->securityKey: %s', securityKey);
     // Step 1: get agent configuration
     let agentConfig = await agentsHelpers.getAgent(agentGid);
+    logger.debug('getIntelligences->agentConfig.system.securityKey: %s', agentConfig.system.securityKey);
     // If security key doesn't match, then we assume this agnet doesn't belong to this user
     // For security issue, don't allow user do this
     if (_.trim(agentConfig.system.securityKey) !== _.trim(securityKey)) {
+      logger.info('getIntelligences, agentConfig.system.securityKe isn\' same with securityKey. ', {'agentConfig.system.securityKey': agentConfig.system.securityKey, securityKey: securityKey});
       throw new HTTPError(
         400,
         null,

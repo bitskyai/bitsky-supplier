@@ -624,7 +624,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
       return await repo.deleteMany(query);
     } else {
       // SQL
-      console.log('repoName: ', repoName);
+      console.log("repoName: ", repoName);
       const intelligenceQuery = await getRepository(repoName)
         .createQueryBuilder()
         .delete()
@@ -639,9 +639,9 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
           funName = "where";
           andWhere = true;
         }
-        intelligenceQuery[
-          funName
-        ]("system_security_key = :securityKey", { securityKey });
+        intelligenceQuery[funName]("system_security_key = :securityKey", {
+          securityKey
+        });
       }
 
       if (ids && ids.length) {
@@ -749,6 +749,8 @@ export async function getIntelligencesForAgentDB(
       permission = PERMISSIONS.public;
     }
     let repo;
+    logger.debug("getIntelligencesForAgentDB->agentConfig: ", agentConfig);
+    logger.debug("getIntelligencesForAgentDB->securityKey: ", securityKey);
     if (isMongo()) {
       repo = await getMongoRepository(Intelligence);
       let query: any = {
@@ -777,23 +779,28 @@ export async function getIntelligencesForAgentDB(
         priority: "ASC"
       };
 
+      logger.debug("getIntelligencesForAgentDB->query", query);
+
       // if security key provide, get all intelligences for this security key first
       if (securityKey) {
         query.where.system_security_key = securityKey;
         intelligences = await repo.find(query);
-      }
+        // if permission doesn't exit or agent is public then try to see any public intelligences need to collect
+        if (
+          (!permission || _.upperCase(permission) === PERMISSIONS.public) &&
+          (!intelligences || !intelligences.length)
+        ) {
+          // if no intelligences for this securityKey and if this agent's permission is public then, get other intelligences that is public
+          delete query.where.system_security_key;
+          query.where.permission = {
+            $nin: [PERMISSIONS.private]
+          };
 
-      // if permission doesn't exit or agent is public then try to see any public intelligences need to collect
-      if (
-        (!permission || _.upperCase(permission) === PERMISSIONS.public) &&
-        (!intelligences || !intelligences.length)
-      ) {
-        // if no intelligences for this securityKey and if this agent's permission is public then, get other intelligences that is public
-        delete query.where.system_security_key;
-        query.where.permission = {
-          $nin: [PERMISSIONS.private]
-        };
-
+          intelligences = await repo.find(query);
+        }
+      }else{
+        // if securityKey is empty, this means it is on-primse mode, if a request was sent by UI Server, it always contains a securityKey, only if this request is directly sent to
+        // DIA-Engine, then it possible don't have securityKey, in this mode, then it should be able to get all permissions intelligences since they are belong to same user
         intelligences = await repo.find(query);
       }
     } else {
