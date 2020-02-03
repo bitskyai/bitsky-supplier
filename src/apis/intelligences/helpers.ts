@@ -247,15 +247,26 @@ async function getIntelligences(agentGid: string, securityKey: string) {
     // 1. Think about if a lot of intelligences, how to schedule them
     // make them can be more efficient
     // 2. Think about the case that SOI is inactive
+
+    // avoid UI side send undefined or null as string
+    if(securityKey==='undefined' || securityKey==='null'){
+      securityKey = undefined;
+    }
+
     logger.debug('getIntelligences->agentGid: %s', agentGid);
     logger.debug('getIntelligences->securityKey: %s', securityKey);
     // Step 1: get agent configuration
     let agentConfig = await agentsHelpers.getAgent(agentGid);
     logger.debug('getIntelligences->agentConfig.system.securityKey: %s', agentConfig.system.securityKey);
+    let agentSecurityKey = agentConfig.system.securityKey;
+    // avoid UI side send undefined or null as string
+    if(agentSecurityKey==='undefined' || agentSecurityKey==='null'){
+      agentSecurityKey = undefined;
+    }
     // If security key doesn't match, then we assume this agnet doesn't belong to this user
     // For security issue, don't allow user do this
-    if (_.trim(agentConfig.system.securityKey) !== _.trim(securityKey)) {
-      logger.info('getIntelligences, agentConfig.system.securityKe isn\' same with securityKey. ', {'agentConfig.system.securityKey': agentConfig.system.securityKey, securityKey: securityKey});
+    if (_.trim(agentSecurityKey) !== _.trim(securityKey)) {
+      logger.info('getIntelligences, agentConfig.system.securityKey isn\' same with securityKey. ', {'agentConfig.system.securityKey': agentSecurityKey, securityKey: securityKey});
       throw new HTTPError(
         400,
         null,

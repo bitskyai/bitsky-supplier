@@ -749,8 +749,8 @@ export async function getIntelligencesForAgentDB(
       permission = PERMISSIONS.public;
     }
     let repo;
-    logger.debug("getIntelligencesForAgentDB->agentConfig: ", agentConfig);
-    logger.debug("getIntelligencesForAgentDB->securityKey: ", securityKey);
+    // logger.debug("getIntelligencesForAgentDB->agentConfig: %s", agentConfig);
+    // logger.debug("getIntelligencesForAgentDB->securityKey: %s", securityKey);
     if (isMongo()) {
       repo = await getMongoRepository(Intelligence);
       let query: any = {
@@ -779,7 +779,7 @@ export async function getIntelligencesForAgentDB(
         priority: "ASC"
       };
 
-      logger.debug("getIntelligencesForAgentDB->query", query);
+      // logger.debug("getIntelligencesForAgentDB->query", query);
 
       // if security key provide, get all intelligences for this security key first
       if (securityKey) {
