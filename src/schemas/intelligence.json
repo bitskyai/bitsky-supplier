@@ -1,0 +1,310 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://munew.io/schemas/intelligence.json",
+  "type": "object",
+  "title": "Intelligence Schema",
+  "version": "1.0.0",
+  "required": ["soi", "url"],
+  "additionalProperties": false,
+  "properties": {
+    "system": {
+      "type": "object",
+      "description": "Following properties are updated by system, user cannot direct update them",
+      "additionalProperties": false,
+      "properties": {
+        "state": {
+          "title": "State",
+          "type": "string",
+          "description": "State of this agent",
+          "enum": [
+            "DRAFT",
+            "CONFIGURED",
+            "FINISHED",
+            "RUNNING",
+            "FAILED",
+            "PAUSED",
+            "TIMEOUT"
+          ]
+        },
+        "securityKey": {
+          "$ref": "#/definitions/securityKey"
+        },
+        "created": {
+          "$ref": "#/definitions/created"
+        },
+        "modified": {
+          "$ref": "#/definitions/modified"
+        },
+        "startedAt": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/timestamp"
+            },
+            {
+              "title": "Intelligence started at"
+            }
+          ]
+        },
+        "endedAt": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/timestamp"
+            },
+            {
+              "title": "Intelligence finished at"
+            }
+          ]
+        },
+        "agent": {
+          "title": "Execute Agent",
+          "description": "Which agent to execute this intelligence",
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "globalId": {
+              "$ref": "#/definitions/globalId"
+            },
+            "type": {
+              "$ref": "#/definitions/agentType"
+            },
+            "retryTimes": {
+              "type": "integer",
+              "description": "How many times client side retried to re-execute this intelligence"
+            },
+            "startedAt": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/timestamp"
+                },
+                {
+                  "description": "Agent start to execute this intelligence"
+                }
+              ]
+            },
+            "endedAt": {
+              "allOf": [
+                {
+                  "$ref": "#/definitions/timestamp"
+                },
+                {
+                  "title": "Agent end to execute this intelligence"
+                }
+              ]
+            }
+          }
+        },
+        "version": {
+          "$ref": "#/definitions/version"
+        },
+        "failuresNumber": {
+          "title": "Number of failures",
+          "type": "integer",
+          "default": 0,
+          "description": "How many times this intelligence was fail running.",
+          "minimum": 0
+        },
+        "failuresReason": {
+          "type": "string",
+          "description": "Why ping SOI fail, so user can know why it was fail"
+        }
+      }
+    },
+    "_id": {
+      "$ref": "#/definitions/_id"
+    },
+    "globalId": {
+      "$ref": "#/definitions/globalId"
+    },
+    "type": {
+      "title": "Intelligence Type",
+      "type": "string",
+      "default": "CRAWLER",
+      "description": "Type of this intelligence, this type will help agent to decide how to run it. For now, we only have one type **web crawler**",
+      "enum": ["CRAWLER"]
+    },
+    "name": {
+      "$ref": "#/definitions/name"
+    },
+    "description": {
+      "$ref": "#/definitions/description"
+    },
+    "soi": {
+      "type": "object",
+      "description": "After agent execute this intelligence, which SOI to send **callback** to",
+      "required": ["globalId"],
+      "properties": {
+        "globalId": {
+          "$ref": "#/definitions/globalId"
+        },
+        "state": {
+          "$ref": "#/definitions/state"
+        }
+      }
+    },
+    "permission": {
+      "$ref": "#/definitions/permission"
+    },
+    "priority": {
+      "type": "integer",
+      "minimum": 1,
+      "default": 100,
+      "description": "Priority of this intelligence. Only compare priority for same SOI, doesn't compare cross SOI. Big value low priority. Priority value 1 is higher than priority value 2."
+    },
+    "suitableAgents": {
+      "type": "array",
+      "description": "What kind of agent types can execute this intelligence",
+      "default": ["BROWSEREXTENSION"],
+      "items": {
+        "$ref": "#/definitions/agentType"
+      },
+      "minItems": 1,
+      "uniqueItems": true
+    },
+    "url": {
+      "$ref": "#/definitions/url"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Additional metadata for this intelligence",
+      "properties": {
+        "script": {
+          "type": "string",
+          "description": "Code want to execute after **window.onload**. You only need to pass function body. And Default you will get following parameters - **resolve**, **reject**, **intelligence**, **axios**. You need to resolve(data) or reject(err), and will send data or err to SOI. If you need agent to execute your code, Only work with **BROWSEREXTENSION** and **HEADLESSBROSWER** agent"
+        }
+      }
+    },
+    "dataset": {
+      "$ref": "#/definitions/dataset"
+    }
+  },
+  "definitions": {
+    "_id": {
+      "title": "ID",
+      "description": "identifier of this entitle",
+      "type": ["string", "object"]
+    },
+    "created": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/timestamp"
+        },
+        {
+          "title": "Created at"
+        }
+      ]
+    },
+    "modified": {
+      "allOf": [
+        {
+          "$ref": "#/definitions/timestamp"
+        },
+        {
+          "title": "Last time modified at"
+        }
+      ]
+    },
+    "timestamp": {
+      "type": ["integer", "null"],
+      "description": "Timestamp of when this intelligence was assigned to an agent",
+      "examples": [1553974629109]
+    },
+    "version": {
+      "title": "Version",
+      "description": "version of this agent",
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "default": "1.0.0",
+      "examples": ["1.0.0"]
+    },
+    "globalId": {
+      "title": "Global ID",
+      "description": "globally unique identifier, if you don't pass, then it will automatically generate one",
+      "type": "string",
+      "examples": ["59f43b55-46a3-4efc-a960-018bcca91f46"]
+    },
+    "agentType": {
+      "title": "Agent Type",
+      "type": "string",
+      "description": "Agent type of this agent",
+      "enum": ["BROWSEREXTENSION", "SERVICE", "HEADLESSBROWSER"]
+    },
+    "permission": {
+      "type": "string",
+      "description": "Control who can run this intelligence. Private mean only matched **securityKey** can run, public mean any matched agent can collect. If your metadata has script, then it will be forced to private.",
+      "default": "PRIVATE",
+      "enum": ["PRIVATE", "PUBLIC"]
+    },
+    "url": {
+      "type": "string",
+      "format": "uri",
+      "description": "Target URL for this intelligence.",
+      "examples": ["https://json-schema.org"]
+    },
+    "name": {
+      "title": "Name",
+      "description": "Give a meaningful name",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "examples": ["My Chrome Extension"]
+    },
+    "description": {
+      "title": "Description",
+      "description": "description of this agent",
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "examples": ["My chrome extension used for test purpose"]
+    },
+    "securityKey": {
+      "title": "Security Key",
+      "type": "string",
+      "description": "Security key is used to identify different user"
+    },
+    "state": {
+      "title": "State",
+      "type": "string",
+      "description": "State of this entitle",
+      "enum": ["DRAFT", "CONFIGURED", "ACTIVE", "DELETED"]
+    },
+    "dataset": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "All data that was collected by agent when it executed intelligence. You also can use **metadata.script** to add more properties",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "The finally URL that collect this information. Sometime, previous URL maybe redirect.",
+          "format": "uri",
+          "examples": ["https://json-schema.org"]
+        },
+        "data": {
+          "type": "object",
+          "description": "Collect ",
+          "properties": {
+            "contentType": {
+              "type": "string",
+              "title": "Content Type",
+              "description": "Content Type of return data",
+              "default": "html",
+              "enum": ["html", "json", "text"]
+            },
+            "content": {
+              "oneOf": [
+                {
+                  "type": "string",
+                  "description": "Collect html or text string"
+                },
+                {
+                  "type": "object",
+                  "description": "Collect JSON data"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,732 @@
+openapi: 3.0.1
+info:
+  title: DIA Engine
+  description: Decentralized Intelligence Agency
+  termsOfService: http://swagger.io/terms/
+  contact:
+    email: shaokexu@gmail.com
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - url: http://localhost:9099/
+tags:
+  - name: soi
+    description: Service of Intelligence
+  - name: server
+    description: Decentralized Intelligence Agency
+  - name: intelligences
+    description: Intelligences want to collect
+paths:
+  /apis/sois:
+    get:
+      tags:
+        - soi
+      summary: Get a list of SOIs
+      description: Operation Index - 0011
+      operationId: getSOIs
+      responses:
+        200:
+          description: Get SOIs successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./src/schemas/soi.json"
+    post:
+      tags:
+        - soi
+      summary: Register a SOI.
+      description: Operation Index - 0001
+      operationId: registerSOI
+      requestBody:
+        description: Need to register SOI information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./src/schemas/soi.json"
+      responses:
+        200:
+          description: Registered successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    description: Generate MongoDB Id
+                  global_id:
+                    $ref: "#/components/schemas/GlobalId"
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /apis/sois/{gid}:
+    get:
+      tags:
+        - soi
+      summary: Get a SOI.
+      description: Operation Index - 0002
+      operationId: getSOI
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of SOI
+          schema:
+            $ref: "#/components/schemas/GlobalId"
+      responses:
+        200:
+          description: Get a SOI successful
+          content:
+            application/json:
+              schema:
+                $ref: "./src/schemas/soi.json"
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Cannot find specific SOI
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - soi
+      summary: Update a SOI
+      description: Operation Index - 0003
+      operationId: updateSOI
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of SOI
+          schema:
+            $ref: "#/components/schemas/GlobalId"
+      requestBody:
+        description: SOI information need to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./src/schemas/soi.json"
+      responses:
+        204:
+          description: Update SOI successful
+        404:
+          description: Cannot find specific SOI
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - soi
+      summary: Unregister a SOI
+      description: Operation Index - 0004
+      operationId: unregisterSOI
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of SOI
+          schema:
+            $ref: "#/components/schemas/GlobalId"
+      responses:
+        200:
+          description: Delete SOI successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  global_id:
+                    $ref: "#/components/schemas/GlobalId"
+        404:
+          description: Cannot find specific SOI
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  global_id:
+                    $ref: "#/components/schemas/GlobalId"
+  /apis/sois/{gid}/status:
+    put:
+      tags:
+        - soi
+      summary: Update a SOI status
+      description: Operation Index - 0010
+      operationId: updateSOIStatus
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of SOI
+          schema:
+            $ref: "#/components/schemas/GlobalId"
+      responses:
+        200:
+          description: Update a SOI successful
+          content:
+            application/json:
+              schema:
+                $ref: "./src/schemas/soi.json"
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Cannot find specific SOI
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /apis/agents:
+    get:
+      tags:
+        - agent
+      description: Operation Index - 0012
+      operationId: getAgents
+      responses:
+        200:
+          description: Get Agents successful
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./src/schemas/agent.json"
+    post:
+      tags:
+        - agent
+      summary: Register an Agent.
+      description: Operation Index - 0013
+      operationId: registerAgent
+      requestBody:
+        description: Need to register Agent information
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./src/schemas/agent.json"
+      responses:
+        200:
+          description: Registered successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  _id:
+                    type: string
+                    description: Generate MongoDB Id
+                  global_id:
+                    $ref: "#/components/schemas/GlobalId"
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /apis/agents/{gid}:
+    get:
+      tags:
+        - agent
+      summary: Get an Agent
+      description: Operation Index - 0014
+      operationId: getAgent
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of Agent
+          schema:
+            $ref: "#/components/schemas/GlobalId"
+      responses:
+        200:
+          description: Get an agent successful
+          content:
+            application/json:
+              schema:
+                $ref: "./src/schemas/agent.json"
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Cannot find specific Agent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    put:
+      tags:
+        - agent
+      summary: Update an Agent
+      description: Operation Index - 0015
+      operationId: updateAgent
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of Agent
+          schema:
+            $ref: "#/components/schemas/GlobalId"
+      requestBody:
+        description: Agent information need to update
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "./src/schemas/agent.json"
+      responses:
+        204:
+          description: Update Agent successful
+        404:
+          description: Cannot find specific Agent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    delete:
+      tags:
+        - agent
+      summary: Unregister an Agent
+      description: Operation Index - 0016
+      operationId: unregisterAgent
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of Agent
+          schema:
+            $ref: "#/components/schemas/GlobalId"
+      responses:
+        200:
+          description: Delete Agent successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  global_id:
+                    $ref: "#/components/schemas/GlobalId"
+        404:
+          description: Cannot find specific Agent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  global_id:
+                    $ref: "#/components/schemas/GlobalId"
+  /apis/agents/{gid}/activate:
+    post:
+      tags:
+        - agent
+      summary: Activate an Agent status
+      description: Operation Index - 0017
+      operationId: activateAgentStatus
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of agent
+          schema:
+            $ref: "#/components/schemas/GlobalId"
+      responses:
+        200:
+          description: Update a Agent successful
+          content:
+            application/json:
+              schema:
+                $ref: "./src/schemas/agent.json"
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Cannot find specific Agent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /apis/agents/{gid}/deactivate:
+    post:
+      tags:
+        - agent
+      summary: Activate an Agent status
+      description: Operation Index - 0018
+      operationId: deactivateAgentStatus
+      parameters:
+        - in: path
+          name: gid
+          required: true
+          description: global_id of agent
+          schema:
+            $ref: "#/components/schemas/GlobalId"
+      responses:
+        200:
+          description: Update a Agent successful
+          content:
+            application/json:
+              schema:
+                $ref: "./src/schemas/agent.json"
+        400:
+          description: Bad request, the data pass isn't valid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        404:
+          description: Cannot find specific Agent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+  /apis/manangement/intelligences:
+    get:
+      tags:
+        - intelligences
+      summary: Get intelligences
+      description: Operation Index - 0019
+      operationId: getIntelligencesForManagement
+      parameters:
+        - in: query
+          name: cursor
+          description: Current
+          schema:
+            $ref: "#/components/schemas/Cursor"
+        - in: query
+          name: limit
+          description: How many intelligences for each page
+          schema:
+            type: integer
+            default: 50
+        - in: query
+          name: url
+          description: URL string want to search
+          schema:
+            type: string
+        - in: query
+          name: state
+          description: search intelligence's state that is contained state.
+          schema:
+            type: string
+            example:
+              - PAUSED,TIMEOUT
+      responses:
+        200:
+          description: Get intelligences successful
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - intelligences
+                properties:
+                  previousCursor:
+                    $ref: "#/components/schemas/Cursor"
+                  nextCursor:
+                    $ref: "#/components/schemas/Cursor"
+                  total:
+                    type: integer
+                    description: Total number of intelligences
+                  intelligences:
+                    type: array
+                    items:
+                      $ref: "./src/schemas/intelligence.json"
+    delete:
+      tags:
+        - intelligences
+      summary: Delete intelligences from database
+      description: Operation Index - 0022
+      operationId: deleteIntelligencesForManagement
+      parameters:
+        - in: query
+          name: url
+          description: URL string want to search
+          schema:
+            type: string
+      requestBody:
+        description: Pause all passed Intelligences
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                description: Intelligences Global Id
+      responses:
+        204:
+          description: Delete successful
+  /apis/manangement/intelligences/pause:
+    post:
+      tags:
+        - intelligences
+      summary: Pause all matched intelligences.
+      description: Operation Index - 0020. **ids** priority high than **query parameters(`url`)**, if you pass both, only **ids** will be executed
+      operationId: pauseIntelligencesForManagement
+      parameters:
+        - in: query
+          name: url
+          description: URL string want to search
+          schema:
+            type: string
+      requestBody:
+        description: Pause all passed Intelligences
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                description: Intelligences Global Id
+      responses:
+        204:
+          description: Pasuse all intelligences successful
+  /apis/manangement/intelligences/resume:
+    post:
+      tags:
+        - intelligences
+      summary: Get intelligences
+      description: Operation Index - 0021. **ids** priority high than **query parameters(`url`)**, if you pass both, only **ids** will be executed
+      operationId: resumeIntelligencesForManagement
+      parameters:
+        - in: query
+          name: url
+          description: URL string want to search
+          schema:
+            type: string
+      requestBody:
+        description: Resume all passed Intelligences
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                type: string
+                description: Intelligences Global Id
+      responses:
+        204:
+          description: Resume all intelligences successful
+  /apis/intelligences:
+    get:
+      tags:
+        - intelligences
+      summary: Get intelligences for agents to execute
+      description: Operation Index - 0005
+      operationId: getIntelligences
+      parameters:
+        - in: query
+          name: type
+          required: true
+          description: Agent Type
+          schema:
+            type: string
+            enum:
+              - BROWSEREXTENSION
+              - HEADLESSBROWSER
+              - SERVICE
+        - in: query
+          name: gid
+          required: true
+          description: Agent Global Id
+          schema:
+            $ref: "#/components/schemas/GlobalId"
+        - in: query
+          name: limit
+          description: How many intelligences want to get
+          schema:
+            type: number
+        - in: query
+          name: permission
+          description: permisson for this agent
+          schema:
+            type: string
+            default: public
+            enum:
+              - private
+              - public
+      responses:
+        200:
+          description: Intelligences for collected
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "./src/schemas/intelligence.json"
+    post:
+      tags:
+        - intelligences
+      summary: Add intelligences to collecting list
+      description: Operation Index - 0006
+      operationId: addIntelligences
+      requestBody:
+        description: Need to collect intelligences
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "./src/schemas/intelligence.json"
+      responses:
+        200:
+          description: Extract intelligences successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddSuccess"
+        404:
+          description: Cannot find specific SOI, please make sure you registered
+    put:
+      tags:
+        - intelligences
+      summary: Update intelligences
+      description: Operation Index - 0007
+      operationId: updateIntelligences
+      requestBody:
+        description: Update intelligences
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                allOf:
+                  - $ref: "./src/schemas/intelligence.json"
+                  - type: object
+                    properties:
+                      operation:
+                        type: string
+                        description: what kind of operation want to do to this intelligence. This will not be save to Intelligence.
+                        default: DELETE
+                        enum:
+                          - DELETE
+                          - UPDATE
+      responses:
+        200:
+          description: Extract intelligences successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AddSuccess"
+        404:
+          description: Cannot find specific SOI, please make sure you registered
+    delete:
+      tags:
+        - intelligences
+      summary: Delete intelligences from collecting list
+      description: Operation Index - 0008
+      operationId: deleteIntelligences
+      parameters:
+        - in: query
+          name: gids
+          description: Intelligences' Global Id that want to delete
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/GlobalId"
+      responses:
+        204:
+          description: Update SOI successful
+  /health:
+    get:
+      tags:
+        - server
+      summary: Check DIA's health status
+      description: Operation Index - 0009
+      operationId: checkHealth
+      responses:
+        200:
+          description: SOI is active
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+components:
+  schemas:
+    GlobalId:
+      type: string
+      description: Global unique id.
+      example: ef72448b-7bc4-42d1-9436-822c9634d943
+    Cursor:
+      type: string
+      description: Cursor for pagination
+    AddSuccess:
+      type: object
+      properties:
+        successful:
+          type: array
+          description: Successful Intelligence global_id
+          items:
+            $ref: "#/components/schemas/GlobalId"
+        fail:
+          type: array
+          description: Fail Intelligence global_id
+          items:
+            $ref: "#/components/schemas/GlobalId"
+    HealthStatus:
+      type: object
+      properties:
+        name:
+          type: string
+          description: DIA Name
+          example: "dia"
+        description:
+          type: string
+          description: DIA description.
+          example: "Decentralized Intelligence Agency"
+        version:
+          type: string
+          description: DIA version
+          example: "0.0.1"
+        migrationVersion:
+          type: string
+          description: DIA currently migrationVersion
+          example: 1
+    Error:
+      type: object
+      properties:
+        stack:
+          type: string
+          description: Error stack, return to UI only in develop mode
+        message:
+          type: string
+          description: Error Message
+        statusCode:
+          type: number
+          description: HTTP Status Code
+        code:
+          type: string
+          description: Error Code
+        data:
+          type: object
+          description: Additional data for this error
+  securitySchemes:
+    api_key:
+      type: apiKey
+      name: X-API-KEY
+      in: header

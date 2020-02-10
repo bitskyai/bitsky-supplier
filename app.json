@@ -1,0 +1,25 @@
+{
+  "name": "dia-engine",
+  "description": "Decentralized Intelligence Agency engine",
+  "keywords": [
+    "DIA",
+    "DIA Engine",
+    "Data Crawling",
+    "Automation",
+    "nodejs"
+  ],
+  "website": "https://munew.io",
+  "repository": "https://github.com/munew/dia-engine.git",
+  "env": {
+    "API_KEY": {
+      "description": "API Key for restful api validation",
+      "value": "5b0e37dd-2bc8-42b4-8e18-d9b8faf19c99"
+    }
+  },
+  "success_url": "/",
+  "buildpacks": [
+    {
+      "url": "http://github.com/heroku/heroku-buildpack-nodejs.git"
+    }
+  ]
+}
