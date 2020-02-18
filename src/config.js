@@ -9,7 +9,6 @@ function getFullConfig(){
     TYPEORM_URL: process.env.TYPEORM_URL || constants.DEFAULT_MONGODB.url,
     TYPEORM_HOST: process.env.TYPEORM_HOST,
     TYPEORM_PORT: process.env.TYPEORM_PORT,
-    TYPEORM_DATABASE: process.env.TYPEORM_DATABASE,
     SOI_STATE_CHECK_TIME:
       Number(process.env.SOI_STATE_CHECK_TIME) ||
       constants.CONFIG.SOI_STATE_CHECK_TIME,
