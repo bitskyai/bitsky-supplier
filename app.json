@@ -17,8 +17,24 @@
       "value": "sqlite",
       "required": false
     },
-    "TYPEORM_URL": {
-      "description": "Database connection url where perform connection to. Required when your TYPEORM_CONNECTION is mongodb.",
+    "TYPEORM_HOST": {
+      "description": "Database host. Required when your TYPEORM_CONNECTION isn't sqlite. Example: munew123.mlab.com",
+      "required": false
+    },
+    "TYPEORM_DATABASE": {
+      "description": "Database name. Required when your TYPEORM_CONNECTION isn't sqlite. Example: munew",
+      "required": false
+    },
+    "TYPEORM_PORT": {
+      "description": "Database host port. Example: 27017",
+      "required": false
+    },
+    "TYPEORM_USERNAME": {
+      "description": "Database username. Example: dbuser",
+      "required": false
+    },
+    "TYPEORM_PASSWORD": {
+      "description": "Database password. Example: welcome",
       "required": false
     },
     "NPM_CONFIG_PRODUCTION":{

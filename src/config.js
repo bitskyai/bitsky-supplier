@@ -5,10 +5,12 @@ function getFullConfig(){
   let config = {
     PORT: Number(process.env.PORT) || constants.CONFIG.PORT,
     TYPEORM_CONNECTION: process.env.TYPEORM_CONNECTION,
-    TYPEORM_DATABASE: process.env.TYPEORM_DATABASE || constants.DEFAULT_SQLITE.database,
-    TYPEORM_URL: process.env.TYPEORM_URL || constants.DEFAULT_MONGODB.url,
+    TYPEORM_URL: process.env.TYPEORM_URL,
     TYPEORM_HOST: process.env.TYPEORM_HOST,
     TYPEORM_PORT: process.env.TYPEORM_PORT,
+    TYPEORM_USERNAME: process.env.TYPEORM_USERNAME,
+    TYPEORM_PASSWORD: process.env.TYPEORM_PASSWORD,
+    TYPEORM_DATABASE: process.env.TYPEORM_DATABASE || constants.DEFAULT_SQLITE.database,
     SOI_STATE_CHECK_TIME:
       Number(process.env.SOI_STATE_CHECK_TIME) ||
       constants.CONFIG.SOI_STATE_CHECK_TIME,
