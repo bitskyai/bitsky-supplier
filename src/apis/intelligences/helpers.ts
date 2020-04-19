@@ -300,8 +300,9 @@ async function getIntelligences(agentGid: string, securityKey: string) {
   }
 }
 
-async function updateIntelligences(content, securityKey) {
+async function updateIntelligences(content, securityKey:string) {
   try {
+    console.log("updateIntelligences -> content: ", content);
     let contentMap = {};
     let gids = content.map(item => {
       contentMap[item.globalId] = item;
@@ -319,27 +320,36 @@ async function updateIntelligences(content, securityKey) {
     let intelligenceHistory = [];
     gids=[];
     for (let i = 0; i < intelligences.length; i++) {
+      // this is the intelligence get from DB
       let item = intelligences[i];
+      // this is the intelligence that passed by agent
+      let intelligence = contentMap[item.globalId];
       // If this intelligence was failed, then increase **failuresNumber**
-      if (item.system.state === INTELLIGENCE_STATE.failed) {
+      // Any state isn't FINISHED, then think it is failed, need to increase failuresNumber
+      // if failuresNumber is <= max fail number, then let Agent try to collect it again
+      if (
+        (item.system.failuresNumber || 0) < CONFIG.MAX_FAIL_NUMBER_FOR_INTELLIGENCE && _.get(intelligence, "system.state") !== INTELLIGENCE_STATE.finished
+      ) {
         if (!item.system.failuresNumber) {
           item.system.failuresNumber = 1;
         } else {
           item.system.failuresNumber += 1;
         }
-      }
-
-      if (
-        item.system.failuresNumber <= CONFIG.MAX_FAIL_NUMBER_FOR_INTELLIGENCE
-      ) {
         // This intelligence need continue to retry
         failedIntelligences.push({
           globalId: item.globalId,
           system: {
             modified: Date.now(),
             endedAt: Date.now(),
-            state: INTELLIGENCE_STATE.failed,
-            failuresNumber: item.system.failuresNumber
+            state: _.get(intelligence, 'system.state') || INTELLIGENCE_STATE.failed,
+            failuresNumber: _.get(item, "system.failuresNumber"),
+            failuresReason: _.get(intelligence, 'system.failuresReason'),
+            agent: {
+              globalId: _.get(intelligence, 'system.agent.globalId'),
+              type: _.get(intelligence, 'system.agent.type'),
+              startedAt: _.get(intelligence, 'system.agent.startedAt'),
+              endedAt: _.get(intelligence, 'system.agent.endedAt')
+            }
           }
         });
       } else {
@@ -348,10 +358,15 @@ async function updateIntelligences(content, securityKey) {
 
         delete item.id;
         delete item._id;
+        // if it's successful, then means reach max retry time, to keep why it isn't successful
+        if(_.get(intelligence, "system.state") !== INTELLIGENCE_STATE.finished){
+          item.system.failuresNumber += 1;
+          item.system.failuresReason = _.get(intelligence, 'system.failuresReason');
+        }
         item.system.modified = Date.now();
         item.system.endedAt = Date.now();
         item.system.state = _.get(
-          contentMap[item.globalId],
+          intelligence,
           "system.state",
           INTELLIGENCE_STATE.finished
         );
