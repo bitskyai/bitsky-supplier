@@ -105,7 +105,7 @@
         },
         "failuresReason": {
           "type": "string",
-          "description": "Why ping SOI fail, so user can know why it was fail"
+          "description": "Agent collect fail reason"
         }
       }
     },
