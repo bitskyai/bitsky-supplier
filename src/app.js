@@ -36,7 +36,7 @@ async function createApp() {
   );
   app.use(
     bodyParser.json({
-      limit: "10mb"
+      limit: "100mb"
     })
   );
   app.use(
