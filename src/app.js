@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const compression = require("compression");
 const morgan = require("morgan");
 const path = require("path");
+const cors = require('cors')
 const logger = require("./util/logger");
 const errorResponder = require("./middleware/error-responder");
 const errorLogger = require("./middleware/error-logger");
@@ -16,6 +17,7 @@ const checkMigration = require("./migration");
 
 async function createApp() {
   const app = express();
+  app.use(cors());
   logger.info("create app successful!");
 
   // App is served behind Heroku's router.
