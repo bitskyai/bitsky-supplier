@@ -60,7 +60,7 @@ export async function startServer(customConfig) {
     });
 
     server.on("close", () => {
-      logger.info("Server closed");
+      logger.info("Engine Server closed");
       // process.emit("cleanup");
 
       logger.info("Giving 100ms time to cleanup..");
