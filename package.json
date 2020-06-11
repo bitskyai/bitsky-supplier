@@ -1,6 +1,6 @@
 {
   "name": "dia-engine",
-  "version": "0.1.0",
+  "version": "0.2.2",
   "description": "Decentralized Intelligence Agency",
   "migrationVersion": "1",
   "main": "./src/app.js",
