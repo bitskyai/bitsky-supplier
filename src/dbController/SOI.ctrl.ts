@@ -164,15 +164,17 @@ export async function addSOIDB(soi) {
       "00005000001",
       "SOI.ctrl->addSOIDB"
     );
-    logger.error("addSOIDB, error:", error);
+    logger.error(`addSOIDB, error:${error.message}`, {error});
     throw error;
   }
 }
 
-export async function getSOIsDB(securityKey: string) {
+export async function getSOIsDB(query?:any, securityKey?: string) {
   try {
     const repo = getRepository(SOI);
-    let query: any = {};
+    if(!query){
+      query = {};
+    }
     if (securityKey) {
       query.system_security_key = securityKey;
     }
@@ -187,7 +189,7 @@ export async function getSOIsDB(securityKey: string) {
       "00005000001",
       "SOI.ctrl->getSOIsDB"
     );
-    logger.error("getSOIsDB, error:", error);
+    logger.error(`getSOIsDB, error:${error.message}`, {error});
     throw error;
   }
 }
@@ -212,7 +214,7 @@ export async function getSOIByGlobalIdDB(gid: string, securityKey: string) {
       "00005000001",
       "SOI.ctrl->getSOIByGlobalIdDB"
     );
-    logger.error("getSOIByGlobalIdDB, error:", error);
+    logger.error(`getSOIByGlobalIdDB, error:${error.message}`, {error});
     throw error;
   }
 }
@@ -237,7 +239,7 @@ export async function updateSOIDB(gid, securityKey, soi) {
       "00005000001",
       "SOI.ctrl->updateSOIDB"
     );
-    logger.error("updateSOIDB, error:", error);
+    logger.error(`updateSOIDB, error:${error.message}`, {error});
     throw error;
   }
 }
@@ -261,7 +263,7 @@ export async function deleteSOIDB(gid: string, securityKey: string) {
       "00005000001",
       "SOI.ctrl->deleteSOIDB"
     );
-    logger.error("deleteSOIDB, error:", error);
+    logger.error(`deleteSOIDB, error:${error.message}`, {error});
     throw error;
   }
 }

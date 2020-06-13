@@ -146,7 +146,7 @@ export async function getSOI(gid, securityKey) {
  */
 async function getSOIs(securityKey) {
   try {
-    let sois = await getSOIsDB(securityKey);
+    let sois = await getSOIsDB({}, securityKey);
     return sois;
   } catch (err) {
     throw err;

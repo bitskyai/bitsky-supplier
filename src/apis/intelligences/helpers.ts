@@ -67,6 +67,7 @@ async function pauseIntelligencesForManagement(
       INTELLIGENCE_STATE.paused,
       url,
       ids,
+      null,
       securityKey
     );
     console.log(result);
@@ -92,6 +93,7 @@ async function resumeIntelligencesForManagement(
       INTELLIGENCE_STATE.configured,
       url,
       ids,
+      null,
       securityKey
     );
     console.log(result);
@@ -253,11 +255,11 @@ async function getIntelligences(agentGid: string, securityKey: string) {
       securityKey = undefined;
     }
 
-    logger.debug('getIntelligences->agentGid: %s', agentGid);
-    logger.debug('getIntelligences->securityKey: %s', securityKey);
+    logger.debug(`getIntelligences->agentGid: ${agentGid}`);
+    logger.debug(`getIntelligences->securityKey: ${securityKey}`);
     // Step 1: get agent configuration
     let agentConfig = await agentsHelpers.getAgent(agentGid);
-    logger.debug('getIntelligences->agentConfig.system.securityKey: %s', agentConfig.system.securityKey);
+    logger.debug(`getIntelligences->agentConfig.system.securityKey: ${agentConfig.system.securityKey}`);
     let agentSecurityKey = agentConfig.system.securityKey;
     // avoid UI side send undefined or null as string
     if(agentSecurityKey==='undefined' || agentSecurityKey==='null'){

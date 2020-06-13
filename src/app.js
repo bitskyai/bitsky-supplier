@@ -14,6 +14,7 @@ const createRouters = require("./routers");
 const { getConfig } = require("./config");
 const security = require("./util/security");
 const checkMigration = require("./migration");
+const {setupIntervalAgendas} = require('./intervalAgendas');
 
 async function createApp() {
   const app = express();
@@ -68,6 +69,9 @@ async function createApp() {
   await checkMigration();
 
   createRouters(app);
+
+  // don't need to wait it finish
+  setupIntervalAgendas();
 
   app.use(errorLogger());
   app.use(errorResponder());
