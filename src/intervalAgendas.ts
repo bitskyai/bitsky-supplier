@@ -13,7 +13,7 @@ export async function setupIntervalAgendas() {
     await checkAnalystServicesHealth();
     clearInterval(__updateTimeoutIntelligencesIntervalHandler);
     clearInterval(__checkAnalystServicesHealthIntervalHandler);
-    const intelligenceTimeout = getConfig("TIMEOUT_VALUE_FOR_INTELLIGENCE");
+    const intelligenceTimeout = getConfig("INTELLIGENCE_TIMEOUT_CHECK_TIME");
     const intervalCheckAS = getConfig("SOI_STATE_CHECK_TIME");
     __updateTimeoutIntelligencesIntervalHandler = setInterval(() => {
       logger.info("start updateTimeoutIntelligences ... ", {

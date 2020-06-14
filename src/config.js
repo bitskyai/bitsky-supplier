@@ -11,6 +11,9 @@ function getFullConfig(){
     TYPEORM_USERNAME: process.env.TYPEORM_USERNAME,
     TYPEORM_PASSWORD: process.env.TYPEORM_PASSWORD,
     TYPEORM_DATABASE: process.env.TYPEORM_DATABASE || constants.DEFAULT_SQLITE.database,
+    INTELLIGENCE_TIMEOUT_CHECK_TIME: 
+      Number(process.env.INTELLIGENCE_TIMEOUT_CHECK_TIME) ||
+      constants.CONFIG.INTELLIGENCE_TIMEOUT_CHECK_TIME,
     SOI_STATE_CHECK_TIME:
       Number(process.env.SOI_STATE_CHECK_TIME) ||
       constants.CONFIG.SOI_STATE_CHECK_TIME,
