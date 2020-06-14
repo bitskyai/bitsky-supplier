@@ -508,21 +508,31 @@ export async function updateIntelligencesStateForManagementDB(
   state: any,
   url: string,
   ids: string[],
+  timeoutStartedAt: Number,
   securityKey: string
 ) {
   try {
     state = _.toUpper(state);
-    let states = [INTELLIGENCE_STATE.draft];
-    if (state === INTELLIGENCE_STATE.configured) {
-      states = [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft];
-    }
+    // Don't allow user to mass update draft status to other status
+    // Don't update same status
+    let states = [INTELLIGENCE_STATE.draft, state];
+    // if (state === INTELLIGENCE_STATE.configured) {
+    //   states = [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft];
+    // }
     if (isMongo()) {
       const repo = await getMongoRepository(Intelligence);
-      let query: any = {};
-      // Don't Running or Draft intelligences
+      const query: any = {};
+      const mongoDBUdpateData:any = {
+        $set: {
+          system_modified_at: Date.now(),
+          system_state: state
+        }
+      }
+
       query.system_state = {
         $nin: states
       };
+
       if (securityKey) {
         query.system_security_key = securityKey;
       }
@@ -531,28 +541,38 @@ export async function updateIntelligencesStateForManagementDB(
         query.global_id = {
           $in: ids
         };
-      } else {
-        if (url) {
-          query.url = {
-            $regex: utils.convertStringToRegExp(url)
-          };
-        }
+      } 
+
+      if (url) {
+        query.url = {
+          $regex: utils.convertStringToRegExp(url)
+        };
       }
-      return await repo.updateMany(query, {
-        $set: {
-          system_modified_at: Date.now(),
-          system_state: state
-        }
-      });
+
+      // any value less than `startedAt`, it will set to timeout, whatever what state you pass
+      if(timeoutStartedAt){
+        query.system_started_at = {
+          $lt: timeoutStartedAt
+        };
+        mongoDBUdpateData.$set.system_agent_ended_at = Date.now();
+        mongoDBUdpateData.$set.system_ended_at = Date.now();
+        mongoDBUdpateData.$set.system_state = INTELLIGENCE_STATE.timeout;
+        mongoDBUdpateData.$set.system_failures_reason = "Agent collect intelligence timeout. Engine automatically set to TIMEOUT status";
+        // Since this is set by system, so don't auto increase fail number
+        // Actually, it isn't easy to auto increase `system_failures_number` ^_^
+      }
+
+      return await repo.updateMany(query, mongoDBUdpateData);
     } else {
       // SQL
       const intelligenceQuery = await getRepository(Intelligence)
         .createQueryBuilder("intelligence")
-        .update(Intelligence)
-        .set({
-          system_modified_at: () => Date.now().toString(),
-          system_state: state
-        });
+        .update(Intelligence);
+      
+      let sqlUpdateData: any = {
+        system_modified_at: () => Date.now().toString(),
+        system_state: state
+      }
 
       intelligenceQuery.where("intelligence.system_state NOT IN (:...states)", {
         states
@@ -569,13 +589,26 @@ export async function updateIntelligencesStateForManagementDB(
         intelligenceQuery.where("intelligence.global_id IN (:...ids)", {
           ids
         });
-      } else {
-        if (url) {
-          intelligenceQuery.andWhere("intelligence.url LIKE :url", {
-            url: `%${url}%`
-          });
-        }
+      } 
+
+      if (url) {
+        intelligenceQuery.andWhere("intelligence.url LIKE :url", {
+          url: `%${url}%`
+        });
       }
+
+      if(timeoutStartedAt){
+        intelligenceQuery.andWhere(
+          "intelligence.system_started_at < :timeoutStartedAt",
+          { timeoutStartedAt }
+        );
+        sqlUpdateData.system_agent_ended_at = Date.now();
+        sqlUpdateData.system_ended_at = Date.now();
+        sqlUpdateData.system_state = INTELLIGENCE_STATE.timeout;
+        sqlUpdateData.system_failures_reason = "Agent collect intelligence timeout. Engine automatically set to TIMEOUT status";
+      }
+
+      intelligenceQuery.set(sqlUpdateData);
       return await intelligenceQuery.execute();
     }
   } catch (err) {
@@ -586,7 +619,7 @@ export async function updateIntelligencesStateForManagementDB(
       "00005000001",
       "IntelligenceAndHistory.ctrl->updateIntelligencesStateForManagementDB"
     );
-    logger.error("updateIntelligencesStateForManagementDB, error:", error);
+    logger.error(`updateIntelligencesStateForManagementDB, error: ${error.message}`, {error});
     throw error;
   }
 }
