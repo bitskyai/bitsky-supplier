@@ -7,7 +7,7 @@ const {
   PERMISSIONS,
   AGENT_STATE,
   SOI_STATE,
-  DEFAULT_INTELLIGENCE
+  DEFAULT_INTELLIGENCE,
 } = require("../../util/constants");
 const soisHelpers = require("../sois/helpers");
 const agentsHelpers = require("../agents/helpers");
@@ -22,8 +22,13 @@ import {
   getIntelligencesDB,
   updateEachIntelligencesDB,
   deleteIntelligencesDB,
-  addIntelligenceHistoryDB
+  addIntelligenceHistoryDB,
 } from "../../dbController/IntelligenceAndHistory.ctrl";
+import {
+  addATaskJob,
+  getTopTaskJob,
+  removeTaskJob,
+} from "../../dbController/TasksJobQueue.ctrl";
 
 // To avoid running check soi status multiple times
 // next check will not be started if previous job doesn't finish
@@ -120,7 +125,6 @@ async function deleteIntelligencesForManagement(
       ids,
       securityKey
     );
-    console.log(result);
     return result;
   } catch (err) {
     throw err;
@@ -184,7 +188,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
 
       // Make sure agent type is uppercase
       intelligence.suitableAgents = intelligence.suitableAgents.map(
-        agentType => {
+        (agentType) => {
           return _.toUpper(agentType);
         }
       );
@@ -197,7 +201,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
       if (!validateResult.valid) {
         validationError.push({
           intelligence,
-          error: validateResult.errors
+          error: validateResult.errors,
         });
       }
       // Need to update globalId to globalId
@@ -228,6 +232,25 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
   }
 }
 
+async function waitUntilTopTask(globalId) {
+  try {
+    return new Promise(async (resolve) => {
+      let waitHandler = setInterval(async () => {
+        let job = await getTopTaskJob();
+        console.log('job: ', job);
+        logger.debug(`Top GlobalId in job queue:${job.global_id}, globalId: ${globalId}`, {fun: 'waitUntilTopTask'});
+        if (job.global_id == globalId) {
+          logger.debug(`${globalId} is top job now`, {fun: 'waitUntilTopTask'});
+          clearInterval(waitHandler);
+          resolve(true);
+        }
+      }, 100);
+    });
+  } catch (err) {
+    throw err;
+  }
+}
+
 /**
  * @typedef {Object} IntelligencesAndConfig
  * @property {object} agent - Agent Configuration
@@ -244,14 +267,18 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
  * @returns {IntelligencesAndConfig}
  */
 async function getIntelligences(agentGid: string, securityKey: string) {
+  const taskJobGlobalId = utils.generateGlobalId("taskjob");
   try {
+    // add a task job to the job queue
+    await addATaskJob(taskJobGlobalId, agentGid);
+    await waitUntilTopTask(taskJobGlobalId);
     // TODO: need to improve intelligences schedule
     // 1. Think about if a lot of intelligences, how to schedule them
     // make them can be more efficient
     // 2. Think about the case that SOI is inactive
 
     // avoid UI side send undefined or null as string
-    if(securityKey==='undefined' || securityKey==='null'){
+    if (securityKey === "undefined" || securityKey === "null") {
       securityKey = undefined;
     }
 
@@ -259,16 +286,24 @@ async function getIntelligences(agentGid: string, securityKey: string) {
     logger.debug(`getIntelligences->securityKey: ${securityKey}`);
     // Step 1: get agent configuration
     let agentConfig = await agentsHelpers.getAgent(agentGid);
-    logger.debug(`getIntelligences->agentConfig.system.securityKey: ${agentConfig.system.securityKey}`);
+    logger.debug(
+      `getIntelligences->agentConfig.system.securityKey: ${agentConfig.system.securityKey}`
+    );
     let agentSecurityKey = agentConfig.system.securityKey;
     // avoid UI side send undefined or null as string
-    if(agentSecurityKey==='undefined' || agentSecurityKey==='null'){
+    if (agentSecurityKey === "undefined" || agentSecurityKey === "null") {
       agentSecurityKey = undefined;
     }
     // If security key doesn't match, then we assume this agnet doesn't belong to this user
     // For security issue, don't allow user do this
     if (_.trim(agentSecurityKey) !== _.trim(securityKey)) {
-      logger.info('getIntelligences, agentConfig.system.securityKey isn\' same with securityKey. ', {'agentConfig.system.securityKey': agentSecurityKey, securityKey: securityKey});
+      logger.info(
+        "getIntelligences, agentConfig.system.securityKey isn' same with securityKey. ",
+        {
+          "agentConfig.system.securityKey": agentSecurityKey,
+          securityKey: securityKey,
+        }
+      );
       throw new HTTPError(
         400,
         null,
@@ -289,24 +324,26 @@ async function getIntelligences(agentGid: string, securityKey: string) {
         400,
         null,
         {
-          agent: agentConfig
+          agent: agentConfig,
         },
         "00054000002",
         agentGid
       );
     }
     intelligences = await getIntelligencesForAgentDB(agentConfig, securityKey);
+    await removeTaskJob(taskJobGlobalId);
     return intelligences;
   } catch (err) {
+    await removeTaskJob(taskJobGlobalId);
     throw err;
   }
 }
 
-async function updateIntelligences(content, securityKey:string) {
+async function updateIntelligences(content, securityKey: string) {
   try {
     console.log("updateIntelligences -> content: ", content);
     let contentMap = {};
-    let gids = content.map(item => {
+    let gids = content.map((item) => {
       contentMap[item.globalId] = item;
       return item.globalId;
     });
@@ -320,7 +357,7 @@ async function updateIntelligences(content, securityKey:string) {
 
     let failedIntelligences = [];
     let intelligenceHistory = [];
-    gids=[];
+    gids = [];
     for (let i = 0; i < intelligences.length; i++) {
       // this is the intelligence get from DB
       let item = intelligences[i];
@@ -330,7 +367,9 @@ async function updateIntelligences(content, securityKey:string) {
       // Any state isn't FINISHED, then think it is failed, need to increase failuresNumber
       // if failuresNumber is <= max fail number, then let Agent try to collect it again
       if (
-        (item.system.failuresNumber || 0) < CONFIG.MAX_FAIL_NUMBER_FOR_INTELLIGENCE && _.get(intelligence, "system.state") !== INTELLIGENCE_STATE.finished
+        (item.system.failuresNumber || 0) <
+          CONFIG.MAX_FAIL_NUMBER_FOR_INTELLIGENCE &&
+        _.get(intelligence, "system.state") !== INTELLIGENCE_STATE.finished
       ) {
         if (!item.system.failuresNumber) {
           item.system.failuresNumber = 1;
@@ -343,16 +382,17 @@ async function updateIntelligences(content, securityKey:string) {
           system: {
             modified: Date.now(),
             endedAt: Date.now(),
-            state: _.get(intelligence, 'system.state') || INTELLIGENCE_STATE.failed,
+            state:
+              _.get(intelligence, "system.state") || INTELLIGENCE_STATE.failed,
             failuresNumber: _.get(item, "system.failuresNumber"),
-            failuresReason: _.get(intelligence, 'system.failuresReason'),
+            failuresReason: _.get(intelligence, "system.failuresReason"),
             agent: {
-              globalId: _.get(intelligence, 'system.agent.globalId'),
-              type: _.get(intelligence, 'system.agent.type'),
-              startedAt: _.get(intelligence, 'system.agent.startedAt'),
-              endedAt: _.get(intelligence, 'system.agent.endedAt')
-            }
-          }
+              globalId: _.get(intelligence, "system.agent.globalId"),
+              type: _.get(intelligence, "system.agent.type"),
+              startedAt: _.get(intelligence, "system.agent.startedAt"),
+              endedAt: _.get(intelligence, "system.agent.endedAt"),
+            },
+          },
         });
       } else {
         // This intelligences need to move to intelligence_history
@@ -361,9 +401,14 @@ async function updateIntelligences(content, securityKey:string) {
         delete item.id;
         delete item._id;
         // if it's successful, then means reach max retry time, to keep why it isn't successful
-        if(_.get(intelligence, "system.state") !== INTELLIGENCE_STATE.finished){
+        if (
+          _.get(intelligence, "system.state") !== INTELLIGENCE_STATE.finished
+        ) {
           item.system.failuresNumber += 1;
-          item.system.failuresReason = _.get(intelligence, 'system.failuresReason');
+          item.system.failuresReason = _.get(
+            intelligence,
+            "system.failuresReason"
+          );
         }
         item.system.modified = Date.now();
         item.system.endedAt = Date.now();
@@ -385,7 +430,7 @@ async function updateIntelligences(content, securityKey:string) {
       }
     }
 
-    if(failedIntelligences.length){
+    if (failedIntelligences.length) {
       await updateEachIntelligencesDB(failedIntelligences);
     }
 
@@ -412,5 +457,5 @@ module.exports = {
   getIntelligencesForManagement,
   addIntelligences,
   getIntelligences,
-  updateIntelligences
+  updateIntelligences,
 };
