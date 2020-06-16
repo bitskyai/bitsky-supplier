@@ -42,7 +42,7 @@ const DEFAULT_SQLITE = {
 
 const DEFAULT_MONGODB = {
   type: "mongodb",
-  url: `mongodb://localhost:27017/${packageJson.name}`
+  url: `mongodb://localhost:27017/${packageJson.name}`,
 };
 
 const COLLECTIONS_NAME = {

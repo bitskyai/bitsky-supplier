@@ -146,7 +146,7 @@ export async function getSOI(gid, securityKey) {
  */
 async function getSOIs(securityKey) {
   try {
-    let sois = await getSOIsDB({}, securityKey);
+    let sois = await getSOIsDB(securityKey);
     return sois;
   } catch (err) {
     throw err;
@@ -240,7 +240,7 @@ async function updateSOIState(gid, originalSoi) {
 
     // default set to fail
     let state = _.toUpper(SOI_STATE.failed);
-    let pingFailReason = '';
+    let pingFailReason = undefined;
     let soiHealth = await checkSOIHealth(
       originalSoi.baseURL,
       originalSoi.health.method,
@@ -269,7 +269,7 @@ async function updateSOIState(gid, originalSoi) {
     });
     return {
       state: state,
-      reason: soiHealth.reason
+      reason: pingFailReason
     };
   } catch (err) {
     throw err;

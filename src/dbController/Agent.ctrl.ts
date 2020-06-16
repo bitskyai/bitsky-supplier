@@ -164,11 +164,11 @@ export async function addAgentDB(agent) {
   try {
     const repo = getRepository(Agent);
     let agentInstance = objectToAgent(agent, null);
-    console.log('agentInstance: ', agentInstance);
+    console.log("agentInstance: ", agentInstance);
     await repo.save(agentInstance);
     return {
       _id: agentInstance.id,
-      globalId: agentInstance.global_id
+      globalId: agentInstance.global_id,
     };
   } catch (err) {
     let error = new HTTPError(
@@ -210,31 +210,40 @@ export async function getAgentByGlobalIdDB(gid: string, securityKey: string) {
   try {
     const repo = getRepository(Agent);
     let query: any = {
-      global_id: gid
+      global_id: gid,
     };
     if (securityKey) {
       query.system_security_key = securityKey;
     }
     let agent = await repo.findOne(query);
+    if (!agent) {
+      throw new HTTPError(404, null, { globalId: gid });
+    }
     agent = flattenToObject(agent);
     return agent;
   } catch (err) {
-    let error = new HTTPError(
-      500,
-      err,
-      {},
-      "00005000001",
-      "Agent.ctrl->getAgentByGlobalIdDB"
-    );
-    logger.error("getAgentByGlobalIdDB, error:", error);
-    throw error;
+    if(!(err instanceof HTTPError)){
+      err = new HTTPError(
+        500,
+        err,
+        {},
+        "00005000001",
+        "Agent.ctrl->getAgentByGlobalIdDB"
+      );
+    }
+    // if(err.statusCode === 404){
+    //   logger.info(`getAgentByGlobalIdDB, cannot find agent by globalId - ${gid}`);
+    // }else{
+    //   logger.error(`getAgentByGlobalIdDB, error: ${err.message}`, {error: err});
+    // }
+    throw err;
   }
 }
 
 export async function updateAgentDB(gid, securityKey, agent) {
   try {
     let query: any = {
-      global_id: gid
+      global_id: gid,
     };
     if (securityKey) {
       query.system_security_key = securityKey;
@@ -259,7 +268,7 @@ export async function updateAgentDB(gid, securityKey, agent) {
 export async function deleteAgentDB(gid: string, securityKey: string) {
   try {
     let query: any = {
-      global_id: gid
+      global_id: gid,
     };
     if (securityKey) {
       query.system_security_key = securityKey;
@@ -279,19 +288,3 @@ export async function deleteAgentDB(gid: string, securityKey: string) {
     throw error;
   }
 }
-
-// export async function addAgent() {
-//   try {
-//     const repo = getRepository(Agent);
-//   } catch (err) {
-//     let error = new HTTPError(
-//       500,
-//       err,
-//       {},
-//       "00005000001",
-//       "Agent.ctrl->addAgent"
-//     );
-//     logger.error("addAgent, error:", error);
-//     throw error;
-//   }
-// }

@@ -1,6 +1,7 @@
 const _ = require("lodash");
-import { getRepository } from "typeorm";
+import { getRepository, getMongoRepository } from "typeorm";
 import SOI from "../entity/SOI";
+import { isMongo } from "../util/dbConfiguration";
 const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
 
@@ -141,6 +142,8 @@ function objectToSOI(soi, soiInstance) {
 
   if (_.get(soi, "system.pingFailReason")) {
     soiInstance.system_ping_fail_reason = soi.system.pingFailReason;
+  }else{
+    soiInstance.system_ping_fail_reason = '';
   }
 
   return soiInstance;
@@ -154,7 +157,7 @@ export async function addSOIDB(soi) {
     await repo.save(soiInstance);
     return {
       _id: soiInstance.id,
-      globalId: soiInstance.global_id
+      globalId: soiInstance.global_id,
     };
   } catch (err) {
     let error = new HTTPError(
@@ -164,17 +167,15 @@ export async function addSOIDB(soi) {
       "00005000001",
       "SOI.ctrl->addSOIDB"
     );
-    logger.error(`addSOIDB, error:${error.message}`, {error});
+    logger.error(`addSOIDB, error:${error.message}`, { error });
     throw error;
   }
 }
 
-export async function getSOIsDB(query?:any, securityKey?: string) {
+export async function getSOIsDB(securityKey?: string) {
   try {
     const repo = getRepository(SOI);
-    if(!query){
-      query = {};
-    }
+    let query: any = {};
     if (securityKey) {
       query.system_security_key = securityKey;
     }
@@ -189,7 +190,56 @@ export async function getSOIsDB(query?:any, securityKey?: string) {
       "00005000001",
       "SOI.ctrl->getSOIsDB"
     );
-    logger.error(`getSOIsDB, error:${error.message}`, {error});
+    logger.error(`getSOIsDB, error:${error.message}`, { error });
+    throw error;
+  }
+}
+
+export async function getNeedCheckHealthSOIsDB(
+  lastPing: number,
+  securityKey?: string
+) {
+  try {
+    let sois = [];
+    if (isMongo()) {
+      const repo = await getMongoRepository(SOI);
+      let query: any = {
+        system_last_ping: {
+          $lt: lastPing,
+        },
+      };
+
+      if (securityKey) {
+        query.system_security_key = securityKey;
+      }
+
+      sois = await repo.find(query);
+    } else {
+      // SQL
+      const soisQuery = await getRepository(SOI)
+        .createQueryBuilder()
+        .where("system_last_ping = :lastPing", {
+          lastPing,
+        });
+
+      if (securityKey) {
+        soisQuery.andWhere("system_security_key = :securityKey", {
+          securityKey,
+        });
+      }
+      sois = await soisQuery.getMany();
+    }
+    sois = flattenToObject(sois);
+    return sois;
+  } catch (err) {
+    let error = new HTTPError(
+      500,
+      err,
+      {},
+      "00005000001",
+      "SOI.ctrl->getNeedCheckHealthSOIsDB"
+    );
+    logger.error(`getNeedCheckHealthSOIsDB, error:${error.message}`, { error });
     throw error;
   }
 }
@@ -198,7 +248,7 @@ export async function getSOIByGlobalIdDB(gid: string, securityKey: string) {
   try {
     const repo = getRepository(SOI);
     let query: any = {
-      global_id: gid
+      global_id: gid,
     };
     if (securityKey) {
       query.system_security_key = securityKey;
@@ -214,7 +264,7 @@ export async function getSOIByGlobalIdDB(gid: string, securityKey: string) {
       "00005000001",
       "SOI.ctrl->getSOIByGlobalIdDB"
     );
-    logger.error(`getSOIByGlobalIdDB, error:${error.message}`, {error});
+    logger.error(`getSOIByGlobalIdDB, error:${error.message}`, { error });
     throw error;
   }
 }
@@ -222,7 +272,7 @@ export async function getSOIByGlobalIdDB(gid: string, securityKey: string) {
 export async function updateSOIDB(gid, securityKey, soi) {
   try {
     let query: any = {
-      global_id: gid
+      global_id: gid,
     };
     if (securityKey) {
       query.system_security_key = securityKey;
@@ -239,7 +289,7 @@ export async function updateSOIDB(gid, securityKey, soi) {
       "00005000001",
       "SOI.ctrl->updateSOIDB"
     );
-    logger.error(`updateSOIDB, error:${error.message}`, {error});
+    logger.error(`updateSOIDB, error:${error.message}`, { error });
     throw error;
   }
 }
@@ -247,7 +297,7 @@ export async function updateSOIDB(gid, securityKey, soi) {
 export async function deleteSOIDB(gid: string, securityKey: string) {
   try {
     let query: any = {
-      global_id: gid
+      global_id: gid,
     };
     if (securityKey) {
       query.system_security_key = securityKey;
@@ -263,7 +313,7 @@ export async function deleteSOIDB(gid: string, securityKey: string) {
       "00005000001",
       "SOI.ctrl->deleteSOIDB"
     );
-    logger.error(`deleteSOIDB, error:${error.message}`, {error});
+    logger.error(`deleteSOIDB, error:${error.message}`, { error });
     throw error;
   }
 }

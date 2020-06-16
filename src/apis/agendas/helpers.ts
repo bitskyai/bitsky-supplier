@@ -5,8 +5,8 @@ const logger = require("../../util/logger");
 const { INTELLIGENCE_STATE } = require("../../util/constants");
 const { HTTPError } = require("../../util/error");
 import { updateIntelligencesStateForManagementDB } from "../../dbController/IntelligenceAndHistory.ctrl";
-import { removeTimeoutJob } from '../../dbController/TasksJobQueue.ctrl';
-import { getSOIsDB } from "../../dbController/SOI.ctrl";
+import { removeTimeoutJob } from "../../dbController/TasksJobQueue.ctrl";
+import { getNeedCheckHealthSOIsDB } from "../../dbController/SOI.ctrl";
 const { updateSOIState } = require("../sois/helpers");
 
 /**
@@ -45,17 +45,15 @@ export async function updateTimeoutIntelligences(securityKey?) {
 export async function checkAnalystServicesHealth(securityKey?) {
   try {
     const intervalCheckAS = getConfig("SOI_STATE_CHECK_TIME");
-    const lastModifiedAt = Date.now() - intervalCheckAS;
-    const analystServices = await getSOIsDB(
-      {
-        system_modified_at: LessThan(lastModifiedAt),
-      },
+    const lastPing = Date.now() - intervalCheckAS;
+    const analystServices = await getNeedCheckHealthSOIsDB(
+      lastPing,
       securityKey
     );
     logger.info(`Check Analyst Service Health`, {
       fun: "checkAnalystServicesHealth",
       intervalCheckAS,
-      lastModifiedAt,
+      lastPing,
       analystServices: analystServices.length,
     });
     for (let i = 0; i < analystServices.length; i++) {
@@ -66,26 +64,26 @@ export async function checkAnalystServicesHealth(securityKey?) {
       // if it isn't HTTPError instance
       err = new HTTPError(500, err);
     }
-    logger.error(
-      `Check Analyst Service Health fail. Error: ${err.message}`,
-      { error: err, fun: "checkAnalystServicesHealth" }
-    );
+    logger.error(`Check Analyst Service Health fail. Error: ${err.message}`, {
+      error: err,
+      fun: "checkAnalystServicesHealth",
+    });
     throw err;
   }
 }
 
-export async function removeTimeoutTaskJob(){
-  try{
+export async function removeTimeoutTaskJob() {
+  try {
     await removeTimeoutJob();
-  }catch(err){
+  } catch (err) {
     if (!(err instanceof HTTPError)) {
       // if it isn't HTTPError instance
       err = new HTTPError(500, err);
     }
-    logger.error(
-      `Remove timeout task fail. Error: ${err.message}`,
-      { error: err, fun: "removeTimeoutTaskJob" }
-    );
+    logger.error(`Remove timeout task fail. Error: ${err.message}`, {
+      error: err,
+      fun: "removeTimeoutTaskJob",
+    });
     throw err;
   }
 }
