@@ -42,7 +42,6 @@
     "eslint-config-airbnb-base": "^13.1.0",
     "eslint-plugin-import": "^2.16.0",
     "mocha": "^6.0.2",
-    "ndb": "^1.0.44",
     "nodemon": "^1.18.10",
     "npm-check-updates": "^3.0.12",
     "rimraf": "^3.0.0",
@@ -54,7 +53,6 @@
     "tsc": "rimraf build && copyfiles -u 1 \"src/*.js\" \"src/**/*.html\" \"src/**/*.png\" \"src/**/*.css\" \"src/**/*.ico\" \"src/**/*.js\" \"src/**/*.json\" build && tsc",
     "start": "node build/index.js",
     "watch": "npm run tsc && nodemon build/index.js",
-    "debug": "ndb node build/index.js",
     "check-dependencies": "ncu",
     "update-dependencies": "ncu -u"
   },

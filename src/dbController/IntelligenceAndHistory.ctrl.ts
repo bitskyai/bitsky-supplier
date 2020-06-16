@@ -1100,7 +1100,7 @@ export async function deleteIntelligencesDB(
       query.global_id = {
         $in: gids
       };
-      const repo = await getMongoRepository(Intelligence);
+      const repo = getMongoRepository(Intelligence);
       return await repo.deleteMany(query);
     } else {
       return await getRepository(Intelligence)
@@ -1129,13 +1129,15 @@ export async function deleteIntelligencesDB(
 export async function updateEachIntelligencesDB(intelligences: any[]) {
   try {
     let repo;
+    if (isMongo()) {
+      repo = getMongoRepository(Intelligence);
+    }else{
+      repo = getRepository(Intelligence);
+    }
     for (let i = 0; i < intelligences.length; i++) {
       let intelligence = intelligences[i];
       intelligence = objectsToIntelligences(intelligence, {});
       if (isMongo()) {
-        if (!repo) {
-          repo = await getMongoRepository(Intelligence);
-        }
         await repo.updateOne(
           {
             global_id: intelligence.global_id
@@ -1143,9 +1145,6 @@ export async function updateEachIntelligencesDB(intelligences: any[]) {
           intelligence
         );
       } else {
-        if (!repo) {
-          repo = await getRepository(Intelligence);
-        }
         await repo
           .createQueryBuilder("intelligence")
           .update(Intelligence)
@@ -1162,9 +1161,9 @@ export async function updateEachIntelligencesDB(intelligences: any[]) {
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->updateIntelligencesDB"
+      "IntelligenceAndHistory.ctrl->updateEachIntelligencesDB"
     );
-    logger.error("updateIntelligencesDB, error:", error);
+    logger.error("updateEachIntelligencesDB, error: ", error);
     throw error;
   }
 }

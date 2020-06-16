@@ -17,7 +17,7 @@ export async function updateTimeoutIntelligences(securityKey?) {
     const intelligenceTimeout = getConfig("TIMEOUT_VALUE_FOR_INTELLIGENCE");
     const startedAt = Date.now() - intelligenceTimeout;
     logger.info(`Update intelligences if they are timeout`, {
-      fun: "updateTimeoutIntelligences",
+      function: "updateTimeoutIntelligences",
       intelligenceTimeout,
       startedAt,
       securityKey,
@@ -36,7 +36,7 @@ export async function updateTimeoutIntelligences(securityKey?) {
     }
     logger.error(
       `Update intelligences if they are timeout fail. Error: ${err.message}`,
-      { error: err, fun: "updateTimeoutIntelligences" }
+      { error: err, function: "updateTimeoutIntelligences" }
     );
     throw err;
   }
@@ -51,7 +51,7 @@ export async function checkAnalystServicesHealth(securityKey?) {
       securityKey
     );
     logger.info(`Check Analyst Service Health`, {
-      fun: "checkAnalystServicesHealth",
+      function: "checkAnalystServicesHealth",
       intervalCheckAS,
       lastPing,
       analystServices: analystServices.length,
@@ -66,7 +66,7 @@ export async function checkAnalystServicesHealth(securityKey?) {
     }
     logger.error(`Check Analyst Service Health fail. Error: ${err.message}`, {
       error: err,
-      fun: "checkAnalystServicesHealth",
+      function: "checkAnalystServicesHealth",
     });
     throw err;
   }
@@ -82,7 +82,7 @@ export async function removeTimeoutTaskJob() {
     }
     logger.error(`Remove timeout task fail. Error: ${err.message}`, {
       error: err,
-      fun: "removeTimeoutTaskJob",
+      function: "removeTimeoutTaskJob",
     });
     throw err;
   }

@@ -241,18 +241,18 @@ async function waitUntilTopTask(globalId) {
         if(!job||!job.global_id){
           // this means all jobs are timeout, but this agent is still waiting
           // normally this happend the intervalAgendas removeTimeoutTaskJob
-          logger.info(`No job in the queue, this happened because intervalAgendas removeTimeoutTaskJob`, {fun: 'waitUntilTopTask'});
+          logger.info(`No job in the queue, this happened because intervalAgendas removeTimeoutTaskJob`, {function: 'waitUntilTopTask'});
           clearInterval(waitHandler);
           reject(false);
           return;
         }
-        logger.debug(`Top GlobalId in job queue:${job.global_id}, globalId: ${globalId}`, {fun: 'waitUntilTopTask'});
+        logger.debug(`Top GlobalId in job queue:${job.global_id}, globalId: ${globalId}`, {function: 'waitUntilTopTask'});
         if (job.global_id == globalId) {
-          logger.debug(`${globalId} is top job now`, {fun: 'waitUntilTopTask'});
+          logger.debug(`${globalId} is top job now`, {function: 'waitUntilTopTask'});
           clearInterval(waitHandler);
           resolve(true);
         }else if((Date.now() - startTime) > taskJobTimeout){
-          logger.error(`${globalId} is timeout`, {fun: 'waitUntilTopTask'});
+          logger.error(`${globalId} is timeout`, {function: 'waitUntilTopTask'});
           clearInterval(waitHandler);
           reject(false);
         }

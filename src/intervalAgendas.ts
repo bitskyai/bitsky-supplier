@@ -19,10 +19,10 @@ export async function setupIntervalAgendas() {
     clearInterval(__removeTimeoutTaskJobIntervalHandler);
     const intelligenceTimeout = getConfig("INTELLIGENCE_TIMEOUT_CHECK_TIME");
     const intervalCheckAS = getConfig("SOI_STATE_CHECK_TIME");
-    const timeoutCreatedAt = getConfig("TASK_JOB_TIMEOUT");
+    const timeoutCreatedAt = getConfig("TASK_JOB_TIMEOUT")*0.2;
     __updateTimeoutIntelligencesIntervalHandler = setInterval(() => {
       logger.info("start updateTimeoutIntelligences ... ", {
-        fun: "setupIntervalAgendas",
+        function: "setupIntervalAgendas",
         intelligenceTimeout,
       });
       updateTimeoutIntelligences();
@@ -30,7 +30,7 @@ export async function setupIntervalAgendas() {
 
     __checkAnalystServicesHealthIntervalHandler = setInterval(() => {
       logger.info("start checkAnalystServicesHealth ... ", {
-        fun: "setupIntervalAgendas",
+        function: "setupIntervalAgendas",
         intelligenceTimeout,
       });
       checkAnalystServicesHealth();
@@ -38,20 +38,20 @@ export async function setupIntervalAgendas() {
 
     __removeTimeoutTaskJobIntervalHandler = setInterval(() => {
       logger.info("start removeTimeoutTaskJob ... ", {
-        fun: "setupIntervalAgendas",
+        function: "setupIntervalAgendas",
         timeoutCreatedAt,
       });
       removeTimeoutTaskJob();
     }, timeoutCreatedAt);
 
     logger.info("successful setupIntervalAgendas", {
-      fun: "setupIntervalAgendas",
+      function: "setupIntervalAgendas",
       intelligenceTimeout,
       intervalCheckAS,
     });
   } catch (err) {
     logger.error(`setupIntervalAgendas fail. Error: ${err.message}`, {
-      fun: "setupIntervalAgendas",
+      function: "setupIntervalAgendas",
       error: err,
     });
   }
