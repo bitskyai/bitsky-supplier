@@ -5,6 +5,7 @@ const logger = require("../../util/logger");
 const { INTELLIGENCE_STATE } = require("../../util/constants");
 const { HTTPError } = require("../../util/error");
 import { updateIntelligencesStateForManagementDB } from "../../dbController/IntelligenceAndHistory.ctrl";
+import { removeTimeoutJob } from '../../dbController/TasksJobQueue.ctrl';
 import { getSOIsDB } from "../../dbController/SOI.ctrl";
 const { updateSOIState } = require("../sois/helpers");
 
@@ -68,6 +69,22 @@ export async function checkAnalystServicesHealth(securityKey?) {
     logger.error(
       `Check Analyst Service Health fail. Error: ${err.message}`,
       { error: err, fun: "checkAnalystServicesHealth" }
+    );
+    throw err;
+  }
+}
+
+export async function removeTimeoutTaskJob(){
+  try{
+    await removeTimeoutJob();
+  }catch(err){
+    if (!(err instanceof HTTPError)) {
+      // if it isn't HTTPError instance
+      err = new HTTPError(500, err);
+    }
+    logger.error(
+      `Remove timeout task fail. Error: ${err.message}`,
+      { error: err, fun: "removeTimeoutTaskJob" }
     );
     throw err;
   }

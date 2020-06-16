@@ -1,7 +1,7 @@
-import { getRepository, getMongoRepository } from "typeorm";
+import { getRepository, getMongoRepository, LessThan } from "typeorm";
 import TasksJobQueue from "../entity/TasksJobQueue";
 const logger = require("../util/logger");
-const utils = require("../util/utils");
+const { getConfig } = require("../config");
 const { HTTPError } = require("../util/error");
 import { isMongo } from "../util/dbConfiguration";
 
@@ -10,7 +10,7 @@ export async function addATaskJob(globalId, agentGlobalId) {
     const repo = getRepository(TasksJobQueue);
     const job = await repo.insert({
       global_id: globalId,
-      agent_global_id: agentGlobalId
+      agent_global_id: agentGlobalId,
     });
     return job;
   } catch (err) {
@@ -45,7 +45,7 @@ export async function getTopTaskJob() {
         .createQueryBuilder()
         .orderBy({
           created_at: "ASC",
-          id: "ASC"
+          id: "ASC",
         })
         .getOne();
     }
@@ -64,10 +64,33 @@ export async function getTopTaskJob() {
   }
 }
 
+export async function removeTimeoutJob() {
+  try {
+    let timeoutCreatedAt:any = Date.now() - getConfig("TASK_JOB_TIMEOUT");
+    timeoutCreatedAt = new Date(timeoutCreatedAt).toISOString();
+    console.log("removeTimeoutJob->timeoutCreatedAt: ", timeoutCreatedAt);
+    if (isMongo()) {
+      await getMongoRepository(TasksJobQueue).deleteMany({
+        $query: {
+          created_at: {
+            $lt: timeoutCreatedAt
+          }
+        },
+      })
+    } else {
+      await getRepository(TasksJobQueue)
+        .createQueryBuilder()
+        .delete()
+        .where('created_at < :timeoutCreatedAt', {timeoutCreatedAt})
+        .execute();
+    }
+  } catch (err) {}
+}
+
 export async function removeTaskJob(globalId) {
   try {
     let query: any = {
-      global_id: globalId
+      global_id: globalId,
     };
     const repo = getRepository(TasksJobQueue);
     let result = await repo.delete(query);

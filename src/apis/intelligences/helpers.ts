@@ -13,6 +13,7 @@ const soisHelpers = require("../sois/helpers");
 const agentsHelpers = require("../agents/helpers");
 const logger = require("../../util/logger");
 const utils = require("../../util/utils");
+const { getConfig } = require('../../config');
 import {
   addIntelligencesDB,
   getIntelligencesOrHistoryForManagementDB,
@@ -75,7 +76,6 @@ async function pauseIntelligencesForManagement(
       null,
       securityKey
     );
-    console.log(result);
     return result;
   } catch (err) {
     throw err;
@@ -101,7 +101,6 @@ async function resumeIntelligencesForManagement(
       null,
       securityKey
     );
-    console.log(result);
     return result;
   } catch (err) {
     throw err;
@@ -234,15 +233,28 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
 
 async function waitUntilTopTask(globalId) {
   try {
-    return new Promise(async (resolve) => {
+    return new Promise(async (resolve, reject) => {
+      const startTime = Date.now();
+      const taskJobTimeout = getConfig("TASK_JOB_TIMEOUT");
       let waitHandler = setInterval(async () => {
         let job = await getTopTaskJob();
-        console.log('job: ', job);
+        if(!job||!job.global_id){
+          // this means all jobs are timeout, but this agent is still waiting
+          // normally this happend the intervalAgendas removeTimeoutTaskJob
+          logger.info(`No job in the queue, this happened because intervalAgendas removeTimeoutTaskJob`, {fun: 'waitUntilTopTask'});
+          clearInterval(waitHandler);
+          reject(false);
+          return;
+        }
         logger.debug(`Top GlobalId in job queue:${job.global_id}, globalId: ${globalId}`, {fun: 'waitUntilTopTask'});
         if (job.global_id == globalId) {
           logger.debug(`${globalId} is top job now`, {fun: 'waitUntilTopTask'});
           clearInterval(waitHandler);
           resolve(true);
+        }else if((Date.now() - startTime) > taskJobTimeout){
+          logger.error(`${globalId} is timeout`, {fun: 'waitUntilTopTask'});
+          clearInterval(waitHandler);
+          reject(false);
         }
       }, 100);
     });
@@ -341,7 +353,6 @@ async function getIntelligences(agentGid: string, securityKey: string) {
 
 async function updateIntelligences(content, securityKey: string) {
   try {
-    console.log("updateIntelligences -> content: ", content);
     let contentMap = {};
     let gids = content.map((item) => {
       contentMap[item.globalId] = item;
