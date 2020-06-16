@@ -8,6 +8,7 @@ const CONFIG = {
   X_SECURITY_KEY_HEADER: "x-munew-security-key", // This is an http request header, used for follow service to identify who send this request
   SECURITY_KEY_IN_DB: "securityKey",
   INTELLIGENCE_TIMEOUT_CHECK_TIME: 60*1000, // HOW frequently to check intelligence timeout
+  TASK_JOB_TIMEOUT: 60*1000, // Timeout value for a task job
   SOI_STATE_CHECK_TIME: 10 * 1000, // How frequently to check SOI state
   TIMEOUT_VALUE_FOR_INTELLIGENCE: 5 * 60 * 1000,
   MAX_FAIL_NUMBER_FOR_INTELLIGENCE: 3, // Max fail number for an intelligence, if more then this fail number, this intelligence will be moved to history
