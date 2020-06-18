@@ -5,6 +5,8 @@ const packageJson = require("../../package.json");
 const CONFIG = {
   X_REQUESTED_WITH: "x-munew-requested-with", // who send this request
   DIA_UI: "x_munew_dia_ui",
+  X_SERIAL_ID: "x-munew-serial-id", // request serial id
+  X_JOB_ID: "x-munew-job-id", // each request is a job
   X_SECURITY_KEY_HEADER: "x-munew-security-key", // This is an http request header, used for follow service to identify who send this request
   SECURITY_KEY_IN_DB: "securityKey",
   INTELLIGENCE_TIMEOUT_CHECK_TIME: 60*1000, // HOW frequently to check intelligence timeout

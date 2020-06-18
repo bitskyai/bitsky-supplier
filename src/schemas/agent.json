@@ -49,6 +49,17 @@
               "description": "When last time this agent ping DIA server"
             }
           ]
+        },
+        "serialId": {
+          "allOf": [
+            {
+              "$ref": "#/definitions/globalId"
+            },
+            {
+              "title": "Connected Agent Serial Id",
+              "description": "The unique serial id of connected agent"
+            }
+          ]
         }
       }
     },

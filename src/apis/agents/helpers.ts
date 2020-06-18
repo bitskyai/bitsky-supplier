@@ -1,10 +1,6 @@
 const _ = require("lodash");
 const semver = require("semver");
-const {
-  CONFIG,
-  AGENT_STATE,
-  DEFAULT_AGENT
-} = require("../../util/constants");
+const { CONFIG, AGENT_STATE, DEFAULT_AGENT } = require("../../util/constants");
 const { HTTPError } = require("../../util/error");
 
 import {
@@ -12,11 +8,11 @@ import {
   getAgentsDB,
   getAgentByGlobalIdDB,
   updateAgentDB,
-  deleteAgentDB
+  deleteAgentDB,
 } from "../../dbController/Agent.ctrl";
 const {
   validateAgentAndUpdateState,
-  generateGlobalId
+  generateGlobalId,
 } = require("../../util/utils");
 // const logger = require("../../util/logger");
 
@@ -124,16 +120,21 @@ async function registerAgent(agent, securityKey) {
  *
  * @returns {object}
  */
-async function getAgent(gid: string, securityKey: string) {
+async function getAgent(
+  gid: string,
+  securityKey: string,
+  serialId: string,
+  jobId: string
+) {
   try {
     if (!gid) {
       throw new HTTPError(
         400,
         null,
         {
-          globalId: gid
+          globalId: gid,
         },
-        "00024000001"
+        "00144000001"
       );
     }
     let agent = await getAgentByGlobalIdDB(gid, securityKey);
@@ -142,12 +143,50 @@ async function getAgent(gid: string, securityKey: string) {
         404,
         null,
         {
-          globalId: gid
+          globalId: gid,
         },
-        "00024040001",
+        "00144040001",
         gid
       );
     }
+
+    // console.log(
+    //   `getAgent, gid: ${gid}, serialId: ${serialId}, jobId: ${jobId}`
+    // );
+
+    // If pass `serialId` and `serialId` isn't same with `agent.system.serialId`
+    if (
+      agent.system &&
+      agent.system.serialId &&
+      serialId &&
+      agent.system.serialId != serialId
+    ) {
+      // This agent was connected
+      throw new HTTPError(
+        403,
+        null,
+        {
+          globalId: gid,
+        },
+        "00144030001",
+        gid
+      );
+    }
+
+    let updateAgent:any = {
+      system: {
+        lastPing: Date.now(),
+      },
+    };
+
+    if (serialId&&!agent.system.serialId) {
+      // need to update agent serialId, so this means agent was connected, before disconnect, don't allow connect
+      // first agent connect to this
+      updateAgent.system.serialId = serialId;
+    }
+
+    await updateAgentDB(gid, securityKey, updateAgent);
+
     return agent;
   } catch (err) {
     throw err;
@@ -236,6 +275,40 @@ async function updateAgent(gid, agent, securityKey) {
 }
 
 /**
+ * Disconnect an agent
+ * 0017
+ * @param {string} gid - agent globalId
+ * @param {string} securityKey - current user's security key
+ */
+async function disconnectAgent(gid, securityKey, jobId) {
+  try {
+    let originalAgent: any = await checkAgentExistByGlobalID(gid, securityKey);
+
+    // change state to **active**
+    const version = semver.inc(
+      originalAgent.system.version || "1.0.0",
+      "major"
+    );
+
+    const updateAgent = {
+      globalId: generateGlobalId("agent"),
+      system:{
+        serialId: '',
+        version: version,
+        lastPing: 0
+      }
+    }
+
+    await updateAgentDB(gid, securityKey, updateAgent);
+    return {
+      globalId: updateAgent.globalId,
+    };
+  } catch (err) {
+    throw err;
+  }
+}
+
+/**
  * Activate an agent
  * 0017
  * @param {string} gid - agent globalId
@@ -262,7 +335,7 @@ async function activateAgent(gid, securityKey) {
     } else if (originalAgent.system.state === AGENT_STATE.active) {
       // If an agent's state is active, don't need to update it again
       return {
-        state: originalAgent.system.state
+        state: originalAgent.system.state,
       };
     }
 
@@ -288,7 +361,7 @@ async function activateAgent(gid, securityKey) {
     // };
     let result = await updateAgentDB(gid, securityKey, originalAgent);
     return {
-      state: originalAgent.system.state
+      state: originalAgent.system.state,
     };
   } catch (err) {
     throw err;
@@ -321,7 +394,7 @@ async function deactivateAgent(gid, securityKey) {
     } else if (originalAgent.system.state != AGENT_STATE.active) {
       // If an agent's state isn't active, don't need to update it again
       return {
-        state: originalAgent.system.state
+        state: originalAgent.system.state,
       };
     }
 
@@ -347,16 +420,16 @@ async function deactivateAgent(gid, securityKey) {
     // };
     let result = await updateAgentDB(gid, securityKey, originalAgent);
     return {
-      state: originalAgent.system.state
+      state: originalAgent.system.state,
     };
   } catch (err) {
     throw err;
   }
 }
 
-async function unregisterAgent(gid:string, securityKey:string) {
+async function unregisterAgent(gid: string, securityKey: string) {
   try {
-    console.log('gid: ', gid, ' securityKey: ', securityKey);
+    console.log("gid: ", gid, " securityKey: ", securityKey);
     // Make sure can find Agent, if cannot, the it will throw 404 error
     await checkAgentExistByGlobalID(gid, securityKey);
     let result = await deleteAgentDB(gid, securityKey);
@@ -391,7 +464,6 @@ async function unregisterAgent(gid:string, securityKey:string) {
     // // remove this Agent in agents collection
     // let result = await remove(COLLECTIONS_NAME.agents, agentQuery);
     // return result;
-
   } catch (err) {
     throw err;
   }
@@ -404,5 +476,6 @@ module.exports = {
   unregisterAgent,
   activateAgent,
   deactivateAgent,
-  getAgents
+  disconnectAgent,
+  getAgents,
 };

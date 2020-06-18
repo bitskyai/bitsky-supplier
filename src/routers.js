@@ -19,7 +19,6 @@ function createAPIRouters(app){
 
   // middleware that is specific to this router
   router.use(function timeLog (req, res, next) {
-    logger.info(`[API Router] Time: ${ Date.now()}`);
     next();
   });
 
@@ -40,7 +39,7 @@ function createHealthRouter(app){
 
   // middleware that is specific to this router
   router.use(function timeLog (req, res, next) {
-    logger.info(`[Health Router] Time: ${ Date.now()}`);
+    logger.debug(`[Health Router] Time: ${ Date.now()}`);
     next();
   });
 

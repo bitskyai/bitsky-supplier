@@ -40,12 +40,53 @@ function registerRouter(router) {
       }
     });
 
+    // For agent client to connect agent configuration
+    // X_SERIAL_ID is required
     router.get("/agents/:gid", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+        let serialId = req.get(CONFIG.X_SERIAL_ID);
+        let jobId = req.get(CONFIG.X_JOB_ID);
+        if(!serialId){
+          throw new HTTPError(
+            400,
+            null,
+            {
+              serialId,
+              globalId: _.get(req, "params.gid"),
+              jobId
+            },
+            "00144000002",
+            CONFIG.X_SERIAL_ID
+          );
+        }
         let result = await helpers.getAgent(
           _.get(req, "params.gid"),
-          securityKey
+          securityKey,
+          serialId,
+          jobId
+        );
+        res.send(result);
+      } catch (err) {
+        // Already HTTPError, then throw it
+        if (err instanceof HTTPError) {
+          next(err);
+        } else {
+          // Otherwise create a HTTPError
+          next(new HTTPError(500, err, {}, "00025000001"));
+        }
+      }
+    });
+
+    router.post("/manangement/agents/:gid/disconnect", async (req, res, next) => {
+      try {
+        let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+        // let serialId = req.get(CONFIG.X_SERIAL_ID);
+        let jobId = req.get(CONFIG.X_JOB_ID);
+        let result = await helpers.disconnectAgent(
+          _.get(req, "params.gid"),
+          securityKey,
+          jobId
         );
         res.send(result);
       } catch (err) {

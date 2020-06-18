@@ -104,6 +104,26 @@
     "reason": "Unknown error",
     "action": "Check log to find more detail"
   },
+  "00144000001": {
+    "message": "You must pass globalId, it is required",
+    "reason": "Don't pass globalId",
+    "action": "Check the globalId you passed"
+  },
+  "00144000002": {
+    "message": "You must pass `%s` http request header, it is required",
+    "reason": "Don't pass serial id http request header",
+    "action": "Check the serial id you passed"
+  },
+  "00144040001": {
+    "message": "Cannot find Agent by globalId - %s",
+    "reason": "Cannot find Agent by globalId",
+    "action": "Check whether you passed correct globalId"
+  },
+  "00144030001": {
+    "message": "Cannot connect to this agent, it already connected. - %s",
+    "reason": "Agent already connected",
+    "action": "If you really want to connect to this agent, then disconnect it first"
+  },
   "00134000001": {
     "message": "Please change another globalId. %s already exist!",
     "reason": "globalId isn't unique",

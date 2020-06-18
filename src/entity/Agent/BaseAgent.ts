@@ -104,4 +104,9 @@ export abstract class BaseAgent extends Base {
     nullable: true
   })
   system_last_ping: 'timestamp'
+
+  @Column({
+    nullable: true
+  })
+  system_serial_id: string
 }

@@ -61,6 +61,11 @@ function flattenToObject(agents) {
       obj.system.lastPing = agent.system_last_ping;
     }
 
+    if (_.get(agent, "system_serial_id")) {
+      !obj.system ? (obj.system = {}) : "";
+      obj.system.serialId = agent.system_serial_id;
+    }
+
     return obj;
   }
 
@@ -143,18 +148,42 @@ function objectToAgent(agent, agentInstance) {
 
   if (_.get(agent, "system.securityKey")) {
     agentInstance.system_security_key = agent.system.securityKey;
+  }else{
+    if(_.get(agent, "system.securityKey") !== undefined){
+      agentInstance.system_security_key = null;
+    }
   }
 
   if (_.get(agent, "system.created")) {
     agentInstance.system_created_at = agent.system.created;
+  }else{
+    if(_.get(agent, "system.created") !== undefined){
+      agentInstance.system_created_at = null;
+    }
   }
 
   if (_.get(agent, "system.modified")) {
     agentInstance.system_modified_at = agent.system.modified;
+  }else{
+    if(_.get(agent, "system.modified") !== undefined){
+      agentInstance.system_modified_at = null;
+    }
   }
 
   if (_.get(agent, "system.lastPing")) {
     agentInstance.system_last_ping = agent.system.lastPing;
+  }else{
+    if(_.get(agent, "system.lastPing") !== undefined){
+      agentInstance.system_last_ping = null;
+    }
+  }
+
+  if (_.get(agent, "system.serialId")) {
+    agentInstance.system_serial_id = agent.system.serialId;
+  }else{
+    if(_.get(agent, "system.serialId") !== undefined){
+      agentInstance.system_serial_id = null;
+    }
   }
 
   return agentInstance;
@@ -242,6 +271,13 @@ export async function getAgentByGlobalIdDB(gid: string, securityKey: string) {
 
 export async function updateAgentDB(gid, securityKey, agent) {
   try {
+    if(!agent||!gid){
+      // if agent doesn't exist or gid doesn't exist, don't need to update
+      return {
+        gid: gid
+      };
+    }
+
     let query: any = {
       global_id: gid,
     };
@@ -249,8 +285,18 @@ export async function updateAgentDB(gid, securityKey, agent) {
       query.system_security_key = securityKey;
     }
     const repo = getRepository(Agent);
+
+    if(!agent.system){
+      agent.system = {};
+    }
+
+    // update last modified
+    agent.system.modified = Date.now();
     agent = objectToAgent(agent, {});
-    let result = await repo.update(query, agent);
+
+    // console.log(`updateAgentDB->agent: `, agent);
+
+    const result = await repo.update(query, agent);
     return result;
   } catch (err) {
     let error = new HTTPError(
