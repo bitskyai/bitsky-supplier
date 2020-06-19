@@ -12,7 +12,7 @@ const {
   INTELLIGENCE_STATE,
   SOI_STATE,
   PERMISSIONS,
-  DEFAULT_SOI
+  DEFAULT_SOI,
 } = require("../util/constants");
 import { isMongo } from "../util/dbConfiguration";
 import { updateAgentDB } from "./Agent.ctrl";
@@ -307,13 +307,13 @@ export async function getIntelligencesOrHistoryForManagementDB(
 
       if (url) {
         query.url = {
-          $regex: utils.convertStringToRegExp(url)
+          $regex: utils.convertStringToRegExp(url),
         };
       }
 
       if (state) {
         query["system_state"] = {
-          $in: state.split(",")
+          $in: state.split(","),
         };
       }
 
@@ -321,28 +321,28 @@ export async function getIntelligencesOrHistoryForManagementDB(
       const repo = await getMongoRepository(repoName);
       total = await repo.count(query);
       let nQuery: any = {
-        where: query
+        where: query,
       };
       if (modified && id) {
         nQuery.where.$or = [
           {
             system_modified_at: {
-              $lt: modified * 1
-            }
+              $lt: modified * 1,
+            },
           },
           // If the "sytem.modified" is an exact match, we need a tiebreaker, so we use the _id field from the cursor.
           {
             system_modified_at: modified * 1,
             _id: {
-              $lt: ObjectId(id)
-            }
-          }
+              $lt: ObjectId(id),
+            },
+          },
         ];
       }
       nQuery.take = limit || 50;
       nQuery.order = {
         system_modified_at: "DESC",
-        _id: "DESC"
+        _id: "DESC",
       };
       intelligences = await repo.find(nQuery);
     } else {
@@ -373,7 +373,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
           andWhere = true;
         }
         intelligenceQuery[funName]("intelligence.url LIKE :url", {
-          url: `%${url}%`
+          url: `%${url}%`,
         });
       }
 
@@ -389,7 +389,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
         intelligenceQuery[funName](
           "intelligence.system_state IN (:...states)",
           {
-            states
+            states,
           }
         );
       }
@@ -441,7 +441,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
       previousCursor: cursor,
       nextCursor: nextCursor,
       intelligences: flattenToObject(intelligences),
-      total: total
+      total: total,
     };
   } catch (err) {
     let error = new HTTPError(
@@ -467,27 +467,27 @@ export async function updateIntelligencesSOIStateForManagementDB(
       const repo = await getMongoRepository(Intelligence);
       let query: any = {};
       query.soi_global_id = {
-        $eq: soiGID
+        $eq: soiGID,
       };
       // update SOI state and modified_at
       return await repo.updateMany(query, {
         $set: {
           system_modified_at: Date.now(),
-          soi_state: state
-        }
+          soi_state: state,
+        },
       });
     } else {
       // SQL
       let updateData: any = {
         system_modified_at: Date.now(),
-        soi_state: state
+        soi_state: state,
       };
       const intelligenceQuery = await getRepository(Intelligence)
         .createQueryBuilder("intelligence")
         .update(Intelligence)
         .set(updateData)
         .where("intelligence.soi_global_id = :id", {
-          id: soiGID
+          id: soiGID,
         });
       return await intelligenceQuery.execute();
     }
@@ -522,15 +522,15 @@ export async function updateIntelligencesStateForManagementDB(
     if (isMongo()) {
       const repo = await getMongoRepository(Intelligence);
       const query: any = {};
-      const mongoDBUdpateData:any = {
+      const mongoDBUdpateData: any = {
         $set: {
           system_modified_at: Date.now(),
-          system_state: state
-        }
-      }
+          system_state: state,
+        },
+      };
 
       query.system_state = {
-        $nin: states
+        $nin: states,
       };
 
       if (securityKey) {
@@ -539,25 +539,28 @@ export async function updateIntelligencesStateForManagementDB(
 
       if (ids && ids.length) {
         query.global_id = {
-          $in: ids
+          $in: ids,
         };
-      } 
+      }
 
       if (url) {
         query.url = {
-          $regex: utils.convertStringToRegExp(url)
+          $regex: utils.convertStringToRegExp(url),
         };
       }
 
       // any value less than `startedAt`, it will set to timeout, whatever what state you pass
-      if(timeoutStartedAt){
+      if (timeoutStartedAt) {
+        // Only timeout currently is in  `RUNNING` state, other state don't need timeout
+        query.system_state.$in = [INTELLIGENCE_STATE.running];
         query.system_started_at = {
-          $lt: timeoutStartedAt
+          $lt: timeoutStartedAt,
         };
         mongoDBUdpateData.$set.system_agent_ended_at = Date.now();
         mongoDBUdpateData.$set.system_ended_at = Date.now();
         mongoDBUdpateData.$set.system_state = INTELLIGENCE_STATE.timeout;
-        mongoDBUdpateData.$set.system_failures_reason = "Agent collect intelligence timeout. Engine automatically set to TIMEOUT status";
+        mongoDBUdpateData.$set.system_failures_reason =
+          "Agent collect intelligence timeout. Engine automatically set to TIMEOUT status";
         // Since this is set by system, so don't auto increase fail number
         // Actually, it isn't easy to auto increase `system_failures_number` ^_^
       }
@@ -568,14 +571,14 @@ export async function updateIntelligencesStateForManagementDB(
       const intelligenceQuery = await getRepository(Intelligence)
         .createQueryBuilder("intelligence")
         .update(Intelligence);
-      
+
       let sqlUpdateData: any = {
         system_modified_at: () => Date.now().toString(),
-        system_state: state
-      }
+        system_state: state,
+      };
 
       intelligenceQuery.where("intelligence.system_state NOT IN (:...states)", {
-        states
+        states,
       });
 
       if (securityKey) {
@@ -587,25 +590,32 @@ export async function updateIntelligencesStateForManagementDB(
 
       if (ids && ids.length) {
         intelligenceQuery.where("intelligence.global_id IN (:...ids)", {
-          ids
-        });
-      } 
-
-      if (url) {
-        intelligenceQuery.andWhere("intelligence.url LIKE :url", {
-          url: `%${url}%`
+          ids,
         });
       }
 
-      if(timeoutStartedAt){
+      if (url) {
+        intelligenceQuery.andWhere("intelligence.url LIKE :url", {
+          url: `%${url}%`,
+        });
+      }
+
+      if (timeoutStartedAt) {
         intelligenceQuery.andWhere(
           "intelligence.system_started_at < :timeoutStartedAt",
           { timeoutStartedAt }
         );
+        intelligenceQuery.andWhere(
+          "intelligence.system_state IN (:...states)",
+          {
+            states: [INTELLIGENCE_STATE.running],
+          }
+        );
         sqlUpdateData.system_agent_ended_at = Date.now();
         sqlUpdateData.system_ended_at = Date.now();
         sqlUpdateData.system_state = INTELLIGENCE_STATE.timeout;
-        sqlUpdateData.system_failures_reason = "Agent collect intelligence timeout. Engine automatically set to TIMEOUT status";
+        sqlUpdateData.system_failures_reason =
+          "Agent collect intelligence timeout. Engine automatically set to TIMEOUT status";
       }
 
       intelligenceQuery.set(sqlUpdateData);
@@ -619,7 +629,10 @@ export async function updateIntelligencesStateForManagementDB(
       "00005000001",
       "IntelligenceAndHistory.ctrl->updateIntelligencesStateForManagementDB"
     );
-    logger.error(`updateIntelligencesStateForManagementDB, error: ${error.message}`, {error});
+    logger.error(
+      `updateIntelligencesStateForManagementDB, error: ${error.message}`,
+      { error }
+    );
     throw error;
   }
 }
@@ -645,12 +658,12 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
 
       if (ids && ids.length) {
         query.global_id = {
-          $in: ids
+          $in: ids,
         };
       } else {
         if (url) {
           query.url = {
-            $regex: utils.convertStringToRegExp(url)
+            $regex: utils.convertStringToRegExp(url),
           };
         }
       }
@@ -673,7 +686,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
           andWhere = true;
         }
         intelligenceQuery[funName]("system_security_key = :securityKey", {
-          securityKey
+          securityKey,
         });
       }
 
@@ -686,7 +699,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
           andWhere = true;
         }
         intelligenceQuery[funName]("global_id IN (:...ids)", {
-          ids
+          ids,
         });
       } else {
         if (url) {
@@ -698,7 +711,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
             andWhere = true;
           }
           intelligenceQuery[funName]("url LIKE :url", {
-            url: `%${url}%`
+            url: `%${url}%`,
           });
         }
       }
@@ -731,7 +744,7 @@ export async function deleteIntelligencesBySOIForManagementDB(
       }
 
       query.soi_global_id = {
-        $in: [soiGID]
+        $in: [soiGID],
       };
       return await repo.deleteMany(query);
     } else {
@@ -741,7 +754,7 @@ export async function deleteIntelligencesBySOIForManagementDB(
         .delete()
         .from(Intelligence)
         .where("intelligence.soi_global_id = :id", {
-          id: soiGID
+          id: soiGID,
         });
 
       if (securityKey) {
@@ -787,29 +800,29 @@ export async function getIntelligencesForAgentDB(
     if (isMongo()) {
       repo = await getMongoRepository(Intelligence);
       let query: any = {
-        where: {}
+        where: {},
       };
       query.where.system_state = {
         $nin: [
           INTELLIGENCE_STATE.draft,
           INTELLIGENCE_STATE.running,
           INTELLIGENCE_STATE.finished,
-          INTELLIGENCE_STATE.paused
-        ]
+          INTELLIGENCE_STATE.paused,
+        ],
       };
       query.where.soi_state = {
-        $eq: SOI_STATE.active
+        $eq: SOI_STATE.active,
       };
       query.where.suitable_agents = {
         $elemMatch: {
-          $eq: _.toUpper(agentConfig.type)
-        }
+          $eq: _.toUpper(agentConfig.type),
+        },
       };
 
       query.take = concurrent;
       query.order = {
         soi_global_id: "DESC",
-        priority: "ASC"
+        priority: "ASC",
       };
 
       // logger.debug("getIntelligencesForAgentDB->query", query);
@@ -826,12 +839,12 @@ export async function getIntelligencesForAgentDB(
           // if no intelligences for this securityKey and if this agent's permission is public then, get other intelligences that is public
           delete query.where.system_security_key;
           query.where.permission = {
-            $nin: [PERMISSIONS.private]
+            $nin: [PERMISSIONS.private],
           };
 
           intelligences = await repo.find(query);
         }
-      }else{
+      } else {
         // if securityKey is empty, this means it is on-primse mode, if a request was sent by UI Server, it always contains a securityKey, only if this request is directly sent to
         // DIA-Engine, then it possible don't have securityKey, in this mode, then it should be able to get all permissions intelligences since they are belong to same user
         intelligences = await repo.find(query);
@@ -851,11 +864,11 @@ export async function getIntelligencesForAgentDB(
           INTELLIGENCE_STATE.draft,
           INTELLIGENCE_STATE.running,
           INTELLIGENCE_STATE.finished,
-          INTELLIGENCE_STATE.paused
-        ]
+          INTELLIGENCE_STATE.paused,
+        ],
       });
       intelligenceQuery.andWhere("intelligence.soi_state = :state", {
-        state: SOI_STATE.active
+        state: SOI_STATE.active,
       });
       intelligenceQuery.andWhere(
         "intelligence.suitable_agents LIKE :agentType",
@@ -863,7 +876,7 @@ export async function getIntelligencesForAgentDB(
       );
       intelligenceQuery.orderBy({
         soi_global_id: "DESC",
-        priority: "ASC"
+        priority: "ASC",
       });
       intelligenceQuery.limit(concurrent);
 
@@ -874,14 +887,14 @@ export async function getIntelligencesForAgentDB(
             INTELLIGENCE_STATE.draft,
             INTELLIGENCE_STATE.running,
             INTELLIGENCE_STATE.finished,
-            INTELLIGENCE_STATE.paused
-          ]
+            INTELLIGENCE_STATE.paused,
+          ],
         }
       );
       intelligenceQueryNoSecurityKey.andWhere(
         "intelligence.soi_state = :state",
         {
-          state: SOI_STATE.active
+          state: SOI_STATE.active,
         }
       );
       intelligenceQueryNoSecurityKey.andWhere(
@@ -890,7 +903,7 @@ export async function getIntelligencesForAgentDB(
       );
       intelligenceQueryNoSecurityKey.orderBy({
         soi_global_id: "DESC",
-        priority: "ASC"
+        priority: "ASC",
       });
       intelligenceQueryNoSecurityKey.limit(concurrent);
       // if security key provide, get all intelligences for this security key first
@@ -909,7 +922,7 @@ export async function getIntelligencesForAgentDB(
           intelligenceQueryNoSecurityKey.andWhere(
             "intelligence.permission NOT IN (:...permissions)",
             {
-              permissions: [PERMISSIONS.private]
+              permissions: [PERMISSIONS.private],
             }
           );
           intelligences = await intelligenceQueryNoSecurityKey.getMany();
@@ -954,7 +967,7 @@ export async function getIntelligencesForAgentDB(
       // }
       item.system.agent = {
         globalId: agentConfig.globalId,
-        type: _.toUpper(agentConfig.type)
+        type: _.toUpper(agentConfig.type),
       };
     }
 
@@ -964,7 +977,7 @@ export async function getIntelligencesForAgentDB(
       system_modified_at: Date.now(),
       system_state: INTELLIGENCE_STATE.running,
       system_agent_global_id: agentConfig.globalId,
-      system_agent_type: _.toUpper(agentConfig.type)
+      system_agent_type: _.toUpper(agentConfig.type),
     };
 
     if (isMongo()) {
@@ -972,11 +985,11 @@ export async function getIntelligencesForAgentDB(
       await repo.updateMany(
         {
           global_id: {
-            $in: gids
-          }
+            $in: gids,
+          },
         },
         {
-          $set: updateData
+          $set: updateData,
         }
       );
     } else {
@@ -986,7 +999,7 @@ export async function getIntelligencesForAgentDB(
         .update(Intelligence)
         .set(updateData);
       query.where("intelligence.global_id IN (:...gids)", {
-        gids
+        gids,
       });
       await query.execute();
     }
@@ -996,8 +1009,8 @@ export async function getIntelligencesForAgentDB(
     updateAgentDB(agentConfig.globalId, securityKey, {
       system: {
         modified: Date.now(),
-        lastPing: Date.now()
-      }
+        lastPing: Date.now(),
+      },
     });
 
     // TODO: 2019/11/10 need to rethink about this logic, since intelligences already send back to agents
@@ -1045,13 +1058,13 @@ export async function getIntelligencesDB(gids: string[], securityKey: string) {
     }
     if (isMongo()) {
       let query: any = {
-        where: {}
+        where: {},
       };
       if (securityKey) {
         query.where["system_security_key"] = securityKey;
       }
       query.where.global_id = {
-        $in: gids
+        $in: gids,
       };
       const repo = await getMongoRepository(Intelligence);
       let intelligences = await repo.find(query);
@@ -1098,7 +1111,7 @@ export async function deleteIntelligencesDB(
         query.system_security_key = securityKey;
       }
       query.global_id = {
-        $in: gids
+        $in: gids,
       };
       const repo = getMongoRepository(Intelligence);
       return await repo.deleteMany(query);
@@ -1131,7 +1144,7 @@ export async function updateEachIntelligencesDB(intelligences: any[]) {
     let repo;
     if (isMongo()) {
       repo = getMongoRepository(Intelligence);
-    }else{
+    } else {
       repo = getRepository(Intelligence);
     }
     for (let i = 0; i < intelligences.length; i++) {
@@ -1140,7 +1153,7 @@ export async function updateEachIntelligencesDB(intelligences: any[]) {
       if (isMongo()) {
         await repo.updateOne(
           {
-            global_id: intelligence.global_id
+            global_id: intelligence.global_id,
           },
           intelligence
         );
@@ -1150,7 +1163,7 @@ export async function updateEachIntelligencesDB(intelligences: any[]) {
           .update(Intelligence)
           .set(intelligence)
           .where("intelligence.global_id = :gloalId", {
-            gloalId: intelligence.global_id
+            gloalId: intelligence.global_id,
           })
           .execute();
       }

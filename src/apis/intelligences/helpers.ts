@@ -297,7 +297,7 @@ async function getIntelligences(agentGid: string, securityKey: string) {
     logger.debug(`getIntelligences->agentGid: ${agentGid}`);
     logger.debug(`getIntelligences->securityKey: ${securityKey}`);
     // Step 1: get agent configuration
-    let agentConfig = await agentsHelpers.getAgent(agentGid);
+    let agentConfig = await agentsHelpers.getAgent(agentGid, securityKey);
     logger.debug(
       `getIntelligences->agentConfig.system.securityKey: ${agentConfig.system.securityKey}`
     );
