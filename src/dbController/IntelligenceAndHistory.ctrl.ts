@@ -280,7 +280,8 @@ export async function getIntelligencesOrHistoryForManagementDB(
   state: string,
   limit: number,
   securityKey: string,
-  history?: boolean
+  history?: boolean,
+  ids?: string[]
 ) {
   try {
     let modified: any, id: string, intelligences: object[], total: number;
@@ -317,6 +318,12 @@ export async function getIntelligencesOrHistoryForManagementDB(
         };
       }
 
+      if (ids && ids.length) {
+        query.global_id = {
+          $in: ids,
+        };
+      }
+
       // Query Build doesn't support for Mongo
       const repo = await getMongoRepository(repoName);
       total = await repo.count(query);
@@ -339,7 +346,9 @@ export async function getIntelligencesOrHistoryForManagementDB(
           },
         ];
       }
-      nQuery.take = limit || 50;
+      if(limit){
+        nQuery.take = limit;
+      }
       nQuery.order = {
         system_modified_at: "DESC",
         _id: "DESC",
@@ -352,7 +361,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
       // After use *where*, then need to use *andWhere*
       let andWhere = false;
       if (securityKey) {
-        let funName;
+        let funName:string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -365,7 +374,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
       }
 
       if (url) {
-        let funName;
+        let funName:string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -379,7 +388,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
 
       if (state) {
         let states = state.split(",");
-        let funName;
+        let funName:string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -392,6 +401,12 @@ export async function getIntelligencesOrHistoryForManagementDB(
             states,
           }
         );
+      }
+
+      if (ids && ids.length) {
+        intelligenceQuery.where("intelligence.global_id IN (:...ids)", {
+          ids,
+        });
       }
 
       total = await intelligenceQuery.getCount();
@@ -409,7 +424,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
       intelligenceQuery.orderBy({ system_modified_at: "DESC", id: "DESC" });
       if (modified && id) {
         modified = modified * 1;
-        let funName;
+        let funName:string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -507,6 +522,7 @@ export async function updateIntelligencesSOIStateForManagementDB(
 export async function updateIntelligencesStateForManagementDB(
   state: any,
   url: string,
+  selectedState: string,
   ids: string[],
   timeoutStartedAt: Number,
   securityKey: string
@@ -516,9 +532,10 @@ export async function updateIntelligencesStateForManagementDB(
     // Don't allow user to mass update draft status to other status
     // Don't update same status
     let states = [INTELLIGENCE_STATE.draft, state];
-    // if (state === INTELLIGENCE_STATE.configured) {
-    //   states = [INTELLIGENCE_STATE.running, INTELLIGENCE_STATE.draft];
-    // }
+    if(state === INTELLIGENCE_STATE.configured || state === INTELLIGENCE_STATE.paused){
+      states.push(INTELLIGENCE_STATE.running);
+    }
+    
     if (isMongo()) {
       const repo = await getMongoRepository(Intelligence);
       const query: any = {};
@@ -540,6 +557,12 @@ export async function updateIntelligencesStateForManagementDB(
       if (ids && ids.length) {
         query.global_id = {
           $in: ids,
+        };
+      }
+
+      if (selectedState) {
+        query["system_state"] = {
+          $in: selectedState.split(","),
         };
       }
 
@@ -589,7 +612,7 @@ export async function updateIntelligencesStateForManagementDB(
       }
 
       if (ids && ids.length) {
-        intelligenceQuery.where("intelligence.global_id IN (:...ids)", {
+        intelligenceQuery.andWhere("intelligence.global_id IN (:...ids)", {
           ids,
         });
       }
@@ -598,6 +621,15 @@ export async function updateIntelligencesStateForManagementDB(
         intelligenceQuery.andWhere("intelligence.url LIKE :url", {
           url: `%${url}%`,
         });
+      }
+
+      if (selectedState) {
+        intelligenceQuery.andWhere(
+          "intelligence.system_state IN (:...states)",
+          {
+            states: selectedState.split(",")
+          }
+        );
       }
 
       if (timeoutStartedAt) {
@@ -639,6 +671,7 @@ export async function updateIntelligencesStateForManagementDB(
 
 export async function deleteIntelligencesOrHistoryForManagementDB(
   url: string,
+  selectedState: string,
   ids: string[],
   securityKey: string,
   history?: boolean
@@ -656,16 +689,21 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
         query.system_security_key = securityKey;
       }
 
+      if (selectedState) {
+        query["system_state"] = {
+          $in: selectedState.split(","),
+        };
+      }
+
       if (ids && ids.length) {
         query.global_id = {
           $in: ids,
         };
-      } else {
-        if (url) {
-          query.url = {
-            $regex: utils.convertStringToRegExp(url),
-          };
-        }
+      }
+      if (url) {
+        query.url = {
+          $regex: utils.convertStringToRegExp(url),
+        };
       }
       return await repo.deleteMany(query);
     } else {
@@ -678,7 +716,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
       // After use *where*, then need to use *andWhere*
       let andWhere = false;
       if (securityKey) {
-        let funName;
+        let funName:string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -691,7 +729,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
       }
 
       if (ids && ids.length) {
-        let funName;
+        let funName:string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -701,19 +739,35 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
         intelligenceQuery[funName]("global_id IN (:...ids)", {
           ids,
         });
-      } else {
-        if (url) {
-          let funName;
-          if (andWhere) {
-            funName = "andWhere";
-          } else {
-            funName = "where";
-            andWhere = true;
-          }
-          intelligenceQuery[funName]("url LIKE :url", {
-            url: `%${url}%`,
-          });
+      } 
+
+      if (url) {
+        let funName:string;
+        if (andWhere) {
+          funName = "andWhere";
+        } else {
+          funName = "where";
+          andWhere = true;
         }
+        intelligenceQuery[funName]("url LIKE :url", {
+          url: `%${url}%`,
+        });
+      }
+
+      if (selectedState) {
+        let funName:string;
+        if (andWhere) {
+          funName = "andWhere";
+        } else {
+          funName = "where";
+          andWhere = true;
+        }
+        intelligenceQuery[funName](
+          "intelligence.system_state IN (:...states)",
+          {
+            states: selectedState.split(",")
+          }
+        );
       }
       return await intelligenceQuery.execute();
     }

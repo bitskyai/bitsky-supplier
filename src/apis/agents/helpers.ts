@@ -124,7 +124,8 @@ async function getAgent(
   gid: string,
   securityKey: string,
   serialId: string,
-  jobId: string
+  jobId: string,
+  requestedWith: string
 ) {
   try {
     if (!gid) {
@@ -173,13 +174,16 @@ async function getAgent(
       );
     }
 
-    let updateAgent:any = {
-      system: {
-        lastPing: Date.now(),
-      },
+    let updateAgent: any = {
+      system: {},
     };
 
-    if (serialId&&!agent.system.serialId) {
+    if (requestedWith !== CONFIG.REQUESTED_WITH_ENGINE_UI) {
+      // if it isn't called by engine-ui then update last ping, otherwise don't need
+      updateAgent.system.lastPing = Date.now();
+    }
+
+    if (serialId && !agent.system.serialId) {
       // need to update agent serialId, so this means agent was connected, before disconnect, don't allow connect
       // first agent connect to this
       updateAgent.system.serialId = serialId;
@@ -292,12 +296,12 @@ async function disconnectAgent(gid, securityKey, jobId) {
 
     const updateAgent = {
       globalId: generateGlobalId("agent"),
-      system:{
-        serialId: '',
+      system: {
+        serialId: "",
         version: version,
-        lastPing: 0
-      }
-    }
+        lastPing: 0,
+      },
+    };
 
     await updateAgentDB(gid, securityKey, updateAgent);
     return {

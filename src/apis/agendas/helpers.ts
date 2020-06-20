@@ -26,6 +26,7 @@ export async function updateTimeoutIntelligences(securityKey?) {
       INTELLIGENCE_STATE.timeout,
       null,
       null,
+      null,
       startedAt,
       securityKey
     );

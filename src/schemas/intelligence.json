@@ -137,7 +137,7 @@
           "$ref": "#/definitions/globalId"
         },
         "state": {
-          "$ref": "#/definitions/state"
+          "$ref": "#/definitions/soiState"
         }
       }
     },
@@ -267,6 +267,12 @@
       "type": "string",
       "description": "State of this entitle",
       "enum": ["DRAFT", "CONFIGURED", "ACTIVE", "DELETED"]
+    },
+    "soiState": {
+      "title": "SOI State",
+      "type": "string",
+      "description": "State of this entitle",
+      "enum": ["ACTIVE", "FAILED"]
     },
     "dataset": {
       "type": "object",

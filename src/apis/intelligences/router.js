@@ -28,7 +28,7 @@ function registerRouter(router) {
         router.post('/manangement/intelligences/pause', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-                await helpers.pauseIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'body'), securityKey);
+                await helpers.pauseIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
                 res.status(204).send();
             }catch(err){
                 // Already HTTPError, then throw it
@@ -44,7 +44,7 @@ function registerRouter(router) {
         router.post('/manangement/intelligences/resume', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-                await helpers.resumeIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'body'), securityKey);
+                await helpers.resumeIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
                 res.status(204).send();
             }catch(err){
                 // Already HTTPError, then throw it
@@ -60,7 +60,7 @@ function registerRouter(router) {
         router.delete('/manangement/intelligences', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-                await helpers.deleteIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'body'), securityKey);
+                await helpers.deleteIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
                 res.status(204).send();
             }catch(err){
                 // Already HTTPError, then throw it

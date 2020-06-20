@@ -44,9 +44,10 @@ function registerRouter(router) {
     // X_SERIAL_ID is required
     router.get("/agents/:gid", async (req, res, next) => {
       try {
-        let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-        let serialId = req.get(CONFIG.X_SERIAL_ID);
-        let jobId = req.get(CONFIG.X_JOB_ID);
+        const securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
+        const serialId = req.get(CONFIG.X_SERIAL_ID);
+        const jobId = req.get(CONFIG.X_JOB_ID);
+        const requestedWith = req.get(CONFIG.X_REQUESTED_WITH);
         if(!serialId){
           throw new HTTPError(
             400,
@@ -64,7 +65,8 @@ function registerRouter(router) {
           _.get(req, "params.gid"),
           securityKey,
           serialId,
-          jobId
+          jobId,
+          requestedWith
         );
         res.send(result);
       } catch (err) {

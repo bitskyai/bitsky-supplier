@@ -65,6 +65,7 @@ async function getIntelligencesForManagement(
  */
 async function pauseIntelligencesForManagement(
   url: string,
+  state: string,
   ids: string[],
   securityKey: string
 ) {
@@ -72,6 +73,7 @@ async function pauseIntelligencesForManagement(
     let result = await updateIntelligencesStateForManagementDB(
       INTELLIGENCE_STATE.paused,
       url,
+      state,
       ids,
       null,
       securityKey
@@ -90,6 +92,7 @@ async function pauseIntelligencesForManagement(
  */
 async function resumeIntelligencesForManagement(
   url: string,
+  state: string,
   ids: string[],
   securityKey: string
 ) {
@@ -97,6 +100,7 @@ async function resumeIntelligencesForManagement(
     let result = await updateIntelligencesStateForManagementDB(
       INTELLIGENCE_STATE.configured,
       url,
+      state,
       ids,
       null,
       securityKey
@@ -115,12 +119,14 @@ async function resumeIntelligencesForManagement(
  */
 async function deleteIntelligencesForManagement(
   url: string,
+  state: string,
   ids: string[],
   securityKey: string
 ) {
   try {
     let result = await deleteIntelligencesOrHistoryForManagementDB(
       url,
+      state,
       ids,
       securityKey
     );
@@ -184,6 +190,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
       intelligence.system.created = Date.now();
       intelligence.system.modified = Date.now();
       intelligence.system.securityKey = securityKey;
+      intelligence.system.state = AGENT_STATE.configured;
 
       // Make sure agent type is uppercase
       intelligence.suitableAgents = intelligence.suitableAgents.map(
@@ -192,7 +199,9 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
         }
       );
       // since just recieve SOI request, so set the state to **ACTIVE**
-      intelligence.soi.state = SOI_STATE.active;
+      if(!intelligence.soi.state){
+        intelligence.soi.state = SOI_STATE.active;
+      }      
 
       let validateResult = utils.validateIntelligence(intelligence);
 
@@ -203,6 +212,12 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
           error: validateResult.errors,
         });
       }
+      // remove unchangable field for create
+      delete intelligence.system.agent;
+      delete intelligence.system.startedAt;
+      delete intelligence.system.endedAt;
+      delete intelligence.system.failuresNumber;
+
       // Need to update globalId to globalId
       soiGlobalIds[intelligence.soi.globalId] = 1;
       return intelligence;
