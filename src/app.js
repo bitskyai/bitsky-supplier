@@ -6,7 +6,7 @@ const bodyParser = require("body-parser");
 const compression = require("compression");
 const morgan = require("morgan");
 const path = require("path");
-const cors = require('cors')
+const cors = require("cors");
 const logger = require("./util/logger");
 const errorResponder = require("./middleware/error-responder");
 const errorLogger = require("./middleware/error-logger");
@@ -14,11 +14,16 @@ const createRouters = require("./routers");
 const { getConfig } = require("./config");
 const security = require("./util/security");
 const checkMigration = require("./migration");
-const {setupIntervalAgendas} = require('./intervalAgendas');
+const { setupIntervalAgendas } = require("./intervalAgendas");
+const { CONFIG } = require("./util/constants");
 
 async function createApp() {
   const app = express();
-  app.use(cors());
+  app.use(
+    cors({
+      exposedHeaders: [CONFIG.X_RESPONSED_WITH],
+    })
+  );
   logger.info("create app successful!");
 
   // App is served behind Heroku's router.
@@ -26,7 +31,7 @@ async function createApp() {
   app.enable("trust proxy", 1);
   app.disable("x-powered-by");
 
-  if (getConfig('NODE_ENV') !== "production") {
+  if (getConfig("NODE_ENV") !== "production") {
     app.use(morgan("dev"));
   }
 
@@ -34,23 +39,24 @@ async function createApp() {
   app.use(
     bodyParser.text({
       limit: "4mb",
-      type: "text/html"
+      type: "text/html",
     })
   );
   app.use(
     bodyParser.json({
-      limit: "100mb"
+      limit: "100mb",
     })
   );
   app.use(
     compression({
       // Compress everything over 10 bytes
-      threshold: 10
+      threshold: 10,
     })
   );
 
   // Security check, if you don't want your server is public, then you can add `API_KEY` to protect your APIs
   app.use((req, res, next) => {
+    res.header(CONFIG.X_RESPONSED_WITH, CONFIG.SERVICE_NAME);
     if (security.verifyAPIKey(req, res)) {
       next();
     } else {

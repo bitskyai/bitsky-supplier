@@ -4,6 +4,7 @@ const packageJson = require("../../package.json");
 
 const CONFIG = {
   REQUESTED_WITH_ENGINE_UI: "engine-ui", // Request by engine-ui
+  X_RESPONSED_WITH: "x-munew-responsed-with",
   X_REQUESTED_WITH: "x-munew-requested-with", // who send this request
   DIA_UI: "x_munew_dia_ui",
   X_SERIAL_ID: "x-munew-serial-id", // request serial id
