@@ -48,11 +48,13 @@ function registerRouter(router) {
         const serialId = req.get(CONFIG.X_SERIAL_ID);
         const jobId = req.get(CONFIG.X_JOB_ID);
         const requestedWith = req.get(CONFIG.X_REQUESTED_WITH);
+        const type = req.query.type;
         if(!serialId){
           throw new HTTPError(
             400,
             null,
             {
+              type,
               serialId,
               globalId: _.get(req, "params.gid"),
               jobId
@@ -61,12 +63,26 @@ function registerRouter(router) {
             CONFIG.X_SERIAL_ID
           );
         }
+        if(!type){
+          throw new HTTPError(
+            400,
+            null,
+            {
+              type,
+              serialId,
+              globalId: _.get(req, "params.gid"),
+              jobId
+            },
+            "00144000003"
+          );
+        }
         let result = await helpers.getAgent(
           _.get(req, "params.gid"),
           securityKey,
           serialId,
           jobId,
-          requestedWith
+          requestedWith,
+          type
         );
         res.send(result);
       } catch (err) {

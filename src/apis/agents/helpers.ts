@@ -125,7 +125,8 @@ async function getAgent(
   securityKey: string,
   serialId: string,
   jobId: string,
-  requestedWith: string
+  requestedWith: string,
+  type: string
 ) {
   try {
     if (!gid) {
@@ -148,6 +149,21 @@ async function getAgent(
         },
         "00144040001",
         gid
+      );
+    }
+
+    if(type && (_.toUpper(agent.type) !== _.toUpper(type))){
+      // if pass type, then need to make sure agent type is same with target agent type
+      throw new HTTPError(
+        400,
+        null,
+        {
+          globalId: gid,
+        },
+        "00144000004",
+        gid,
+        type, 
+        agent.type
       );
     }
 
@@ -183,9 +199,10 @@ async function getAgent(
       updateAgent.system.lastPing = Date.now();
     }
 
-    if (serialId && !agent.system.serialId) {
+    if (type && serialId && !agent.system.serialId) {
       // need to update agent serialId, so this means agent was connected, before disconnect, don't allow connect
       // first agent connect to this
+      // only user pass `type` and `serialId` then update serialId
       updateAgent.system.serialId = serialId;
     }
 

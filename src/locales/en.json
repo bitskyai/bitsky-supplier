@@ -114,6 +114,16 @@
     "reason": "Don't pass serial id http request header",
     "action": "Check the serial id you passed"
   },
+  "00144000003": {
+    "message": "You must send agent type in query, it is required. ?type=<request_agent_type>",
+    "reason": "Don't pass agent type",
+    "action": "Sent agent type as query"
+  },
+  "00144000004": {
+    "message": "Your agent type is different with the Agent(globalId:%s) you want to connect. Your agent type: %s, Target Agent type: %s",
+    "reason": "Your agent type is different with target agent type",
+    "action": "Change another agent"
+  },
   "00144040001": {
     "message": "Cannot find Agent by globalId - %s",
     "reason": "Cannot find Agent by globalId",
