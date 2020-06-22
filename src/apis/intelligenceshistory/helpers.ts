@@ -88,6 +88,7 @@ async function rerunIntelligencesForManagement(
     let soisState = {};
     let intelligences = result.intelligences;
     for (let i = 0; i < intelligences.length; i++) {
+      // update soi state
       let soiId = intelligences[i].soi.globalId;
       if(!soisState[soiId]){
         let soi = await getSOI(soiId, securityKey);

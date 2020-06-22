@@ -165,15 +165,11 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
     let soiGlobalIds = {};
     intelligences = intelligences.map((intelligence: any) => {
       // remove data that cannot set by user
-      // Comment: 07/30/2019
-      // delete intelligence.created_at;
-      // delete intelligence.modified_at;
-      // delete intelligence.last_collected_at;
-      // delete intelligence.started_at;
-      // delete intelligence.ended_at;
-      // delete intelligence.status;
-
-      let err = [];
+      delete intelligence.dataset;
+      delete intelligence.system;
+      
+      // let err = [];
+      /*
       if (!intelligence.globalId) {
         // comment 07/25/2019 - instead of error, generate an globalid
         // err.push({
@@ -184,6 +180,8 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
         // To avoid same intelligence insert multiple time
         intelligence._id = intelligence.globalId;
       }
+      */
+      intelligence.globalId = utils.generateGlobalId("intelligence");
       intelligence = _.merge({}, defaultIntelligence, intelligence);
 
       // Update system information
@@ -201,7 +199,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
       // since just recieve SOI request, so set the state to **ACTIVE**
       if(!intelligence.soi.state){
         intelligence.soi.state = SOI_STATE.active;
-      }      
+      }
 
       let validateResult = utils.validateIntelligence(intelligence);
 

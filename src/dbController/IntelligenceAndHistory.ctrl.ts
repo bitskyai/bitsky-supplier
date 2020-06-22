@@ -591,7 +591,7 @@ export async function updateIntelligencesStateForManagementDB(
       return await repo.updateMany(query, mongoDBUdpateData);
     } else {
       // SQL
-      const intelligenceQuery = await getRepository(Intelligence)
+      const intelligenceQuery = getRepository(Intelligence)
         .createQueryBuilder("intelligence")
         .update(Intelligence);
 
@@ -599,7 +599,6 @@ export async function updateIntelligencesStateForManagementDB(
         system_modified_at: () => Date.now().toString(),
         system_state: state,
       };
-
       intelligenceQuery.where("intelligence.system_state NOT IN (:...states)", {
         states,
       });
@@ -625,9 +624,9 @@ export async function updateIntelligencesStateForManagementDB(
 
       if (selectedState) {
         intelligenceQuery.andWhere(
-          "intelligence.system_state IN (:...states)",
+          "intelligence.system_state IN (:...selectedState)",
           {
-            states: selectedState.split(",")
+            selectedState: selectedState.split(",")
           }
         );
       }
@@ -638,9 +637,9 @@ export async function updateIntelligencesStateForManagementDB(
           { timeoutStartedAt }
         );
         intelligenceQuery.andWhere(
-          "intelligence.system_state IN (:...states)",
+          "intelligence.system_state IN (:...requiredStates)",
           {
-            states: [INTELLIGENCE_STATE.running],
+            requiredStates: [INTELLIGENCE_STATE.running],
           }
         );
         sqlUpdateData.system_agent_ended_at = Date.now();

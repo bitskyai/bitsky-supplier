@@ -218,7 +218,7 @@ export async function getNeedCheckHealthSOIsDB(
       // SQL
       const soisQuery = await getRepository(SOI)
         .createQueryBuilder()
-        .where("system_last_ping = :lastPing", {
+        .where("system_last_ping < :lastPing", {
           lastPing,
         });
 
