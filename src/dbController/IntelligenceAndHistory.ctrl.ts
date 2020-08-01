@@ -262,14 +262,19 @@ export async function addIntelligencesDB(intelligences) {
     }
     return generatedMaps;
   } catch (err) {
-    let error = new HTTPError(
+    const error = new HTTPError(
       500,
       err,
       {},
       "00005000001",
       "IntelligenceAndHistory.ctrl->addIntelligencesDB"
     );
-    logger.error("addIntelligencesDB, error:", error);
+    logger.error(`addIntelligencesDB fail ${error.message}`, {
+      error,
+      parameters: {
+        intelligences,
+      },
+    });
     throw error;
   }
 }
@@ -346,7 +351,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
           },
         ];
       }
-      if(limit){
+      if (limit) {
         nQuery.take = limit;
       }
       nQuery.order = {
@@ -361,7 +366,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
       // After use *where*, then need to use *andWhere*
       let andWhere = false;
       if (securityKey) {
-        let funName:string;
+        let funName: string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -374,7 +379,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
       }
 
       if (url) {
-        let funName:string;
+        let funName: string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -388,7 +393,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
 
       if (state) {
         let states = state.split(",");
-        let funName:string;
+        let funName: string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -424,7 +429,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
       intelligenceQuery.orderBy({ system_modified_at: "DESC", id: "DESC" });
       if (modified && id) {
         modified = modified * 1;
-        let funName:string;
+        let funName: string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -459,14 +464,25 @@ export async function getIntelligencesOrHistoryForManagementDB(
       total: total,
     };
   } catch (err) {
-    let error = new HTTPError(
+    const error = new HTTPError(
       500,
       err,
       {},
       "00005000001",
       "IntelligenceAndHistory.ctrl->getIntelligencesForManagementDB"
     );
-    logger.error("getIntelligencesForManagementDB, error:", error);
+    logger.error(`getIntelligencesForManagementDB fail ${error.message}`, {
+      error,
+      parameters: {
+        cursor,
+        url,
+        state,
+        limit,
+        securityKey,
+        history,
+        ids,
+      },
+    });
     throw error;
   }
 }
@@ -532,10 +548,13 @@ export async function updateIntelligencesStateForManagementDB(
     // Don't allow user to mass update draft status to other status
     // Don't update same status
     let states = [INTELLIGENCE_STATE.draft, state];
-    if(state === INTELLIGENCE_STATE.configured || state === INTELLIGENCE_STATE.paused){
+    if (
+      state === INTELLIGENCE_STATE.configured ||
+      state === INTELLIGENCE_STATE.paused
+    ) {
       states.push(INTELLIGENCE_STATE.running);
     }
-    
+
     if (isMongo()) {
       const repo = await getMongoRepository(Intelligence);
       const query: any = {};
@@ -626,7 +645,7 @@ export async function updateIntelligencesStateForManagementDB(
         intelligenceQuery.andWhere(
           "intelligence.system_state IN (:...selectedState)",
           {
-            selectedState: selectedState.split(",")
+            selectedState: selectedState.split(","),
           }
         );
       }
@@ -715,7 +734,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
       // After use *where*, then need to use *andWhere*
       let andWhere = false;
       if (securityKey) {
-        let funName:string;
+        let funName: string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -728,7 +747,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
       }
 
       if (ids && ids.length) {
-        let funName:string;
+        let funName: string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -738,10 +757,10 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
         intelligenceQuery[funName]("global_id IN (:...ids)", {
           ids,
         });
-      } 
+      }
 
       if (url) {
-        let funName:string;
+        let funName: string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -754,7 +773,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
       }
 
       if (selectedState) {
-        let funName:string;
+        let funName: string;
         if (andWhere) {
           funName = "andWhere";
         } else {
@@ -764,7 +783,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
         intelligenceQuery[funName](
           "intelligence.system_state IN (:...states)",
           {
-            states: selectedState.split(",")
+            states: selectedState.split(","),
           }
         );
       }
@@ -1204,13 +1223,23 @@ export async function updateEachIntelligencesDB(intelligences: any[]) {
       let intelligence = intelligences[i];
       intelligence = objectsToIntelligences(intelligence, {});
       if (isMongo()) {
+        logger.debug(`updateEachIntelligencesDB->isMongo`, {
+          i,
+          global_id: intelligence.global_id
+        });
         await repo.updateOne(
           {
             global_id: intelligence.global_id,
           },
-          intelligence
+          {
+            $set: intelligence
+          }
         );
       } else {
+        logger.debug(`updateEachIntelligencesDB->sqlite`, {
+          i,
+          global_id: intelligence.global_id
+        });
         await repo
           .createQueryBuilder("intelligence")
           .update(Intelligence)
@@ -1222,14 +1251,16 @@ export async function updateEachIntelligencesDB(intelligences: any[]) {
       }
     }
   } catch (err) {
-    let error = new HTTPError(
+    const error = new HTTPError(
       500,
       err,
       {},
       "00005000001",
       "IntelligenceAndHistory.ctrl->updateEachIntelligencesDB"
     );
-    logger.error("updateEachIntelligencesDB, error: ", error);
+    logger.error(`updateEachIntelligencesDB fail ${error.message}`, {
+      error
+    });
     throw error;
   }
 }
