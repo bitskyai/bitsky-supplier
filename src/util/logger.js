@@ -1,6 +1,7 @@
 const { createLogger, format, transports } = require("winston");
 const _ = require("lodash");
 const { getConfig } = require("../config");
+const { CONFIG } = require('./constants');
 const fs = require("fs-extra");
 
 // Only need one logger instance in whole system
@@ -32,13 +33,17 @@ function createMyLogger() {
         // - Write all logs error (and below) to `error.log`.
         //
         new transports.File({
-          filename: `${getConfig("LOG_FILES_PATH")}/error.log`,
-          level: "error"
+          filename: `${getConfig("LOG_FILES_PATH")}/${CONFIG.ERROR_LOG_FILE_NAME}`,
+          level: "error",
+          tailable: true,
+          maxsize: getConfig('LOG_MAX_SIZE'),
+          maxFiles: 1
         }),
         new transports.File({
-          filename: `${getConfig("LOG_FILES_PATH")}/${getConfig(
-            "SERVICE_NAME"
-          )}.log`
+          filename: `${getConfig("LOG_FILES_PATH")}/${CONFIG.COMBINED_LOG_FILE_NAME}`,
+          tailable: true,
+          maxsize: getConfig('LOG_MAX_SIZE'),
+          maxFiles: 1
         })
       ]
     });

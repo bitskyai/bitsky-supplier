@@ -13,7 +13,7 @@ const soisHelpers = require("../sois/helpers");
 const agentsHelpers = require("../agents/helpers");
 const logger = require("../../util/logger");
 const utils = require("../../util/utils");
-const { getConfig } = require('../../config');
+const { getConfig } = require("../../config");
 import {
   addIntelligencesDB,
   getIntelligencesOrHistoryForManagementDB,
@@ -167,7 +167,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
       // remove data that cannot set by user
       delete intelligence.dataset;
       delete intelligence.system;
-      
+
       // let err = [];
       /*
       if (!intelligence.globalId) {
@@ -197,7 +197,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
         }
       );
       // since just recieve SOI request, so set the state to **ACTIVE**
-      if(!intelligence.soi.state){
+      if (!intelligence.soi.state) {
         intelligence.soi.state = SOI_STATE.active;
       }
 
@@ -251,21 +251,31 @@ async function waitUntilTopTask(globalId) {
       const taskJobTimeout = getConfig("TASK_JOB_TIMEOUT");
       let waitHandler = setInterval(async () => {
         let job = await getTopTaskJob();
-        if(!job||!job.global_id){
+        if (!job || !job.global_id) {
           // this means all jobs are timeout, but this agent is still waiting
           // normally this happend the intervalAgendas removeTimeoutTaskJob
-          logger.info(`No job in the queue, this happened because intervalAgendas removeTimeoutTaskJob`, {function: 'waitUntilTopTask'});
+          logger.info(
+            `No job in the queue, this happened because intervalAgendas removeTimeoutTaskJob`,
+            { function: "waitUntilTopTask" }
+          );
           clearInterval(waitHandler);
           reject(false);
           return;
         }
-        logger.debug(`Top GlobalId in job queue:${job.global_id}, globalId: ${globalId}`, {function: 'waitUntilTopTask'});
+        logger.debug(
+          `Top GlobalId in job queue:${job.global_id}, globalId: ${globalId}`,
+          { function: "waitUntilTopTask" }
+        );
         if (job.global_id == globalId) {
-          logger.debug(`${globalId} is top job now`, {function: 'waitUntilTopTask'});
+          logger.debug(`${globalId} is top job now`, {
+            function: "waitUntilTopTask",
+          });
           clearInterval(waitHandler);
           resolve(true);
-        }else if((Date.now() - startTime) > taskJobTimeout){
-          logger.error(`${globalId} is timeout`, {function: 'waitUntilTopTask'});
+        } else if (Date.now() - startTime > taskJobTimeout) {
+          logger.error(`${globalId} is timeout`, {
+            function: "waitUntilTopTask",
+          });
           clearInterval(waitHandler);
           reject(false);
         }
@@ -424,7 +434,7 @@ async function updateIntelligences(content, securityKey: string) {
 
         delete item.id;
         delete item._id;
-        // if it's successful, then means reach max retry time, to keep why it isn't successful
+        // if it isn't successful, then means reach max retry time, to keep why it isn't successful
         if (
           _.get(intelligence, "system.state") !== INTELLIGENCE_STATE.finished
         ) {
@@ -459,14 +469,18 @@ async function updateIntelligences(content, securityKey: string) {
     }
 
     // add it to intelligences_history
-    // await insertMany(COLLECTIONS_NAME.intelligencesHistory, intelligences);
+    for (let i = 0; i < intelligenceHistory.length; i++) {
+      // remove `failuresReason` if intelligence is successful
+      if (
+        _.get(intelligenceHistory[i], "system.state") ==
+        INTELLIGENCE_STATE.finished
+      ) {
+        if (_.get(intelligenceHistory[i], "system.failuresReason")) {
+          _.set(intelligenceHistory[i], "system.failuresReason", "");
+        }
+      }
+    }
     await addIntelligenceHistoryDB(intelligenceHistory);
-
-    // let result = await remove(COLLECTIONS_NAME.intelligences, {
-    //   globalId: {
-    //     $in: gids
-    //   }
-    // });
     let result = await deleteIntelligencesDB(gids, securityKey);
     return result;
   } catch (err) {

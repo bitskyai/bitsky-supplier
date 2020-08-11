@@ -530,7 +530,10 @@ export async function updateIntelligencesSOIStateForManagementDB(
       "00005000001",
       "IntelligenceAndHistory.ctrl->updateIntelligencesSOIStateForManagementDB"
     );
-    logger.error("updateIntelligencesSOIStateForManagementDB, error:", error);
+    logger.error(
+      `updateIntelligencesSOIStateForManagementDB, error:${error.message}`,
+      { error }
+    );
     throw error;
   }
 }
@@ -797,7 +800,9 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
       "00005000001",
       "IntelligenceAndHistory.ctrl->deleteIntelligencesForManagementDB"
     );
-    logger.error("deleteIntelligencesForManagementDB, error:", error);
+    logger.error(`deleteIntelligencesForManagementDB, error:${error.message}`, {
+      error,
+    });
     throw error;
   }
 }
@@ -846,7 +851,10 @@ export async function deleteIntelligencesBySOIForManagementDB(
       "00005000001",
       "IntelligenceAndHistory.ctrl->deleteIntelligencesBySOIForManagementDB"
     );
-    logger.error("deleteIntelligencesBySOIForManagementDB, error:", error);
+    logger.error(
+      `deleteIntelligencesBySOIForManagementDB, error:${error.message}`,
+      { error }
+    );
     throw error;
   }
 }
@@ -1113,7 +1121,9 @@ export async function getIntelligencesForAgentDB(
       "00005000001",
       "IntelligenceAndHistory.ctrl->getIntelligencesForAgentDB"
     );
-    logger.error("getIntelligencesForAgentDB, error:", error);
+    logger.error(`getIntelligencesForAgentDB, error:${error.message}`, {
+      error,
+    });
     throw error;
   }
 }
@@ -1167,7 +1177,7 @@ export async function getIntelligencesDB(gids: string[], securityKey: string) {
       "00005000001",
       "IntelligenceAndHistory.ctrl->getIntelligencesDB"
     );
-    logger.error("getIntelligencesDB, error:", error);
+    logger.error(`getIntelligencesDB, error:${error.message}`, { error });
     throw error;
   }
 }
@@ -1202,7 +1212,7 @@ export async function deleteIntelligencesDB(
       "00005000001",
       "IntelligenceAndHistory.ctrl->deleteIntelligencesDB"
     );
-    logger.error("deleteIntelligencesDB, error:", error);
+    logger.error(`deleteIntelligencesDB, error:${error.message}`, { error });
     throw error;
   }
 }
@@ -1225,20 +1235,20 @@ export async function updateEachIntelligencesDB(intelligences: any[]) {
       if (isMongo()) {
         logger.debug(`updateEachIntelligencesDB->isMongo`, {
           i,
-          global_id: intelligence.global_id
+          global_id: intelligence.global_id,
         });
         await repo.updateOne(
           {
             global_id: intelligence.global_id,
           },
           {
-            $set: intelligence
+            $set: intelligence,
           }
         );
       } else {
         logger.debug(`updateEachIntelligencesDB->sqlite`, {
           i,
-          global_id: intelligence.global_id
+          global_id: intelligence.global_id,
         });
         await repo
           .createQueryBuilder("intelligence")
@@ -1259,7 +1269,7 @@ export async function updateEachIntelligencesDB(intelligences: any[]) {
       "IntelligenceAndHistory.ctrl->updateEachIntelligencesDB"
     );
     logger.error(`updateEachIntelligencesDB fail ${error.message}`, {
-      error
+      error,
     });
     throw error;
   }
@@ -1273,9 +1283,9 @@ export async function addIntelligenceHistoryDB(intelligences) {
       null
     );
     let generatedMaps = [];
-    // everytime insert 5 items
+    // everytime insert 10 items
     while (intelligenceInstances.length) {
-      let insertData = intelligenceInstances.splice(0, 5);
+      let insertData = intelligenceInstances.splice(0, 10);
       let result = await repo.insert(insertData);
       generatedMaps.push(result.generatedMaps);
     }
@@ -1288,7 +1298,7 @@ export async function addIntelligenceHistoryDB(intelligences) {
       "00005000001",
       "IntelligenceHistory.ctrl->addIntelligenceHistoryDB"
     );
-    logger.error("addIntelligenceHistoryDB, error:", error);
+    logger.error(`addIntelligenceHistoryDB, error:${error.message}`, { error });
     throw error;
   }
 }
