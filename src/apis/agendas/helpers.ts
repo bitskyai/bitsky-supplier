@@ -28,7 +28,8 @@ export async function updateTimeoutIntelligences(securityKey?) {
       null,
       null,
       startedAt,
-      securityKey
+      securityKey,
+      true
     );
   } catch (err) {
     if (!(err instanceof HTTPError)) {
@@ -58,7 +59,7 @@ export async function checkAnalystServicesHealth(securityKey?) {
       analystServices: analystServices.length,
     });
     for (let i = 0; i < analystServices.length; i++) {
-      await updateSOIState(analystServices[i].globalId, analystServices[i]);
+      await updateSOIState(analystServices[i].globalId, analystServices[i], true);
     }
   } catch (err) {
     if (!(err instanceof HTTPError)) {

@@ -418,6 +418,11 @@ export async function getIntelligencesOrHistoryForManagementDB(
       if (cursor) {
         let parseCursor = utils.atob(cursor);
         parseCursor = /^(.*):_:_:_(.*)$/.exec(parseCursor);
+
+        console.log(`parseCursor: `, parseCursor);
+        console.log(`modified: `, parseCursor[1]);
+        console.log(`id: `, parseCursor[2]);
+
         modified = parseCursor[1];
         id = parseCursor[2];
       }
@@ -490,7 +495,8 @@ export async function getIntelligencesOrHistoryForManagementDB(
 // Update all matched intelligences' soi state
 export async function updateIntelligencesSOIStateForManagementDB(
   soiGID: string,
-  state: string
+  state: string,
+  dontUpdateModified?: boolean
 ) {
   try {
     state = _.toUpper(state);
@@ -501,18 +507,23 @@ export async function updateIntelligencesSOIStateForManagementDB(
         $eq: soiGID,
       };
       // update SOI state and modified_at
-      return await repo.updateMany(query, {
+      const soiState:any = {
         $set: {
-          system_modified_at: Date.now(),
           soi_state: state,
         },
-      });
+      }
+      if(!dontUpdateModified){
+        soiState.$set.system_modified_at = Date.now();
+      }
+      return await repo.updateMany(query, soiState);
     } else {
       // SQL
-      let updateData: any = {
-        system_modified_at: Date.now(),
+      const updateData: any = {
         soi_state: state,
       };
+      if(!dontUpdateModified){
+        updateData.system_modified_at = Date.now();
+      }
       const intelligenceQuery = await getRepository(Intelligence)
         .createQueryBuilder("intelligence")
         .update(Intelligence)
@@ -544,7 +555,8 @@ export async function updateIntelligencesStateForManagementDB(
   selectedState: string,
   ids: string[],
   timeoutStartedAt: Number,
-  securityKey: string
+  securityKey: string,
+  dontUpdateModified?: boolean
 ) {
   try {
     state = _.toUpper(state);
@@ -563,10 +575,15 @@ export async function updateIntelligencesStateForManagementDB(
       const query: any = {};
       const mongoDBUdpateData: any = {
         $set: {
-          system_modified_at: Date.now(),
           system_state: state,
         },
       };
+
+      if(!dontUpdateModified){
+        // if `dontUpdateModified` is true, then don't udpate modified, otherwise, update modified
+        // The reason of `dontUpdateModified` is when interval check task status or retailer services status, if update `system_modified_at` will cause pagination doesn't work
+        mongoDBUdpateData.$set.system_modified_at = Date.now();
+      }
 
       query.system_state = {
         $nin: states,
@@ -617,10 +634,16 @@ export async function updateIntelligencesStateForManagementDB(
         .createQueryBuilder("intelligence")
         .update(Intelligence);
 
-      let sqlUpdateData: any = {
-        system_modified_at: () => Date.now().toString(),
+      const sqlUpdateData: any = {
         system_state: state,
       };
+
+      if(!dontUpdateModified){
+        // if `dontUpdateModified` is true, then don't udpate modified, otherwise, update modified
+        // The reason of `dontUpdateModified` is when interval check task status or retailer services status, if update `system_modified_at` will cause pagination doesn't work
+        sqlUpdateData.system_modified_at = () => Date.now().toString();
+      }
+
       intelligenceQuery.where("intelligence.system_state NOT IN (:...states)", {
         states,
       });

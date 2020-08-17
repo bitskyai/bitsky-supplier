@@ -213,7 +213,7 @@ async function checkSOIHealth(baseURL, method, url) {
  * @param {string} gid - SOI globalId
  * @param {object} originalSoi - Original SOI Data
  */
-async function updateSOIState(gid, originalSoi) {
+async function updateSOIState(gid, originalSoi, dontUpdateModified?: boolean) {
   try {
     // if user didn't pass originalSoi, then get it
     if (!originalSoi) {
@@ -258,15 +258,18 @@ async function updateSOIState(gid, originalSoi) {
       }
     }
 
-    await updateIntelligencesSOIStateForManagementDB(gid, state);
-    await updateSOIDB(gid, null, {
+    await updateIntelligencesSOIStateForManagementDB(gid, state, dontUpdateModified);
+    const soiSystemInfo:any = {
       system: {
         state: state,
-        modified: Date.now(),
         lastPing: Date.now(),
         pingFailReason: pingFailReason
       }
-    });
+    }
+    if(!dontUpdateModified){
+      soiSystemInfo.system.modified = Date.now();
+    }
+    await updateSOIDB(gid, null, soiSystemInfo);
     return {
       state: state,
       reason: pingFailReason
