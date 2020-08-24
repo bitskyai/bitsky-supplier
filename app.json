@@ -1,6 +1,6 @@
 {
-  "name": "munew",
-  "description": "Make Life Productive. Munew is a fast web crawling, web scraping and automation toolbox",
+  "name": "bitsky",
+  "description": "Make Life Productive. BitSky is a fast web crawling, web scraping and automation toolbox",
   "keywords": [
     "web crawling",
     "web scraping",
@@ -9,8 +9,8 @@
     "automation",
     "nodejs"
   ],
-  "website": "https://munew.io",
-  "logo": "https://raw.githubusercontent.com/munew/dia-electron/master/assets/icons/munew512.png",
+  "website": "https://bitsky.ai",
+  "logo": "https://raw.githubusercontent.com/bitskyai/bitsky-electron/master/assets/icons/munew512.png",
   "env": {
     "TYPEORM_CONNECTION": {
       "description": "Database connection type. Currently, available values [sqlite, mongodb].",
@@ -18,11 +18,11 @@
       "required": false
     },
     "TYPEORM_HOST": {
-      "description": "Database host. Required when your TYPEORM_CONNECTION isn't sqlite. Example: munew123.mlab.com",
+      "description": "Database host. Required when your TYPEORM_CONNECTION isn't sqlite. Example: bitsky123.mlab.com",
       "required": false
     },
     "TYPEORM_DATABASE": {
-      "description": "Database name. Required when your TYPEORM_CONNECTION isn't sqlite. Example: munew",
+      "description": "Database name. Required when your TYPEORM_CONNECTION isn't sqlite. Example: bitsky",
       "required": false
     },
     "TYPEORM_PORT": {

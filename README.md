@@ -1,2 +1,2 @@
-# DIA Engine - Decentralized Intelligence Agency Engine
+# BitSky Supplier
 [![Deploy](https://www.herokucdn.com/deploy/button.svg)](https://heroku.com/deploy)
