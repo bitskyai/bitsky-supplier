@@ -1,6 +1,6 @@
 FROM mhart/alpine-node:12
 
-LABEL maintainer="Munew docker maintainers <help.munewio@gmail.com>"
+LABEL maintainer="Munew docker maintainers <help.bitskyai@gmail.com>"
 ENV REFRESHED_AT 2020-02-19
 
 # create app directory

@@ -8,7 +8,7 @@ const {
 
 function registerRouter(router) {
     if (!_registered) {
-        router.get('/manangement/intelligences', async (req, res, next) => {
+        router.get('/manangement/tasks', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
                 // default return 50 items
@@ -25,7 +25,7 @@ function registerRouter(router) {
             }
         });
 
-        router.post('/manangement/intelligences/pause', async (req, res, next) => {
+        router.post('/manangement/tasks/pause', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
                 await helpers.pauseIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
@@ -41,7 +41,7 @@ function registerRouter(router) {
             }
         });
 
-        router.post('/manangement/intelligences/resume', async (req, res, next) => {
+        router.post('/manangement/tasks/resume', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
                 await helpers.resumeIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
@@ -57,7 +57,7 @@ function registerRouter(router) {
             }
         });
 
-        router.delete('/manangement/intelligences', async (req, res, next) => {
+        router.delete('/manangement/tasks', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
                 await helpers.deleteIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
@@ -73,7 +73,7 @@ function registerRouter(router) {
             }
         });
 
-        router.get('/intelligences', async (req, res, next) => {
+        router.get('/tasks', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
                 let intelligences = await helpers.getIntelligences(_.get(req, 'query.gid'), securityKey);
@@ -89,7 +89,7 @@ function registerRouter(router) {
             }
         });
 
-        router.post('/intelligences', async (req, res, next) => {
+        router.post('/tasks', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
                 let result = await helpers.addIntelligences(_.get(req, 'body'), securityKey);
@@ -105,7 +105,7 @@ function registerRouter(router) {
             }
         });
 
-        router.put('/intelligences', async (req, res, next) => {
+        router.put('/tasks', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
                 await helpers.updateIntelligences(_.get(req, 'body'), securityKey);

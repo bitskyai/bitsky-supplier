@@ -8,7 +8,7 @@ const {
 
 function registerRouter(router) {
     if (!_registered) {
-        router.get('/manangement/intelligenceshistory', async (req, res, next) => {
+        router.get('/manangement/taskshistory', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
                 // default return 50 items
@@ -25,7 +25,7 @@ function registerRouter(router) {
             }
         });
 
-        router.delete('/manangement/intelligenceshistory', async (req, res, next) => {
+        router.delete('/manangement/taskshistory', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
                 await helpers.deleteIntelligencesHistoryForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
@@ -41,7 +41,7 @@ function registerRouter(router) {
             }
         });
 
-        router.post('/manangement/intelligenceshistory/rerun', async (req, res, next) => {
+        router.post('/manangement/taskshistory/rerun', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
                 await helpers.rerunIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);

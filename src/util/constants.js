@@ -29,7 +29,7 @@ const CONFIG = {
   DEFAULT_HEALTH_METHOD: "GET",
   DEFAULT_HEALTH_PATH: "/health",
   DEFAULT_INTELLIGENCES_METHOD: "POST",
-  DEFAULT_INTELLIGENCES_PATH: "/apis/intelligences"
+  DEFAULT_INTELLIGENCES_PATH: "/apis/tasks"
 };
 
 const DEFAULT_DB_CONFIG = {
@@ -105,7 +105,7 @@ const DEFAULT_SOI = {
   },
   callback: {
     method: "POST",
-    path: "/apis/intelligences"
+    path: "/apis/tasks"
   }
 };
 

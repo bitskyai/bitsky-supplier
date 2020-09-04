@@ -56,6 +56,6 @@
     "check-dependencies": "ncu",
     "update-dependencies": "ncu -u"
   },
-  "author": "help.munewio@gmail.com",
+  "author": "help.bitskyai@gmail.com",
   "license": "Apache-2.0"
 }
