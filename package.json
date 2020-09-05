@@ -1,6 +1,6 @@
 {
-  "name": "bitsky-supplier",
-  "version": "0.7.0",
+  "name": "@bitskyai/supplier",
+  "version": "0.1.0",
   "description": "Decentralized Intelligence Agency",
   "migrationVersion": "1",
   "main": "./src/app.js",
