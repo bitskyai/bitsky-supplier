@@ -34,8 +34,11 @@ export async function startServer(customConfig) {
       server.destroy();
     }
     server = app.listen(getConfig("PORT"), function() {
+      console.log(
+        `BitSky server listening on http://localhost:${getConfig("PORT")}/ in ${app.get("env")} mode`
+      );
       logger.info(
-        "Express server listening on http://localhost:%d/ in %s mode",
+        "BitSky server listening on http://localhost:%d/ in %s mode",
         getConfig("PORT"),
         app.get("env")
       );
