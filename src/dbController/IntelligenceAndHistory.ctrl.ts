@@ -7,7 +7,7 @@ const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
 const utils = require("../util/utils");
 const { getConfig } = require("../config");
-const soiHelpers = require("../apis/sois/helpers");
+const soiHelpers = require("../apis/retailers/helpers");
 const {
   INTELLIGENCE_STATE,
   SOI_STATE,
@@ -50,7 +50,7 @@ export function flattenToObject(intelligences) {
       obj.permission = intelligence.permission;
     }
     if (_.get(intelligence, "suitable_agents")) {
-      obj.suitableAgents = intelligence.suitable_agents;
+      obj.suitableProducers = intelligence.suitable_agents;
     }
     if (_.get(intelligence, "url")) {
       obj.url = intelligence.url;
@@ -166,8 +166,8 @@ export function objectsToIntelligences(intelligences, intelligenceInstances) {
     if (_.get(intelligence, "priority")) {
       intelligenceInstance.priority = intelligence.priority;
     }
-    if (_.get(intelligence, "suitableAgents")) {
-      intelligenceInstance.suitable_agents = intelligence.suitableAgents;
+    if (_.get(intelligence, "suitableProducers")) {
+      intelligenceInstance.suitable_agents = intelligence.suitableProducers;
     }
     if (_.get(intelligence, "url")) {
       intelligenceInstance.url = intelligence.url;

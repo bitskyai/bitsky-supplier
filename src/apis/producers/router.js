@@ -6,7 +6,7 @@ const { CONFIG } = require("../../util/constants");
 
 function registerRouter(router) {
   if (!_registered) {
-    router.post("/agents", async (req, res, next) => {
+    router.post("/producers", async (req, res, next) => {
       try {
         // TODO: need to improve how to handle security key
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
@@ -23,7 +23,7 @@ function registerRouter(router) {
       }
     });
 
-    router.get("/agents", async (req, res, next) => {
+    router.get("/producers", async (req, res, next) => {
       try {
         // TODO: need to improve how to handle security key
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
@@ -42,7 +42,7 @@ function registerRouter(router) {
 
     // For agent client to connect agent configuration
     // X_SERIAL_ID is required
-    router.get("/agents/:gid", async (req, res, next) => {
+    router.get("/producers/:gid", async (req, res, next) => {
       try {
         const securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
         const serialId = req.get(CONFIG.X_SERIAL_ID);
@@ -96,7 +96,7 @@ function registerRouter(router) {
       }
     });
 
-    router.post("/manangement/agents/:gid/disconnect", async (req, res, next) => {
+    router.post("/manangement/producers/:gid/disconnect", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
         // let serialId = req.get(CONFIG.X_SERIAL_ID);
@@ -118,7 +118,7 @@ function registerRouter(router) {
       }
     });
 
-    router.put("/agents/:gid", async (req, res, next) => {
+    router.put("/producers/:gid", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
         await helpers.updateAgent(
@@ -138,7 +138,7 @@ function registerRouter(router) {
       }
     });
 
-    router.delete("/agents/:gid", async (req, res, next) => {
+    router.delete("/producers/:gid", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
         await helpers.unregisterAgent(_.get(req, "params.gid"), securityKey);
@@ -155,7 +155,7 @@ function registerRouter(router) {
     });
 
     // 0017
-    router.post("/agents/:gid/activate", async (req, res, next) => {
+    router.post("/producers/:gid/activate", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
         let status = await helpers.activateAgent(_.get(req, "params.gid"), securityKey);
@@ -172,7 +172,7 @@ function registerRouter(router) {
     });
 
     // 0018
-    router.post("/agents/:gid/deactivate", async (req, res, next) => {
+    router.post("/producers/:gid/deactivate", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
         let status = await helpers.deactivateAgent(_.get(req, "params.gid"), securityKey);

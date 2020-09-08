@@ -7,7 +7,7 @@ const { HTTPError } = require("../../util/error");
 import { updateIntelligencesStateForManagementDB } from "../../dbController/IntelligenceAndHistory.ctrl";
 import { removeTimeoutJob } from "../../dbController/TasksJobQueue.ctrl";
 import { getNeedCheckHealthSOIsDB } from "../../dbController/SOI.ctrl";
-const { updateSOIState } = require("../sois/helpers");
+const { updateSOIState } = require("../retailers/helpers");
 
 /**
  * Update all

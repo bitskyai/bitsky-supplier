@@ -9,8 +9,8 @@ const {
   SOI_STATE,
   DEFAULT_INTELLIGENCE,
 } = require("../../util/constants");
-const soisHelpers = require("../sois/helpers");
-const agentsHelpers = require("../agents/helpers");
+const soisHelpers = require("../retailers/helpers");
+const producersHelpers = require("../producers/helpers");
 const logger = require("../../util/logger");
 const utils = require("../../util/utils");
 const { getConfig } = require("../../config");
@@ -156,7 +156,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
     //   started_at: 0,
     //   ended_at: 0,
     //   status: "CONFIGURED",
-    //   suitable_agents: ['BROWSEREXTENSION']
+    //   suitable_agents: ['HEADLESSBROWSER']
     // };
     let defaultIntelligence = DEFAULT_INTELLIGENCE;
     // TODO: data validation need to improve
@@ -191,7 +191,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
       intelligence.system.state = AGENT_STATE.configured;
 
       // Make sure agent type is uppercase
-      intelligence.suitableAgents = intelligence.suitableAgents.map(
+      intelligence.suitableProducers = intelligence.suitableProducers.map(
         (agentType) => {
           return _.toUpper(agentType);
         }
@@ -320,7 +320,7 @@ async function getIntelligences(agentGid: string, securityKey: string) {
     logger.debug(`getIntelligences->agentGid: ${agentGid}`);
     logger.debug(`getIntelligences->securityKey: ${securityKey}`);
     // Step 1: get agent configuration
-    let agentConfig = await agentsHelpers.getAgent(agentGid, securityKey);
+    let agentConfig = await producersHelpers.getAgent(agentGid, securityKey);
     logger.debug(
       `getIntelligences->agentConfig.system.securityKey: ${agentConfig.system.securityKey}`
     );

@@ -6,7 +6,7 @@ const { CONFIG } = require("../../util/constants");
 
 function registerRouter(router) {
   if (!_registered) {
-    router.post("/sois", async (req, res, next) => {
+    router.post("/retailers", async (req, res, next) => {
       try {
         // TODO: need to improve how to handle security key
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
@@ -23,7 +23,7 @@ function registerRouter(router) {
       }
     });
 
-    router.get("/sois", async (req, res, next) => {
+    router.get("/retailers", async (req, res, next) => {
       try {
         // TODO: need to improve how to handle security key
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
@@ -40,7 +40,7 @@ function registerRouter(router) {
       }
     });
 
-    router.get("/sois/:gid", async (req, res, next) => {
+    router.get("/retailers/:gid", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
         let result = await helpers.getSOI(
@@ -59,7 +59,7 @@ function registerRouter(router) {
       }
     });
 
-    router.put("/sois/:gid", async (req, res, next) => {
+    router.put("/retailers/:gid", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
         await helpers.updateSOI(
@@ -79,7 +79,7 @@ function registerRouter(router) {
       }
     });
 
-    router.delete("/sois/:gid", async (req, res, next) => {
+    router.delete("/retailers/:gid", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
         await helpers.unregisterSOI(_.get(req, "params.gid"), securityKey);
@@ -95,7 +95,7 @@ function registerRouter(router) {
       }
     });
 
-    router.put("/sois/:gid/status", async (req, res, next) => {
+    router.put("/retailers/:gid/status", async (req, res, next) => {
       try {
         let status = await helpers.updateSOIState(_.get(req, "params.gid"));
         res.json(status);

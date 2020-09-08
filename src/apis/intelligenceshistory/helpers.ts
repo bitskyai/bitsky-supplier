@@ -6,7 +6,7 @@ import {
   deleteIntelligencesOrHistoryForManagementDB,
 } from "../../dbController/IntelligenceAndHistory.ctrl";
 const addIntelligences = require("../intelligences/helpers").addIntelligences;
-import { getSOI } from "../sois/helpers";
+import { getSOI } from "../retailers/helpers";
 //================================================================
 // Following APIs are designed for CRUD intelligences
 async function getIntelligencesHistoryForManagement(

@@ -12,7 +12,7 @@ if (isMongo()) {
 // Will use JSON schema to validation
 export abstract class BaseAgent extends Base {
 
-  // ["BROWSEREXTENSION", "SERVICE", "HEADLESSBROWSER"]
+  // ["SERVICE", "HEADLESSBROWSER"]
   @Column()
   type: string;
 

@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "https://munew.io/schemas/agent.json",
+  "$id": "https://bitsky.ai/schemas/agent.json",
   "type": "object",
   "title": "Agent Schema",
   "version": "1.1.0",
@@ -207,7 +207,7 @@
       "title": "Agent Type",
       "type": "string",
       "description": "Agent type of this agent",
-      "enum": ["BROWSEREXTENSION", "SERVICE", "HEADLESSBROWSER"]
+      "enum": ["SERVICE", "HEADLESSBROWSER"]
     },
     "permission": {
       "type": "string",

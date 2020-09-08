@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "https://munew.io/schemas/intelligence.json",
+  "$id": "https://bitsky.ai/schemas/intelligence.json",
   "type": "object",
   "title": "Intelligence Schema",
   "version": "1.0.0",
@@ -150,10 +150,10 @@
       "default": 100,
       "description": "Priority of this intelligence. Only compare priority for same SOI, doesn't compare cross SOI. Big value low priority. Priority value 1 is higher than priority value 2."
     },
-    "suitableAgents": {
+    "suitableProducers": {
       "type": "array",
       "description": "What kind of agent types can execute this intelligence",
-      "default": ["BROWSEREXTENSION"],
+      "default": ["HEADLESSBROWSER"],
       "items": {
         "$ref": "#/definitions/agentType"
       },
@@ -170,7 +170,7 @@
       "properties": {
         "script": {
           "type": "string",
-          "description": "Code want to execute after **window.onload**. You only need to pass function body. And Default you will get following parameters - **resolve**, **reject**, **intelligence**, **axios**. You need to resolve(data) or reject(err), and will send data or err to SOI. If you need agent to execute your code, Only work with **BROWSEREXTENSION** and **HEADLESSBROSWER** agent"
+          "description": "Code want to execute after **window.onload**. You only need to pass function body. And Default you will get following parameters - **resolve**, **reject**, **intelligence**, **axios**. You need to resolve(data) or reject(err), and will send data or err to SOI. If you need agent to execute your code, Only work with **HEADLESSBROSWER** agent"
         }
       }
     },
@@ -227,7 +227,7 @@
       "title": "Agent Type",
       "type": "string",
       "description": "Agent type of this agent",
-      "enum": ["BROWSEREXTENSION", "SERVICE", "HEADLESSBROWSER"]
+      "enum": ["SERVICE", "HEADLESSBROWSER"]
     },
     "permission": {
       "type": "string",

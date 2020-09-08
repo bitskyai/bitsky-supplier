@@ -4,7 +4,7 @@ info:
   description: Decentralized Intelligence Agency
   termsOfService: http://swagger.io/terms/
   contact:
-    email: shaokexu@gmail.com
+    email: help.bitskyai@gmail.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -19,7 +19,7 @@ tags:
   - name: intelligences
     description: Intelligences want to collect
 paths:
-  /apis/sois:
+  /apis/retailers:
     get:
       tags:
         - soi
@@ -67,7 +67,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /apis/sois/{gid}:
+  /apis/retailers/{gid}:
     get:
       tags:
         - soi
@@ -161,7 +161,7 @@ paths:
                 properties:
                   global_id:
                     $ref: "#/components/schemas/GlobalId"
-  /apis/sois/{gid}/status:
+  /apis/retailers/{gid}/status:
     put:
       tags:
         - soi
@@ -194,7 +194,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /apis/agents:
+  /apis/producers:
     get:
       tags:
         - agent
@@ -241,7 +241,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /apis/agents/{gid}:
+  /apis/producers/{gid}:
     get:
       tags:
         - agent
@@ -335,7 +335,7 @@ paths:
                 properties:
                   global_id:
                     $ref: "#/components/schemas/GlobalId"
-  /apis/agents/{gid}/activate:
+  /apis/producers/{gid}/activate:
     post:
       tags:
         - agent
@@ -368,7 +368,7 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /apis/agents/{gid}/deactivate:
+  /apis/producers/{gid}/deactivate:
     post:
       tags:
         - agent
@@ -545,7 +545,6 @@ paths:
           schema:
             type: string
             enum:
-              - BROWSEREXTENSION
               - HEADLESSBROWSER
               - SERVICE
         - in: query

@@ -8,10 +8,10 @@ const packageJson = require('../package.json');
 // routers
 const apikey = require('./apis/apikey');
 const self = require('./apis/self');
-const sois = require('./apis/sois');
+const sois = require('./apis/retailers');
 const intelligences = require('./apis/intelligences');
 const intelligencesHistory = require('./apis/intelligenceshistory');
-const agents = require('./apis/agents');
+const agents = require('./apis/producers');
 const health = require('./apis/health');
 
 function createAPIRouters(app){
