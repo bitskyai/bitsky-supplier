@@ -8,7 +8,7 @@ if (isMongo()) {
   Base = BaseSQL;
 }
 
-// This reference to 'schemas/soi.json'
+// This reference to 'schemas/retailer.json'
 // Will use JSON schema to validation
 export abstract class BaseTasksJobQueue extends Base {
   @Column()

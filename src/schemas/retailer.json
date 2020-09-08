@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "https://bitsky.ai/schemas/soi.json",
+  "$id": "https://bitsky.ai/schemas/retailer.json",
   "type": "object",
-  "title": "SOI Schema",
+  "title": "Retailer Schema",
   "version": "1.0.0",
   "required": ["globalId", "name", "baseURL", "callback", "health"],
   "additionalProperties": false,

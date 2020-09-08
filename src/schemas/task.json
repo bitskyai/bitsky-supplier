@@ -1,8 +1,8 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "https://bitsky.ai/schemas/intelligence.json",
+  "$id": "https://bitsky.ai/schemas/task.json",
   "type": "object",
-  "title": "Intelligence Schema",
+  "title": "Task Schema",
   "version": "1.0.0",
   "required": ["soi", "url"],
   "additionalProperties": false,
@@ -152,7 +152,7 @@
     },
     "suitableProducers": {
       "type": "array",
-      "description": "What kind of agent types can execute this intelligence",
+      "description": "What kind of producer types can execute this task",
       "default": ["HEADLESSBROWSER"],
       "items": {
         "$ref": "#/definitions/agentType"

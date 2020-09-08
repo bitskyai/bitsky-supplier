@@ -8,7 +8,7 @@ if (isMongo()) {
   Base = BaseSQL;
 }
 
-// This reference to 'schemas/agent.json'
+// This reference to 'schemas/producer.json'
 // Will use JSON schema to validation
 export abstract class BaseAgent extends Base {
 

@@ -34,7 +34,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "./src/schemas/soi.json"
+                  $ref: "./src/schemas/retailer.json"
     post:
       tags:
         - soi
@@ -47,7 +47,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./src/schemas/soi.json"
+              $ref: "./src/schemas/retailer.json"
       responses:
         200:
           description: Registered successful
@@ -87,7 +87,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./src/schemas/soi.json"
+                $ref: "./src/schemas/retailer.json"
         400:
           description: Bad request, the data pass isn't valid
           content:
@@ -119,7 +119,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./src/schemas/soi.json"
+              $ref: "./src/schemas/retailer.json"
       responses:
         204:
           description: Update SOI successful
@@ -181,7 +181,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./src/schemas/soi.json"
+                $ref: "./src/schemas/retailer.json"
         400:
           description: Bad request, the data pass isn't valid
           content:
@@ -208,7 +208,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "./src/schemas/agent.json"
+                  $ref: "./src/schemas/producer.json"
     post:
       tags:
         - agent
@@ -221,7 +221,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./src/schemas/agent.json"
+              $ref: "./src/schemas/producer.json"
       responses:
         200:
           description: Registered successful
@@ -261,7 +261,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./src/schemas/agent.json"
+                $ref: "./src/schemas/producer.json"
         400:
           description: Bad request, the data pass isn't valid
           content:
@@ -293,7 +293,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "./src/schemas/agent.json"
+              $ref: "./src/schemas/producer.json"
       responses:
         204:
           description: Update Agent successful
@@ -355,7 +355,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./src/schemas/agent.json"
+                $ref: "./src/schemas/producer.json"
         400:
           description: Bad request, the data pass isn't valid
           content:
@@ -388,7 +388,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "./src/schemas/agent.json"
+                $ref: "./src/schemas/producer.json"
         400:
           description: Bad request, the data pass isn't valid
           content:
@@ -452,7 +452,7 @@ paths:
                   intelligences:
                     type: array
                     items:
-                      $ref: "./src/schemas/intelligence.json"
+                      $ref: "./src/schemas/task.json"
     delete:
       tags:
         - intelligences
@@ -575,7 +575,7 @@ paths:
               schema:
                 type: array
                 items:
-                  $ref: "./src/schemas/intelligence.json"
+                  $ref: "./src/schemas/task.json"
     post:
       tags:
         - intelligences
@@ -590,7 +590,7 @@ paths:
             schema:
               type: array
               items:
-                $ref: "./src/schemas/intelligence.json"
+                $ref: "./src/schemas/task.json"
       responses:
         200:
           description: Extract intelligences successful
@@ -615,7 +615,7 @@ paths:
               type: array
               items:
                 allOf:
-                  - $ref: "./src/schemas/intelligence.json"
+                  - $ref: "./src/schemas/task.json"
                   - type: object
                     properties:
                       operation:

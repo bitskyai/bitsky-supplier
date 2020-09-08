@@ -2,9 +2,9 @@ const _ = require("lodash");
 const Ajv = require("ajv");
 const uuidv4 = require('uuid/v4');
 
-const soiSchema = require("../schemas/soi.json");
-const agentSchema = require("../schemas/agent.json");
-const intelligenceSchema = require("../schemas/intelligence.json");
+const soiSchema = require("../schemas/retailer.json");
+const agentSchema = require("../schemas/producer.json");
+const intelligenceSchema = require("../schemas/task.json");
 const UnknownData = require("../data_models/UnknownData");
 const { logUnknownDataToDB } = require("./db");
 const logger = require("./logger");

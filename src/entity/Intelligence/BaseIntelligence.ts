@@ -8,7 +8,7 @@ if (isMongo()) {
   Base = BaseSQL;
 }
 
-// This reference to 'schemas/intelligence.json'
+// This reference to 'schemas/task.json'
 // Will use JSON schema to validation
 export abstract class BaseIntelligence extends Base {
   @Column({
