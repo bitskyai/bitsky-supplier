@@ -190,7 +190,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
       intelligence.system.securityKey = securityKey;
       intelligence.system.state = AGENT_STATE.configured;
 
-      // Make sure agent type is uppercase
+      // Make sure producer type is uppercase
       intelligence.suitableProducers = intelligence.suitableProducers.map(
         (agentType) => {
           return _.toUpper(agentType);
@@ -211,7 +211,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
         });
       }
       // remove unchangable field for create
-      delete intelligence.system.agent;
+      delete intelligence.system.producer;
       delete intelligence.system.startedAt;
       delete intelligence.system.endedAt;
       delete intelligence.system.failuresNumber;
@@ -252,7 +252,7 @@ async function waitUntilTopTask(globalId) {
       let waitHandler = setInterval(async () => {
         let job = await getTopTaskJob();
         if (!job || !job.global_id) {
-          // this means all jobs are timeout, but this agent is still waiting
+          // this means all jobs are timeout, but this producer is still waiting
           // normally this happend the intervalAgendas removeTimeoutTaskJob
           logger.info(
             `No job in the queue, this happened because intervalAgendas removeTimeoutTaskJob`,
@@ -288,7 +288,7 @@ async function waitUntilTopTask(globalId) {
 
 /**
  * @typedef {Object} IntelligencesAndConfig
- * @property {object} agent - Agent Configuration
+ * @property {object} producer - Agent Configuration
  * @property {array} intelligences - Intelligences Array
  */
 /**
@@ -319,7 +319,7 @@ async function getIntelligences(agentGid: string, securityKey: string) {
 
     logger.debug(`getIntelligences->agentGid: ${agentGid}`);
     logger.debug(`getIntelligences->securityKey: ${securityKey}`);
-    // Step 1: get agent configuration
+    // Step 1: get producer configuration
     let agentConfig = await producersHelpers.getAgent(agentGid, securityKey);
     logger.debug(
       `getIntelligences->agentConfig.system.securityKey: ${agentConfig.system.securityKey}`
@@ -353,13 +353,13 @@ async function getIntelligences(agentGid: string, securityKey: string) {
     let intelligences = [];
     agentConfig = utils.omit(agentConfig, ["_id", "securityKey"], ["system"]);
 
-    // if agent isn't active, then throw an error
+    // if producer isn't active, then throw an error
     if (_.toUpper(agentConfig.system.state) !== _.toUpper(AGENT_STATE.active)) {
       throw new HTTPError(
         400,
         null,
         {
-          agent: agentConfig,
+          producer: agentConfig,
         },
         "00054000002",
         agentGid
@@ -395,7 +395,7 @@ async function updateIntelligences(content, securityKey: string) {
     for (let i = 0; i < intelligences.length; i++) {
       // this is the intelligence get from DB
       let item = intelligences[i];
-      // this is the intelligence that passed by agent
+      // this is the intelligence that passed by producer
       let intelligence = contentMap[item.globalId];
       // If this intelligence was failed, then increase **failuresNumber**
       // Any state isn't FINISHED, then think it is failed, need to increase failuresNumber
@@ -420,11 +420,11 @@ async function updateIntelligences(content, securityKey: string) {
               _.get(intelligence, "system.state") || INTELLIGENCE_STATE.failed,
             failuresNumber: _.get(item, "system.failuresNumber"),
             failuresReason: _.get(intelligence, "system.failuresReason"),
-            agent: {
-              globalId: _.get(intelligence, "system.agent.globalId"),
-              type: _.get(intelligence, "system.agent.type"),
-              startedAt: _.get(intelligence, "system.agent.startedAt"),
-              endedAt: _.get(intelligence, "system.agent.endedAt"),
+            producer: {
+              globalId: _.get(intelligence, "system.producer.globalId"),
+              type: _.get(intelligence, "system.producer.type"),
+              startedAt: _.get(intelligence, "system.producer.startedAt"),
+              endedAt: _.get(intelligence, "system.producer.endedAt"),
             },
           },
         });
@@ -451,14 +451,14 @@ async function updateIntelligences(content, securityKey: string) {
           "system.state",
           INTELLIGENCE_STATE.finished
         );
-        if (!item.system.agent) {
-          item.system.agent = {};
+        if (!item.system.producer) {
+          item.system.producer = {};
         }
-        let passedAgent = contentMap[item.globalId].system.agent;
-        item.system.agent.globalId = passedAgent.globalId;
-        item.system.agent.type = passedAgent.type;
-        item.system.agent.startedAt = passedAgent.startedAt;
-        item.system.agent.endedAt = passedAgent.endedAt;
+        let passedAgent = contentMap[item.globalId].system.producer;
+        item.system.producer.globalId = passedAgent.globalId;
+        item.system.producer.type = passedAgent.type;
+        item.system.producer.startedAt = passedAgent.startedAt;
+        item.system.producer.endedAt = passedAgent.endedAt;
 
         intelligenceHistory.push(item);
       }

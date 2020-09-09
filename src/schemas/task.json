@@ -15,7 +15,7 @@
         "state": {
           "title": "State",
           "type": "string",
-          "description": "State of this agent",
+          "description": "State of this producer",
           "enum": [
             "DRAFT",
             "CONFIGURED",
@@ -55,9 +55,9 @@
             }
           ]
         },
-        "agent": {
+        "producer": {
           "title": "Execute Agent",
-          "description": "Which agent to execute this intelligence",
+          "description": "Which producer to execute this intelligence",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -119,7 +119,7 @@
       "title": "Intelligence Type",
       "type": "string",
       "default": "CRAWLER",
-      "description": "Type of this intelligence, this type will help agent to decide how to run it. For now, we only have one type **web crawler**",
+      "description": "Type of this intelligence, this type will help producer to decide how to run it. For now, we only have one type **web crawler**",
       "enum": ["CRAWLER"]
     },
     "name": {
@@ -130,7 +130,7 @@
     },
     "soi": {
       "type": "object",
-      "description": "After agent execute this intelligence, which SOI to send **callback** to",
+      "description": "After producer execute this intelligence, which SOI to send **callback** to",
       "required": ["globalId"],
       "properties": {
         "globalId": {
@@ -170,7 +170,7 @@
       "properties": {
         "script": {
           "type": "string",
-          "description": "Code want to execute after **window.onload**. You only need to pass function body. And Default you will get following parameters - **resolve**, **reject**, **intelligence**, **axios**. You need to resolve(data) or reject(err), and will send data or err to SOI. If you need agent to execute your code, Only work with **HEADLESSBROSWER** agent"
+          "description": "Code want to execute after **window.onload**. You only need to pass function body. And Default you will get following parameters - **resolve**, **reject**, **intelligence**, **axios**. You need to resolve(data) or reject(err), and will send data or err to SOI. If you need producer to execute your code, Only work with **HEADLESSBROSWER** producer"
         }
       }
     },
@@ -206,12 +206,12 @@
     },
     "timestamp": {
       "type": ["integer", "null"],
-      "description": "Timestamp of when this intelligence was assigned to an agent",
+      "description": "Timestamp of when this intelligence was assigned to an producer",
       "examples": [1553974629109]
     },
     "version": {
       "title": "Version",
-      "description": "version of this agent",
+      "description": "version of this producer",
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
       "default": "1.0.0",
@@ -226,12 +226,12 @@
     "agentType": {
       "title": "Agent Type",
       "type": "string",
-      "description": "Agent type of this agent",
+      "description": "Agent type of this producer",
       "enum": ["SERVICE", "HEADLESSBROWSER"]
     },
     "permission": {
       "type": "string",
-      "description": "Control who can run this intelligence. Private mean only matched **securityKey** can run, public mean any matched agent can collect. If your metadata has script, then it will be forced to private.",
+      "description": "Control who can run this intelligence. Private mean only matched **securityKey** can run, public mean any matched producer can collect. If your metadata has script, then it will be forced to private.",
       "default": "PRIVATE",
       "enum": ["PRIVATE", "PUBLIC"]
     },
@@ -251,7 +251,7 @@
     },
     "description": {
       "title": "Description",
-      "description": "description of this agent",
+      "description": "description of this producer",
       "type": "string",
       "minLength": 1,
       "maxLength": 200,
@@ -277,7 +277,7 @@
     "dataset": {
       "type": "object",
       "additionalProperties": true,
-      "description": "All data that was collected by agent when it executed intelligence. You also can use **metadata.script** to add more properties",
+      "description": "All data that was collected by producer when it executed intelligence. You also can use **metadata.script** to add more properties",
       "properties": {
         "url": {
           "type": "string",

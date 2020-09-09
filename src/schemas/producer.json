@@ -46,7 +46,7 @@
             },
             {
               "title": "Last Ping Time",
-              "description": "When last time this agent ping DIA server"
+              "description": "When last time this producer ping DIA server"
             }
           ]
         },
@@ -57,7 +57,7 @@
             },
             {
               "title": "Connected Agent Serial Id",
-              "description": "The unique serial id of connected agent"
+              "description": "The unique serial id of connected producer"
             }
           ]
         }
@@ -186,12 +186,12 @@
     },
     "timestamp": {
       "type": ["integer", "null", "string"],
-      "description": "Timestamp of when this intelligence was assigned to an agent",
+      "description": "Timestamp of when this intelligence was assigned to an producer",
       "examples": [1553974629109]
     },
     "version": {
       "title": "Version",
-      "description": "version of this agent",
+      "description": "version of this producer",
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
       "default": "1.0.0",
@@ -206,12 +206,12 @@
     "agentType": {
       "title": "Agent Type",
       "type": "string",
-      "description": "Agent type of this agent",
+      "description": "Agent type of this producer",
       "enum": ["SERVICE", "HEADLESSBROWSER"]
     },
     "permission": {
       "type": "string",
-      "description": "Decide whether this agent to accept public intelligences. if it is **private**, then don't accept public intelligences",
+      "description": "Decide whether this producer to accept public intelligences. if it is **private**, then don't accept public intelligences",
       "default": "PRIVATE",
       "enum": ["PRIVATE", "PUBLIC"]
     },
@@ -242,7 +242,7 @@
     },
     "description": {
       "title": "Description",
-      "description": "description of this agent",
+      "description": "description of this producer",
       "type": ["string", "null"],
       "minLength": 0,
       "maxLength": 200,

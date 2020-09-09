@@ -40,7 +40,7 @@ function registerRouter(router) {
       }
     });
 
-    // For agent client to connect agent configuration
+    // For producer client to connect producer configuration
     // X_SERIAL_ID is required
     router.get("/producers/:gid", async (req, res, next) => {
       try {

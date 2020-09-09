@@ -5,65 +5,65 @@ const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
 
 function flattenToObject(agents) {
-  function toObject(agent) {
+  function toObject(producer) {
     let obj: any = {};
-    obj.globalId = agent.global_id;
-    obj.type = agent.type;
-    obj.name = agent.name;
-    obj.description = agent.description;
-    obj.private = agent.private;
-    obj.permission = agent.permission;
-    obj.concurrent = agent.concurrent;
-    obj.pollingInterval = agent.polling_interval;
-    obj.maxWaitingTime = agent.max_waiting_time;
-    obj.maxCollect = agent.max_collect;
-    obj.idelTime = agent.idel_time;
-    obj.timeout = agent.timeout;
-    obj.maxRetry = agent.max_retry;
-    obj.baseURL = agent.base_url;
-    if (_.get(agent, "health_method")) {
+    obj.globalId = producer.global_id;
+    obj.type = producer.type;
+    obj.name = producer.name;
+    obj.description = producer.description;
+    obj.private = producer.private;
+    obj.permission = producer.permission;
+    obj.concurrent = producer.concurrent;
+    obj.pollingInterval = producer.polling_interval;
+    obj.maxWaitingTime = producer.max_waiting_time;
+    obj.maxCollect = producer.max_collect;
+    obj.idelTime = producer.idel_time;
+    obj.timeout = producer.timeout;
+    obj.maxRetry = producer.max_retry;
+    obj.baseURL = producer.base_url;
+    if (_.get(producer, "health_method")) {
       !obj.health ? (obj.health = {}) : "";
-      obj.health.method = agent.health_method;
+      obj.health.method = producer.health_method;
     }
 
-    if (_.get(agent, "health_path")) {
+    if (_.get(producer, "health_path")) {
       !obj.health ? (obj.health = {}) : "";
-      obj.health.path = agent.health_path;
+      obj.health.path = producer.health_path;
     }
 
-    if (_.get(agent, "system_state")) {
+    if (_.get(producer, "system_state")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.state = agent.system_state;
+      obj.system.state = producer.system_state;
     }
 
-    if (_.get(agent, "system_version")) {
+    if (_.get(producer, "system_version")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.version = agent.system_version;
+      obj.system.version = producer.system_version;
     }
 
-    if (_.get(agent, "system_security_key")) {
+    if (_.get(producer, "system_security_key")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.securityKey = agent.system_security_key;
+      obj.system.securityKey = producer.system_security_key;
     }
 
-    if (_.get(agent, "system_created_at")) {
+    if (_.get(producer, "system_created_at")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.created = agent.system_created_at;
+      obj.system.created = producer.system_created_at;
     }
 
-    if (_.get(agent, "system_modified_at")) {
+    if (_.get(producer, "system_modified_at")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.modified = agent.system_modified_at;
+      obj.system.modified = producer.system_modified_at;
     }
 
-    if (_.get(agent, "system_last_ping")) {
+    if (_.get(producer, "system_last_ping")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.lastPing = agent.system_last_ping;
+      obj.system.lastPing = producer.system_last_ping;
     }
 
-    if (_.get(agent, "system_serial_id")) {
+    if (_.get(producer, "system_serial_id")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.serialId = agent.system_serial_id;
+      obj.system.serialId = producer.system_serial_id;
     }
 
     return obj;
@@ -82,106 +82,106 @@ function flattenToObject(agents) {
 
 /**
  *
- * @param agent{object} - the agent object
+ * @param producer{object} - the producer object
  */
-function objectToAgent(agent, agentInstance) {
+function objectToAgent(producer, agentInstance) {
   if (!agentInstance) {
     agentInstance = new Agent();
   }
-  if (_.get(agent, "globalId")) {
-    agentInstance.global_id = agent.globalId;
+  if (_.get(producer, "globalId")) {
+    agentInstance.global_id = producer.globalId;
   }
-  if (_.get(agent, "type")) {
-    agentInstance.type = agent.type;
+  if (_.get(producer, "type")) {
+    agentInstance.type = producer.type;
   }
-  if (_.get(agent, "name")) {
-    agentInstance.name = agent.name;
+  if (_.get(producer, "name")) {
+    agentInstance.name = producer.name;
   }
-  if (_.get(agent, "description")) {
-    agentInstance.description = agent.description;
+  if (_.get(producer, "description")) {
+    agentInstance.description = producer.description;
   }
-  if (_.get(agent, "private")) {
-    agentInstance.private = agent.private;
+  if (_.get(producer, "private")) {
+    agentInstance.private = producer.private;
   }
-  if (_.get(agent, "permission")) {
-    agentInstance.permission = agent.permission;
+  if (_.get(producer, "permission")) {
+    agentInstance.permission = producer.permission;
   }
-  if (_.get(agent, "concurrent")) {
-    agentInstance.concurrent = agent.concurrent;
+  if (_.get(producer, "concurrent")) {
+    agentInstance.concurrent = producer.concurrent;
   }
-  if (_.get(agent, "pollingInterval")) {
-    agentInstance.polling_interval = agent.pollingInterval;
+  if (_.get(producer, "pollingInterval")) {
+    agentInstance.polling_interval = producer.pollingInterval;
   }
-  if (_.get(agent, "maxWaitingTime")) {
-    agentInstance.max_waiting_time = agent.maxWaitingTime;
+  if (_.get(producer, "maxWaitingTime")) {
+    agentInstance.max_waiting_time = producer.maxWaitingTime;
   }
-  if (_.get(agent, "maxCollect")) {
-    agentInstance.max_collect = agent.maxCollect;
+  if (_.get(producer, "maxCollect")) {
+    agentInstance.max_collect = producer.maxCollect;
   }
-  if (_.get(agent, "idelTime")) {
-    agentInstance.idel_time = agent.idelTime;
+  if (_.get(producer, "idelTime")) {
+    agentInstance.idel_time = producer.idelTime;
   }
-  if (_.get(agent, "timeout")) {
-    agentInstance.timeout = agent.timeout;
+  if (_.get(producer, "timeout")) {
+    agentInstance.timeout = producer.timeout;
   }
-  if (_.get(agent, "maxRetry")) {
-    agentInstance.max_retry = agent.maxRetry;
+  if (_.get(producer, "maxRetry")) {
+    agentInstance.max_retry = producer.maxRetry;
   }
-  if (_.get(agent, "baseURL")) {
-    agentInstance.base_url = agent.baseURL;
+  if (_.get(producer, "baseURL")) {
+    agentInstance.base_url = producer.baseURL;
   }
-  if (_.get(agent, "health.method")) {
-    agentInstance.health_method = agent.health.method;
-  }
-
-  if (_.get(agent, "health.path")) {
-    agentInstance.health_path = agent.health.path;
+  if (_.get(producer, "health.method")) {
+    agentInstance.health_method = producer.health.method;
   }
 
-  if (_.get(agent, "system.state")) {
-    agentInstance.system_state = agent.system.state;
+  if (_.get(producer, "health.path")) {
+    agentInstance.health_path = producer.health.path;
   }
 
-  if (_.get(agent, "system.version")) {
-    agentInstance.system_version = agent.system.version;
+  if (_.get(producer, "system.state")) {
+    agentInstance.system_state = producer.system.state;
   }
 
-  if (_.get(agent, "system.securityKey")) {
-    agentInstance.system_security_key = agent.system.securityKey;
+  if (_.get(producer, "system.version")) {
+    agentInstance.system_version = producer.system.version;
+  }
+
+  if (_.get(producer, "system.securityKey")) {
+    agentInstance.system_security_key = producer.system.securityKey;
   }else{
-    if(_.get(agent, "system.securityKey") !== undefined){
+    if(_.get(producer, "system.securityKey") !== undefined){
       agentInstance.system_security_key = null;
     }
   }
 
-  if (_.get(agent, "system.created")) {
-    agentInstance.system_created_at = agent.system.created;
+  if (_.get(producer, "system.created")) {
+    agentInstance.system_created_at = producer.system.created;
   }else{
-    if(_.get(agent, "system.created") !== undefined){
+    if(_.get(producer, "system.created") !== undefined){
       agentInstance.system_created_at = null;
     }
   }
 
-  if (_.get(agent, "system.modified")) {
-    agentInstance.system_modified_at = agent.system.modified;
+  if (_.get(producer, "system.modified")) {
+    agentInstance.system_modified_at = producer.system.modified;
   }else{
-    if(_.get(agent, "system.modified") !== undefined){
+    if(_.get(producer, "system.modified") !== undefined){
       agentInstance.system_modified_at = null;
     }
   }
 
-  if (_.get(agent, "system.lastPing")) {
-    agentInstance.system_last_ping = agent.system.lastPing;
+  if (_.get(producer, "system.lastPing")) {
+    agentInstance.system_last_ping = producer.system.lastPing;
   }else{
-    if(_.get(agent, "system.lastPing") !== undefined){
+    if(_.get(producer, "system.lastPing") !== undefined){
       agentInstance.system_last_ping = null;
     }
   }
 
-  if (_.get(agent, "system.serialId")) {
-    agentInstance.system_serial_id = agent.system.serialId;
+  if (_.get(producer, "system.serialId")) {
+    agentInstance.system_serial_id = producer.system.serialId;
   }else{
-    if(_.get(agent, "system.serialId") !== undefined){
+    if(_.get(producer, "system.serialId") !== undefined){
       agentInstance.system_serial_id = null;
     }
   }
@@ -189,10 +189,10 @@ function objectToAgent(agent, agentInstance) {
   return agentInstance;
 }
 
-export async function addAgentDB(agent) {
+export async function addAgentDB(producer) {
   try {
     const repo = getRepository(Agent);
-    let agentInstance = objectToAgent(agent, null);
+    let agentInstance = objectToAgent(producer, null);
     console.log("agentInstance: ", agentInstance);
     await repo.save(agentInstance);
     return {
@@ -244,12 +244,12 @@ export async function getAgentByGlobalIdDB(gid: string, securityKey: string) {
     if (securityKey) {
       query.system_security_key = securityKey;
     }
-    let agent = await repo.findOne(query);
-    if (!agent) {
+    let producer = await repo.findOne(query);
+    if (!producer) {
       throw new HTTPError(404, null, { globalId: gid });
     }
-    agent = flattenToObject(agent);
-    return agent;
+    producer = flattenToObject(producer);
+    return producer;
   } catch (err) {
     if(!(err instanceof HTTPError)){
       err = new HTTPError(
@@ -261,7 +261,7 @@ export async function getAgentByGlobalIdDB(gid: string, securityKey: string) {
       );
     }
     // if(err.statusCode === 404){
-    //   logger.info(`getAgentByGlobalIdDB, cannot find agent by globalId - ${gid}`);
+    //   logger.info(`getAgentByGlobalIdDB, cannot find producer by globalId - ${gid}`);
     // }else{
     //   logger.error(`getAgentByGlobalIdDB, error: ${err.message}`, {error: err});
     // }
@@ -269,10 +269,10 @@ export async function getAgentByGlobalIdDB(gid: string, securityKey: string) {
   }
 }
 
-export async function updateAgentDB(gid, securityKey, agent) {
+export async function updateAgentDB(gid, securityKey, producer) {
   try {
-    if(!agent||!gid){
-      // if agent doesn't exist or gid doesn't exist, don't need to update
+    if(!producer||!gid){
+      // if producer doesn't exist or gid doesn't exist, don't need to update
       return {
         gid: gid
       };
@@ -286,17 +286,17 @@ export async function updateAgentDB(gid, securityKey, agent) {
     }
     const repo = getRepository(Agent);
 
-    if(!agent.system){
-      agent.system = {};
+    if(!producer.system){
+      producer.system = {};
     }
 
     // update last modified
-    agent.system.modified = Date.now();
-    agent = objectToAgent(agent, {});
+    producer.system.modified = Date.now();
+    producer = objectToAgent(producer, {});
 
-    // console.log(`updateAgentDB->agent: `, agent);
+    // console.log(`updateAgentDB->producer: `, producer);
 
-    const result = await repo.update(query, agent);
+    const result = await repo.update(query, producer);
     return result;
   } catch (err) {
     let error = new HTTPError(

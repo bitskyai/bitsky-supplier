@@ -49,7 +49,7 @@
     },
     "globalId": {
       "title": "Global ID",
-      "description": "globally unique identifier of this agent",
+      "description": "globally unique identifier of this producer",
       "type": "string",
       "examples": ["59f43b55-46a3-4efc-a960-018bcca91f46"]
     },
@@ -150,12 +150,12 @@
     },
     "timestamp": {
       "type": ["integer", "null", "string"],
-      "description": "Timestamp of when this intelligence was assigned to an agent",
+      "description": "Timestamp of when this intelligence was assigned to an producer",
       "examples": [1553974629109]
     },
     "version": {
       "title": "Version",
-      "description": "version of this agent",
+      "description": "version of this producer",
       "type": "string",
       "pattern": "^\\d+\\.\\d+\\.\\d+$",
       "default": "1.0.0",
@@ -183,7 +183,7 @@
     },
     "description": {
       "title": "Description",
-      "description": "description of this agent",
+      "description": "description of this producer",
       "type": "string",
       "minLength": 1,
       "maxLength": 200,

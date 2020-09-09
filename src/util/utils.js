@@ -207,8 +207,8 @@ function omit(obj, omitKeys, iterateKeys) {
  */
 
 /**
- * Based on Agent Schema to validate an agent
- * @param {object} agentData - agent data want to be validate
+ * Based on Agent Schema to validate an producer
+ * @param {object} agentData - producer data want to be validate
  * @returns {ValidateResult}
  */
 function validateAgent(agentData) {
@@ -236,7 +236,7 @@ function validateIntelligence(intelligenceData) {
 
 /**
  * Based on SOI Schema to validate a SOI
- * @param {object} soiData - agent data want to be validate
+ * @param {object} soiData - producer data want to be validate
  * @returns {ValidateResult}
  */
 function validateSOI(soiData) {
@@ -249,14 +249,14 @@ function validateSOI(soiData) {
 }
 
 /**
- * Based on Agent Schema to validate agent and update agent state.
- * If agent state is active, then 
- * @param {object} agentData - agent data want to validate
- * @returns {object} - return validate agent with state be updated to correct
+ * Based on Agent Schema to validate producer and update producer state.
+ * If producer state is active, then 
+ * @param {object} agentData - producer data want to validate
+ * @returns {object} - return validate producer with state be updated to correct
  */
 function validateAgentAndUpdateState(agentData) {
-  // Default to set agent state to draft, since agent state is required.
-  // It is useful for new agent that need to be registered
+  // Default to set producer state to draft, since producer state is required.
+  // It is useful for new producer that need to be registered
   if (!agentData.system.state) {
     agentData.system.state = AGENT_STATE.draft;
   }

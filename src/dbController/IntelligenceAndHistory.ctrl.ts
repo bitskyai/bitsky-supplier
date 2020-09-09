@@ -99,28 +99,28 @@ export function flattenToObject(intelligences) {
     }
     if (_.get(intelligence, "system_agent_global_id")) {
       !obj.system ? (obj.system = {}) : "";
-      !obj.system.agent ? (obj.system.agent = {}) : "";
-      obj.system.agent.globalId = intelligence.system_agent_global_id;
+      !obj.system.producer ? (obj.system.producer = {}) : "";
+      obj.system.producer.globalId = intelligence.system_agent_global_id;
     }
     if (_.get(intelligence, "system_agent_type")) {
       !obj.system ? (obj.system = {}) : "";
-      !obj.system.agent ? (obj.system.agent = {}) : "";
-      obj.system.agent.type = intelligence.system_agent_type;
+      !obj.system.producer ? (obj.system.producer = {}) : "";
+      obj.system.producer.type = intelligence.system_agent_type;
     }
     if (_.get(intelligence, "system_agent_retry_times")) {
       !obj.system ? (obj.system = {}) : "";
-      !obj.system.agent ? (obj.system.agent = {}) : "";
-      obj.system.agent.retryTimes = intelligence.system_agent_retry_times;
+      !obj.system.producer ? (obj.system.producer = {}) : "";
+      obj.system.producer.retryTimes = intelligence.system_agent_retry_times;
     }
     if (_.get(intelligence, "system_agent_started_at")) {
       !obj.system ? (obj.system = {}) : "";
-      !obj.system.agent ? (obj.system.agent = {}) : "";
-      obj.system.agent.startedAt = intelligence.system_agent_started_at;
+      !obj.system.producer ? (obj.system.producer = {}) : "";
+      obj.system.producer.startedAt = intelligence.system_agent_started_at;
     }
     if (_.get(intelligence, "system_agent_ended_at")) {
       !obj.system ? (obj.system = {}) : "";
-      !obj.system.agent ? (obj.system.agent = {}) : "";
-      obj.system.agent.endedAt = intelligence.system_agent_ended_at;
+      !obj.system.producer ? (obj.system.producer = {}) : "";
+      obj.system.producer.endedAt = intelligence.system_agent_ended_at;
     }
 
     return obj;
@@ -197,24 +197,24 @@ export function objectsToIntelligences(intelligences, intelligenceInstances) {
     if (_.get(intelligence, "system.endedAt")) {
       intelligenceInstance.system_ended_at = intelligence.system.endedAt;
     }
-    if (_.get(intelligence, "system.agent.globalId")) {
+    if (_.get(intelligence, "system.producer.globalId")) {
       intelligenceInstance.system_agent_global_id =
-        intelligence.system.agent.globalId;
+        intelligence.system.producer.globalId;
     }
-    if (_.get(intelligence, "system.agent.type")) {
-      intelligenceInstance.system_agent_type = intelligence.system.agent.type;
+    if (_.get(intelligence, "system.producer.type")) {
+      intelligenceInstance.system_agent_type = intelligence.system.producer.type;
     }
-    if (_.get(intelligence, "system.agent.retryTimes")) {
+    if (_.get(intelligence, "system.producer.retryTimes")) {
       intelligenceInstance.system_agent_retry_times =
-        intelligence.system.agent.retryTimes;
+        intelligence.system.producer.retryTimes;
     }
-    if (_.get(intelligence, "system.agent.startedAt")) {
+    if (_.get(intelligence, "system.producer.startedAt")) {
       intelligenceInstance.system_agent_started_at =
-        intelligence.system.agent.startedAt;
+        intelligence.system.producer.startedAt;
     }
-    if (_.get(intelligence, "system.agent.endedAt")) {
+    if (_.get(intelligence, "system.producer.endedAt")) {
       intelligenceInstance.system_agent_ended_at =
-        intelligence.system.agent.endedAt;
+        intelligence.system.producer.endedAt;
     }
     if (_.get(intelligence, "system.version")) {
       intelligenceInstance.system_version = intelligence.system.version;
@@ -934,12 +934,12 @@ export async function getIntelligencesForAgentDB(
       if (securityKey) {
         query.where.system_security_key = securityKey;
         intelligences = await repo.find(query);
-        // if permission doesn't exit or agent is public then try to see any public intelligences need to collect
+        // if permission doesn't exit or producer is public then try to see any public intelligences need to collect
         if (
           (!permission || _.upperCase(permission) === PERMISSIONS.public) &&
           (!intelligences || !intelligences.length)
         ) {
-          // if no intelligences for this securityKey and if this agent's permission is public then, get other intelligences that is public
+          // if no intelligences for this securityKey and if this producer's permission is public then, get other intelligences that is public
           delete query.where.system_security_key;
           query.where.permission = {
             $nin: [PERMISSIONS.private],
@@ -1021,7 +1021,7 @@ export async function getIntelligencesForAgentDB(
           (!permission || _.upperCase(permission) === PERMISSIONS.public) &&
           (!intelligences || !intelligences.length)
         ) {
-          // if no intelligences for this securityKey and if this agent's permission is public then, get other intelligences that is public
+          // if no intelligences for this securityKey and if this producer's permission is public then, get other intelligences that is public
           intelligenceQueryNoSecurityKey.andWhere(
             "intelligence.permission NOT IN (:...permissions)",
             {
@@ -1060,15 +1060,15 @@ export async function getIntelligencesForAgentDB(
       }
 
       // Comment: 07/30/2019
-      // Reason: Since this intelligence is reassigned, so it always need to update agent information
-      // if (!item.agent) {
-      //   item.agent = {
+      // Reason: Since this intelligence is reassigned, so it always need to update producer information
+      // if (!item.producer) {
+      //   item.producer = {
       //     globalId: agentGid,
       //     type: _.toUpper(agentConfig.type),
       //     started_at: Date.now()
       //   };
       // }
-      item.system.agent = {
+      item.system.producer = {
         globalId: agentConfig.globalId,
         type: _.toUpper(agentConfig.type),
       };
@@ -1084,7 +1084,7 @@ export async function getIntelligencesForAgentDB(
     };
 
     if (isMongo()) {
-      // Update intelligences that return to agent
+      // Update intelligences that return to producer
       await repo.updateMany(
         {
           global_id: {
@@ -1108,7 +1108,7 @@ export async function getIntelligencesForAgentDB(
     }
 
     // Update Agent Last Ping
-    // Don't need to wait agent update finish
+    // Don't need to wait producer update finish
     updateAgentDB(agentConfig.globalId, securityKey, {
       system: {
         modified: Date.now(),
@@ -1117,7 +1117,7 @@ export async function getIntelligencesForAgentDB(
     });
 
     // TODO: 2019/11/10 need to rethink about this logic, since intelligences already send back to agents
-    //        if we check for now, it is meaningless, better way is let agent to tell. For example, if collect
+    //        if we check for now, it is meaningless, better way is let producer to tell. For example, if collect
     //        intelligences fail, then check SOI or direct know soi is inactive
 
     // Check SOI status in parallel

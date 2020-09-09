@@ -197,7 +197,7 @@ paths:
   /apis/producers:
     get:
       tags:
-        - agent
+        - producer
       description: Operation Index - 0012
       operationId: getAgents
       responses:
@@ -211,7 +211,7 @@ paths:
                   $ref: "./src/schemas/producer.json"
     post:
       tags:
-        - agent
+        - producer
       summary: Register an Agent.
       description: Operation Index - 0013
       operationId: registerAgent
@@ -244,7 +244,7 @@ paths:
   /apis/producers/{gid}:
     get:
       tags:
-        - agent
+        - producer
       summary: Get an Agent
       description: Operation Index - 0014
       operationId: getAgent
@@ -257,7 +257,7 @@ paths:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Get an agent successful
+          description: Get an producer successful
           content:
             application/json:
               schema:
@@ -276,7 +276,7 @@ paths:
                 $ref: "#/components/schemas/Error"
     put:
       tags:
-        - agent
+        - producer
       summary: Update an Agent
       description: Operation Index - 0015
       operationId: updateAgent
@@ -305,7 +305,7 @@ paths:
                 $ref: "#/components/schemas/Error"
     delete:
       tags:
-        - agent
+        - producer
       summary: Unregister an Agent
       description: Operation Index - 0016
       operationId: unregisterAgent
@@ -338,7 +338,7 @@ paths:
   /apis/producers/{gid}/activate:
     post:
       tags:
-        - agent
+        - producer
       summary: Activate an Agent status
       description: Operation Index - 0017
       operationId: activateAgentStatus
@@ -346,7 +346,7 @@ paths:
         - in: path
           name: gid
           required: true
-          description: global_id of agent
+          description: global_id of producer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
@@ -371,7 +371,7 @@ paths:
   /apis/producers/{gid}/deactivate:
     post:
       tags:
-        - agent
+        - producer
       summary: Activate an Agent status
       description: Operation Index - 0018
       operationId: deactivateAgentStatus
@@ -379,7 +379,7 @@ paths:
         - in: path
           name: gid
           required: true
-          description: global_id of agent
+          description: global_id of producer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
@@ -560,7 +560,7 @@ paths:
             type: number
         - in: query
           name: permission
-          description: permisson for this agent
+          description: permisson for this producer
           schema:
             type: string
             default: public
