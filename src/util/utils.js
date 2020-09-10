@@ -324,7 +324,7 @@ function validateRetailerAndUpdateState(retailerData) {
 function generateGlobalId(entityType){
   let id = uuidv4();
   if(!entityType){
-    entityType = "munew-dia";
+    entityType = "bitsky-dia";
   }
   id = `${entityType}::${Date.now()}::${id}`;
   id = btoa(id);

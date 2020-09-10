@@ -10,7 +10,7 @@
     "nodejs"
   ],
   "website": "https://bitsky.ai",
-  "logo": "https://raw.githubusercontent.com/bitskyai/bitsky-electron/master/assets/icons/munew512.png",
+  "logo": "https://raw.githubusercontent.com/bitskyai/bitsky-electron/master/assets/icons/bitsky512.png",
   "env": {
     "TYPEORM_CONNECTION": {
       "description": "Database connection type. Currently, available values [sqlite, mongodb].",
