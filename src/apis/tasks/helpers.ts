@@ -3,11 +3,11 @@ const { HTTPError } = require("../../util/error");
 const {
   CONFIG,
   DEFAULT_RETAILER,
-  INTELLIGENCE_STATE,
+  TASK_STATE,
   PERMISSIONS,
   PRODUCER_STATE,
   RETAILER_STATE,
-  DEFAULT_INTELLIGENCE,
+  DEFAULT_TASK,
 } = require("../../util/constants");
 const retailersHelpers = require("../retailers/helpers");
 const producersHelpers = require("../producers/helpers");
@@ -15,16 +15,16 @@ const logger = require("../../util/logger");
 const utils = require("../../util/utils");
 const { getConfig } = require("../../config");
 import {
-  addIntelligencesDB,
-  getIntelligencesOrHistoryForManagementDB,
-  updateIntelligencesStateForManagementDB,
-  deleteIntelligencesOrHistoryForManagementDB,
-  getIntelligencesForProducerDB,
-  getIntelligencesDB,
-  updateEachIntelligencesDB,
-  deleteIntelligencesDB,
-  addIntelligenceHistoryDB,
-} from "../../dbController/IntelligenceAndHistory.ctrl";
+  addTasksDB,
+  getTasksOrHistoryForManagementDB,
+  updateTasksStateForManagementDB,
+  deleteTasksOrHistoryForManagementDB,
+  getTasksForProducerDB,
+  getTasksDB,
+  updateEachTasksDB,
+  deleteTasksDB,
+  addTaskHistoryDB,
+} from "../../dbController/TaskAndHistory.ctrl";
 import {
   addATaskJob,
   getTopTaskJob,
@@ -36,8 +36,8 @@ import {
 // TODO: when start thinking about load balance, then this data should be in memory cache, not inside service memory
 
 //================================================================
-// Following APIs are designed for CRUD intelligences for Management UI(Desktop or web app)
-async function getIntelligencesForManagement(
+// Following APIs are designed for CRUD tasks for Management UI(Desktop or web app)
+async function getTasksForManagement(
   cursor: string,
   url: string,
   state: string,
@@ -45,7 +45,7 @@ async function getIntelligencesForManagement(
   securityKey: string
 ) {
   try {
-    return await getIntelligencesOrHistoryForManagementDB(
+    return await getTasksOrHistoryForManagementDB(
       cursor,
       url,
       state,
@@ -60,18 +60,18 @@ async function getIntelligencesForManagement(
 /**
  * ids priority high then url, if you pass both then only ids will be executed
  * @param {string} url - url for filter
- * @param {array} ids - Intelligences Global Id
+ * @param {array} ids - Tasks Global Id
  * @param {string} securityKey - security key string
  */
-async function pauseIntelligencesForManagement(
+async function pauseTasksForManagement(
   url: string,
   state: string,
   ids: string[],
   securityKey: string
 ) {
   try {
-    let result = await updateIntelligencesStateForManagementDB(
-      INTELLIGENCE_STATE.paused,
+    let result = await updateTasksStateForManagementDB(
+      TASK_STATE.paused,
       url,
       state,
       ids,
@@ -87,18 +87,18 @@ async function pauseIntelligencesForManagement(
 /**
  * ids priority high then url, if you pass both then only ids will be executed
  * @param {string} url - url for filter
- * @param {array} ids - Intelligences Global Id
+ * @param {array} ids - Tasks Global Id
  * @param {string} securityKey - security key string
  */
-async function resumeIntelligencesForManagement(
+async function resumeTasksForManagement(
   url: string,
   state: string,
   ids: string[],
   securityKey: string
 ) {
   try {
-    let result = await updateIntelligencesStateForManagementDB(
-      INTELLIGENCE_STATE.configured,
+    let result = await updateTasksStateForManagementDB(
+      TASK_STATE.configured,
       url,
       state,
       ids,
@@ -114,17 +114,17 @@ async function resumeIntelligencesForManagement(
 /**
  * ids priority high then url, if you pass both then only ids will be executed
  * @param {string} url - url for filter
- * @param {array} ids - Intelligences Global Id
+ * @param {array} ids - Tasks Global Id
  * @param {string} securityKey - security key string
  */
-async function deleteIntelligencesForManagement(
+async function deleteTasksForManagement(
   url: string,
   state: string,
   ids: string[],
   securityKey: string
 ) {
   try {
-    let result = await deleteIntelligencesOrHistoryForManagementDB(
+    let result = await deleteTasksOrHistoryForManagementDB(
       url,
       state,
       ids,
@@ -137,17 +137,17 @@ async function deleteIntelligencesForManagement(
 }
 
 //================================================================
-// Following APIs are designed for Producer CRUD Intelligences
+// Following APIs are designed for Producer CRUD Tasks
 /**
- * Create intelligences
+ * Create tasks
  *
- * @param {array} intelligences
+ * @param {array} tasks
  * @param {string} securityKey
  */
-async function addIntelligences(intelligences: object[], securityKey: string) {
+async function addTasks(tasks: object[], securityKey: string) {
   try {
     // Comment: 07/30/2019
-    // let defaultIntelligence = {
+    // let defaultTask = {
     //   permission: PERMISSIONS.private,
     //   priority: 100000,
     //   created_at: Date.now(),
@@ -158,67 +158,67 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
     //   status: "CONFIGURED",
     //   suitable_producers: ['HEADLESSBROWSER']
     // };
-    let defaultIntelligence = DEFAULT_INTELLIGENCE;
+    let defaultTask = DEFAULT_TASK;
     // TODO: data validation need to improve
     let validationError = [];
     // hash table for retailer globalId
     let retailerGlobalIds = {};
-    intelligences = intelligences.map((intelligence: any) => {
+    tasks = tasks.map((task: any) => {
       // remove data that cannot set by user
-      delete intelligence.dataset;
-      delete intelligence.system;
+      delete task.dataset;
+      delete task.system;
 
       // let err = [];
       /*
-      if (!intelligence.globalId) {
+      if (!task.globalId) {
         // comment 07/25/2019 - instead of error, generate an globalid
         // err.push({
         //   key: "globalId",
         //   description: "globalId is undefined."
         // });
-        intelligence.globalId = utils.generateGlobalId("intelligence");
-        // To avoid same intelligence insert multiple time
-        intelligence._id = intelligence.globalId;
+        task.globalId = utils.generateGlobalId("task");
+        // To avoid same task insert multiple time
+        task._id = task.globalId;
       }
       */
-      intelligence.globalId = utils.generateGlobalId("intelligence");
-      intelligence = _.merge({}, defaultIntelligence, intelligence);
+      task.globalId = utils.generateGlobalId("task");
+      task = _.merge({}, defaultTask, task);
 
       // Update system information
-      intelligence.system.created = Date.now();
-      intelligence.system.modified = Date.now();
-      intelligence.system.securityKey = securityKey;
-      intelligence.system.state = PRODUCER_STATE.configured;
+      task.system.created = Date.now();
+      task.system.modified = Date.now();
+      task.system.securityKey = securityKey;
+      task.system.state = PRODUCER_STATE.configured;
 
       // Make sure producer type is uppercase
-      intelligence.suitableProducers = intelligence.suitableProducers.map(
+      task.suitableProducers = task.suitableProducers.map(
         (producerType) => {
           return _.toUpper(producerType);
         }
       );
       // since just recieve Retailer request, so set the state to **ACTIVE**
-      if (!intelligence.retailer.state) {
-        intelligence.retailer.state = RETAILER_STATE.active;
+      if (!task.retailer.state) {
+        task.retailer.state = RETAILER_STATE.active;
       }
 
-      let validateResult = utils.validateIntelligence(intelligence);
+      let validateResult = utils.validateTask(task);
 
       // If it isn't valid
       if (!validateResult.valid) {
         validationError.push({
-          intelligence,
+          task,
           error: validateResult.errors,
         });
       }
       // remove unchangable field for create
-      delete intelligence.system.producer;
-      delete intelligence.system.startedAt;
-      delete intelligence.system.endedAt;
-      delete intelligence.system.failuresNumber;
+      delete task.system.producer;
+      delete task.system.startedAt;
+      delete task.system.endedAt;
+      delete task.system.failuresNumber;
 
       // Need to update globalId to globalId
-      retailerGlobalIds[intelligence.retailer.globalId] = 1;
-      return intelligence;
+      retailerGlobalIds[task.retailer.globalId] = 1;
+      return task;
     });
 
     if (validationError.length) {
@@ -230,14 +230,14 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
       await retailersHelpers.getRetailer(retailerGlobalId);
     }
     logger.debug("Retailers exist!", { retailerGlobalIds });
-    // let result = await insertMany(COLLECTIONS_NAME.intelligences, intelligences);
+    // let result = await insertMany(COLLECTIONS_NAME.tasks, tasks);
     // let result = await bulkUpdate(
-    //   COLLECTIONS_NAME.intelligences,
-    //   intelligences,
+    //   COLLECTIONS_NAME.tasks,
+    //   tasks,
     //   true
     // );
     // return (result && result.upsertedIds) || [];
-    let result = await addIntelligencesDB(intelligences);
+    let result = await addTasksDB(tasks);
     return result;
   } catch (err) {
     throw err;
@@ -287,28 +287,28 @@ async function waitUntilTopTask(globalId) {
 }
 
 /**
- * @typedef {Object} IntelligencesAndConfig
+ * @typedef {Object} TasksAndConfig
  * @property {object} producer - Producer Configuration
- * @property {array} intelligences - Intelligences Array
+ * @property {array} tasks - Tasks Array
  */
 /**
- * Get intelligences by Producer Global ID and Security Key
+ * Get tasks by Producer Global ID and Security Key
  *
  * Operation Index - 0005
  *
  * @param {string} producerGid - Producer Global ID
  * @param {string} securityKey - Security Key
  *
- * @returns {IntelligencesAndConfig}
+ * @returns {TasksAndConfig}
  */
-async function getIntelligences(producerGid: string, securityKey: string) {
+async function getTasks(producerGid: string, securityKey: string) {
   const taskJobGlobalId = utils.generateGlobalId("taskjob");
   try {
     // add a task job to the job queue
     await addATaskJob(taskJobGlobalId, producerGid);
     await waitUntilTopTask(taskJobGlobalId);
-    // TODO: need to improve intelligences schedule
-    // 1. Think about if a lot of intelligences, how to schedule them
+    // TODO: need to improve tasks schedule
+    // 1. Think about if a lot of tasks, how to schedule them
     // make them can be more efficient
     // 2. Think about the case that Retailer is inactive
 
@@ -317,12 +317,12 @@ async function getIntelligences(producerGid: string, securityKey: string) {
       securityKey = undefined;
     }
 
-    logger.debug(`getIntelligences->producerGid: ${producerGid}`);
-    logger.debug(`getIntelligences->securityKey: ${securityKey}`);
+    logger.debug(`getTasks->producerGid: ${producerGid}`);
+    logger.debug(`getTasks->securityKey: ${securityKey}`);
     // Step 1: get producer configuration
     let producerConfig = await producersHelpers.getProducer(producerGid, securityKey);
     logger.debug(
-      `getIntelligences->producerConfig.system.securityKey: ${producerConfig.system.securityKey}`
+      `getTasks->producerConfig.system.securityKey: ${producerConfig.system.securityKey}`
     );
     let producerSecurityKey = producerConfig.system.securityKey;
     // avoid UI side send undefined or null as string
@@ -333,7 +333,7 @@ async function getIntelligences(producerGid: string, securityKey: string) {
     // For security issue, don't allow user do this
     if (_.trim(producerSecurityKey) !== _.trim(securityKey)) {
       logger.info(
-        "getIntelligences, producerConfig.system.securityKey isn' same with securityKey. ",
+        "getTasks, producerConfig.system.securityKey isn' same with securityKey. ",
         {
           "producerConfig.system.securityKey": producerSecurityKey,
           securityKey: securityKey,
@@ -349,8 +349,8 @@ async function getIntelligences(producerGid: string, securityKey: string) {
       );
     }
 
-    // default empty intelligences
-    let intelligences = [];
+    // default empty tasks
+    let tasks = [];
     producerConfig = utils.omit(producerConfig, ["_id", "securityKey"], ["system"]);
 
     // if producer isn't active, then throw an error
@@ -365,16 +365,16 @@ async function getIntelligences(producerGid: string, securityKey: string) {
         producerGid
       );
     }
-    intelligences = await getIntelligencesForProducerDB(producerConfig, securityKey);
+    tasks = await getTasksForProducerDB(producerConfig, securityKey);
     await removeTaskJob(taskJobGlobalId);
-    return intelligences;
+    return tasks;
   } catch (err) {
     await removeTaskJob(taskJobGlobalId);
     throw err;
   }
 }
 
-async function updateIntelligences(content, securityKey: string) {
+async function updateTasks(content, securityKey: string) {
   try {
     let contentMap = {};
     let gids = content.map((item) => {
@@ -382,74 +382,74 @@ async function updateIntelligences(content, securityKey: string) {
       return item.globalId;
     });
 
-    let intelligences = await getIntelligencesDB(gids, securityKey);
+    let tasks = await getTasksDB(gids, securityKey);
 
-    if (!intelligences || !intelligences.length) {
-      logger.warn("No intelligences found.", { intelligences: content });
+    if (!tasks || !tasks.length) {
+      logger.warn("No tasks found.", { tasks: content });
       return {};
     }
 
-    let failedIntelligences = [];
-    let intelligenceHistory = [];
+    let failedTasks = [];
+    let taskHistory = [];
     gids = [];
-    for (let i = 0; i < intelligences.length; i++) {
-      // this is the intelligence get from DB
-      let item = intelligences[i];
-      // this is the intelligence that passed by producer
-      let intelligence = contentMap[item.globalId];
-      // If this intelligence was failed, then increase **failuresNumber**
+    for (let i = 0; i < tasks.length; i++) {
+      // this is the task get from DB
+      let item = tasks[i];
+      // this is the task that passed by producer
+      let task = contentMap[item.globalId];
+      // If this task was failed, then increase **failuresNumber**
       // Any state isn't FINISHED, then think it is failed, need to increase failuresNumber
       // if failuresNumber is <= max fail number, then let Producer try to collect it again
       if (
         (item.system.failuresNumber || 0) <
-          CONFIG.MAX_FAIL_NUMBER_FOR_INTELLIGENCE &&
-        _.get(intelligence, "system.state") !== INTELLIGENCE_STATE.finished
+          CONFIG.MAX_FAIL_NUMBER_FOR_TASK &&
+        _.get(task, "system.state") !== TASK_STATE.finished
       ) {
         if (!item.system.failuresNumber) {
           item.system.failuresNumber = 1;
         } else {
           item.system.failuresNumber += 1;
         }
-        // This intelligence need continue to retry
-        failedIntelligences.push({
+        // This task need continue to retry
+        failedTasks.push({
           globalId: item.globalId,
           system: {
             modified: Date.now(),
             endedAt: Date.now(),
             state:
-              _.get(intelligence, "system.state") || INTELLIGENCE_STATE.failed,
+              _.get(task, "system.state") || TASK_STATE.failed,
             failuresNumber: _.get(item, "system.failuresNumber"),
-            failuresReason: _.get(intelligence, "system.failuresReason"),
+            failuresReason: _.get(task, "system.failuresReason"),
             producer: {
-              globalId: _.get(intelligence, "system.producer.globalId"),
-              type: _.get(intelligence, "system.producer.type"),
-              startedAt: _.get(intelligence, "system.producer.startedAt"),
-              endedAt: _.get(intelligence, "system.producer.endedAt"),
+              globalId: _.get(task, "system.producer.globalId"),
+              type: _.get(task, "system.producer.type"),
+              startedAt: _.get(task, "system.producer.startedAt"),
+              endedAt: _.get(task, "system.producer.endedAt"),
             },
           },
         });
       } else {
-        // This intelligences need to move to intelligence_history
+        // This tasks need to move to task_history
         gids.push(item.globalId);
 
         delete item.id;
         delete item._id;
         // if it isn't successful, then means reach max retry time, to keep why it isn't successful
         if (
-          _.get(intelligence, "system.state") !== INTELLIGENCE_STATE.finished
+          _.get(task, "system.state") !== TASK_STATE.finished
         ) {
           item.system.failuresNumber += 1;
           item.system.failuresReason = _.get(
-            intelligence,
+            task,
             "system.failuresReason"
           );
         }
         item.system.modified = Date.now();
         item.system.endedAt = Date.now();
         item.system.state = _.get(
-          intelligence,
+          task,
           "system.state",
-          INTELLIGENCE_STATE.finished
+          TASK_STATE.finished
         );
         if (!item.system.producer) {
           item.system.producer = {};
@@ -460,28 +460,28 @@ async function updateIntelligences(content, securityKey: string) {
         item.system.producer.startedAt = passedProducer.startedAt;
         item.system.producer.endedAt = passedProducer.endedAt;
 
-        intelligenceHistory.push(item);
+        taskHistory.push(item);
       }
     }
 
-    if (failedIntelligences.length) {
-      await updateEachIntelligencesDB(failedIntelligences);
+    if (failedTasks.length) {
+      await updateEachTasksDB(failedTasks);
     }
 
-    // add it to intelligences_history
-    for (let i = 0; i < intelligenceHistory.length; i++) {
-      // remove `failuresReason` if intelligence is successful
+    // add it to tasks_history
+    for (let i = 0; i < taskHistory.length; i++) {
+      // remove `failuresReason` if task is successful
       if (
-        _.get(intelligenceHistory[i], "system.state") ==
-        INTELLIGENCE_STATE.finished
+        _.get(taskHistory[i], "system.state") ==
+        TASK_STATE.finished
       ) {
-        if (_.get(intelligenceHistory[i], "system.failuresReason")) {
-          _.set(intelligenceHistory[i], "system.failuresReason", "");
+        if (_.get(taskHistory[i], "system.failuresReason")) {
+          _.set(taskHistory[i], "system.failuresReason", "");
         }
       }
     }
-    await addIntelligenceHistoryDB(intelligenceHistory);
-    let result = await deleteIntelligencesDB(gids, securityKey);
+    await addTaskHistoryDB(taskHistory);
+    let result = await deleteTasksDB(gids, securityKey);
     return result;
   } catch (err) {
     throw err;
@@ -489,11 +489,11 @@ async function updateIntelligences(content, securityKey: string) {
 }
 
 module.exports = {
-  pauseIntelligencesForManagement,
-  resumeIntelligencesForManagement,
-  deleteIntelligencesForManagement,
-  getIntelligencesForManagement,
-  addIntelligences,
-  getIntelligences,
-  updateIntelligences,
+  pauseTasksForManagement,
+  resumeTasksForManagement,
+  deleteTasksForManagement,
+  getTasksForManagement,
+  addTasks,
+  getTasks,
+  updateTasks,
 };

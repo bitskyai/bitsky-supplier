@@ -12,8 +12,8 @@ function registerRouter(router) {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
                 // default return 50 items
-                let intelligences = await helpers.getIntelligencesHistoryForManagement(_.get(req, 'query.cursor'),  _.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'query.limit', 50), securityKey);
-                res.send(intelligences);
+                let tasks = await helpers.getTasksHistoryForManagement(_.get(req, 'query.cursor'),  _.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'query.limit', 50), securityKey);
+                res.send(tasks);
             }catch(err){
                 // Already HTTPError, then throw it
                 if (err instanceof HTTPError) {
@@ -28,7 +28,7 @@ function registerRouter(router) {
         router.delete('/manangement/taskshistory', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-                await helpers.deleteIntelligencesHistoryForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
+                await helpers.deleteTasksHistoryForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
                 res.status(204).send();
             }catch(err){
                 // Already HTTPError, then throw it
@@ -44,7 +44,7 @@ function registerRouter(router) {
         router.post('/manangement/taskshistory/rerun', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-                await helpers.rerunIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
+                await helpers.rerunTasksForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
                 res.status(204).send();
             }catch(err){
                 // Already HTTPError, then throw it

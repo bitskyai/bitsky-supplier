@@ -12,8 +12,8 @@ function registerRouter(router) {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
                 // default return 50 items
-                let intelligences = await helpers.getIntelligencesForManagement(_.get(req, 'query.cursor'),  _.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'query.limit', 50), securityKey);
-                res.send(intelligences);
+                let tasks = await helpers.getTasksForManagement(_.get(req, 'query.cursor'),  _.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'query.limit', 50), securityKey);
+                res.send(tasks);
             }catch(err){
                 // Already HTTPError, then throw it
                 if (err instanceof HTTPError) {
@@ -28,7 +28,7 @@ function registerRouter(router) {
         router.post('/manangement/tasks/pause', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-                await helpers.pauseIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
+                await helpers.pauseTasksForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
                 res.status(204).send();
             }catch(err){
                 // Already HTTPError, then throw it
@@ -44,7 +44,7 @@ function registerRouter(router) {
         router.post('/manangement/tasks/resume', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-                await helpers.resumeIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
+                await helpers.resumeTasksForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
                 res.status(204).send();
             }catch(err){
                 // Already HTTPError, then throw it
@@ -60,7 +60,7 @@ function registerRouter(router) {
         router.delete('/manangement/tasks', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-                await helpers.deleteIntelligencesForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
+                await helpers.deleteTasksForManagement(_.get(req, 'query.url'), _.get(req, 'query.state'), _.get(req, 'body'), securityKey);
                 res.status(204).send();
             }catch(err){
                 // Already HTTPError, then throw it
@@ -76,8 +76,8 @@ function registerRouter(router) {
         router.get('/tasks', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-                let intelligences = await helpers.getIntelligences(_.get(req, 'query.gid'), securityKey);
-                res.send(intelligences);
+                let tasks = await helpers.getTasks(_.get(req, 'query.gid'), securityKey);
+                res.send(tasks);
             }catch(err){
                 // Already HTTPError, then throw it
                 if (err instanceof HTTPError) {
@@ -92,7 +92,7 @@ function registerRouter(router) {
         router.post('/tasks', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-                let result = await helpers.addIntelligences(_.get(req, 'body'), securityKey);
+                let result = await helpers.addTasks(_.get(req, 'body'), securityKey);
                 res.send(result);
             }catch(err){
                 // Already HTTPError, then throw it
@@ -108,7 +108,7 @@ function registerRouter(router) {
         router.put('/tasks', async (req, res, next) => {
             try{
                 let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-                await helpers.updateIntelligences(_.get(req, 'body'), securityKey);
+                await helpers.updateTasks(_.get(req, 'body'), securityKey);
                 res.status(204).send();
             }catch(err){
                 // Already HTTPError, then throw it

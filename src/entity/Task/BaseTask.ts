@@ -10,7 +10,7 @@ if (isMongo()) {
 
 // This reference to 'schemas/task.json'
 // Will use JSON schema to validation
-export abstract class BaseIntelligence extends Base {
+export abstract class BaseTask extends Base {
   @Column({
     nullable: true
   })

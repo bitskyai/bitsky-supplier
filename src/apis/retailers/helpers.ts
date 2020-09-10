@@ -19,9 +19,9 @@ import {
   deleteRetailerDB
 } from "../../dbController/Retailer.ctrl";
 import {
-  updateIntelligencesRetailerStateForManagementDB,
-  deleteIntelligencesByRetailerForManagementDB
-} from '../../dbController/IntelligenceAndHistory.ctrl'
+  updateTasksRetailerStateForManagementDB,
+  deleteTasksByRetailerForManagementDB
+} from '../../dbController/TaskAndHistory.ctrl'
 const logger = require("../../util/logger");
 
 async function checkRetailerExistByGlobalID(gid, securityKey) {
@@ -82,7 +82,7 @@ async function registerRetailer(
     // validate retailer
     let validateResult = validateRetailer(retailer);
     if (!validateResult.valid) {
-      // Don't allow user to Create/Update an invalid Retailer, this will reduce the complex of maintain intelligences
+      // Don't allow user to Create/Update an invalid Retailer, this will reduce the complex of maintain tasks
       throw new HTTPError(422, validateResult.errors, { retailer }, "00014000002");
     }
 
@@ -234,7 +234,7 @@ async function updateRetailerState(gid, originalRetailer, dontUpdateModified?: b
     // validate retailer, Retailer must be a valid Retailer
     let validateResult = validateRetailer(originalRetailer);
     if (!validateResult.valid) {
-      // Don't allow user to Create/Update an invalid Retailer, this will reduce the complex of maintain intelligences
+      // Don't allow user to Create/Update an invalid Retailer, this will reduce the complex of maintain tasks
       throw new HTTPError(422, validateResult.errors, { originalRetailer }, "00014000002");
     }
 
@@ -258,7 +258,7 @@ async function updateRetailerState(gid, originalRetailer, dontUpdateModified?: b
       }
     }
 
-    await updateIntelligencesRetailerStateForManagementDB(gid, state, dontUpdateModified);
+    await updateTasksRetailerStateForManagementDB(gid, state, dontUpdateModified);
     const retailerSystemInfo:any = {
       system: {
         state: state,
@@ -284,7 +284,7 @@ async function unregisterRetailer(gid, securityKey) {
     // Make sure can find Retailer, if cannot, the it will throw 404 error
     await checkRetailerExistByGlobalID(gid, securityKey);
 
-    await deleteIntelligencesByRetailerForManagementDB(gid, securityKey);
+    await deleteTasksByRetailerForManagementDB(gid, securityKey);
     // remove this Retailer in retailers collection
     let result = await deleteRetailerDB(gid, securityKey);
     return result;

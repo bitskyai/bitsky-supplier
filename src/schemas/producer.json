@@ -81,22 +81,22 @@
     "private": {
       "title": "Private Mode",
       "type": "boolean",
-      "description": "Whether collect intelligences that not created by yourself",
+      "description": "Whether collect tasks that not created by yourself",
       "default": true
     },
     "permission": {
       "$ref": "#/definitions/permission"
     },
     "concurrent": {
-      "title": "Concurrent Collect Intelligences",
+      "title": "Concurrent Collect Tasks",
       "type": "integer",
-      "description": "How many intelligences need to be concurrent collected",
+      "description": "How many tasks need to be concurrent collected",
       "default": 1
     },
     "pollingInterval": {
       "title": "Polling Interval",
       "type": "integer",
-      "description": "Unit: second. How frequently to check whether need to collect new intelligences",
+      "description": "Unit: second. How frequently to check whether need to collect new tasks",
       "default": 30
     },
     "maxWaitingTime": {
@@ -106,14 +106,14 @@
       "default": 5
     },
     "maxCollect": {
-      "title": "Max Collect Intelligences",
+      "title": "Max Collect Tasks",
       "type": "integer",
-      "description": "**undefined** means infinity. Browser has memory leak issue if continue to open urls. To avoid this, need to close window when reach max collect times. Collect Time equal to how many request send to DIA to get intelligence."
+      "description": "**undefined** means infinity. Browser has memory leak issue if continue to open urls. To avoid this, need to close window when reach max collect times. Collect Time equal to how many request send to DIA to get task."
     },
     "idelTime": {
       "title": "Producer Idel Time",
       "type": "integer",
-      "description": "How long time browser need to wait to restart collect intelligences after close browser window. This time is used for browser to release memory.",
+      "description": "How long time browser need to wait to restart collect tasks after close browser window. This time is used for browser to release memory.",
       "default": 0
     },
     "timeout": {
@@ -125,7 +125,7 @@
     "maxRetry": {
       "title": "Max Retry Time",
       "type": "integer",
-      "description": "Max retry time if send collected intelligences fail, if retried max time, then it will send back to DIA and mark those intelligences fail",
+      "description": "Max retry time if send collected tasks fail, if retried max time, then it will send back to DIA and mark those tasks fail",
       "default": 1
     },
     "baseURL": {
@@ -186,7 +186,7 @@
     },
     "timestamp": {
       "type": ["integer", "null", "string"],
-      "description": "Timestamp of when this intelligence was assigned to an producer",
+      "description": "Timestamp of when this task was assigned to an producer",
       "examples": [1553974629109]
     },
     "version": {
@@ -211,14 +211,14 @@
     },
     "permission": {
       "type": "string",
-      "description": "Decide whether this producer to accept public intelligences. if it is **private**, then don't accept public intelligences",
+      "description": "Decide whether this producer to accept public tasks. if it is **private**, then don't accept public tasks",
       "default": "PRIVATE",
       "enum": ["PRIVATE", "PUBLIC"]
     },
     "url": {
       "type": ["string", "null"],
       "format": "uri",
-      "description": "Target URL for this intelligence.",
+      "description": "Target URL for this task.",
       "examples": ["https://json-schema.org"]
     },
     "method": {

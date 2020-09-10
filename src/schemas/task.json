@@ -41,7 +41,7 @@
               "$ref": "#/definitions/timestamp"
             },
             {
-              "title": "Intelligence started at"
+              "title": "Task started at"
             }
           ]
         },
@@ -51,13 +51,13 @@
               "$ref": "#/definitions/timestamp"
             },
             {
-              "title": "Intelligence finished at"
+              "title": "Task finished at"
             }
           ]
         },
         "producer": {
           "title": "Execute Producer",
-          "description": "Which producer to execute this intelligence",
+          "description": "Which producer to execute this task",
           "type": "object",
           "additionalProperties": false,
           "properties": {
@@ -69,7 +69,7 @@
             },
             "retryTimes": {
               "type": "integer",
-              "description": "How many times client side retried to re-execute this intelligence"
+              "description": "How many times client side retried to re-execute this task"
             },
             "startedAt": {
               "allOf": [
@@ -77,7 +77,7 @@
                   "$ref": "#/definitions/timestamp"
                 },
                 {
-                  "description": "Producer start to execute this intelligence"
+                  "description": "Producer start to execute this task"
                 }
               ]
             },
@@ -87,7 +87,7 @@
                   "$ref": "#/definitions/timestamp"
                 },
                 {
-                  "title": "Producer end to execute this intelligence"
+                  "title": "Producer end to execute this task"
                 }
               ]
             }
@@ -100,7 +100,7 @@
           "title": "Number of failures",
           "type": "integer",
           "default": 0,
-          "description": "How many times this intelligence was fail running.",
+          "description": "How many times this task was fail running.",
           "minimum": 0
         },
         "failuresReason": {
@@ -116,10 +116,10 @@
       "$ref": "#/definitions/globalId"
     },
     "type": {
-      "title": "Intelligence Type",
+      "title": "Task Type",
       "type": "string",
       "default": "CRAWLER",
-      "description": "Type of this intelligence, this type will help producer to decide how to run it. For now, we only have one type **web crawler**",
+      "description": "Type of this task, this type will help producer to decide how to run it. For now, we only have one type **web crawler**",
       "enum": ["CRAWLER"]
     },
     "name": {
@@ -130,7 +130,7 @@
     },
     "retailer": {
       "type": "object",
-      "description": "After producer execute this intelligence, which Retailer to send **callback** to",
+      "description": "After producer execute this task, which Retailer to send **callback** to",
       "required": ["globalId"],
       "properties": {
         "globalId": {
@@ -148,7 +148,7 @@
       "type": "integer",
       "minimum": 1,
       "default": 100,
-      "description": "Priority of this intelligence. Only compare priority for same Retailer, doesn't compare cross Retailer. Big value low priority. Priority value 1 is higher than priority value 2."
+      "description": "Priority of this task. Only compare priority for same Retailer, doesn't compare cross Retailer. Big value low priority. Priority value 1 is higher than priority value 2."
     },
     "suitableProducers": {
       "type": "array",
@@ -166,11 +166,11 @@
     "metadata": {
       "type": "object",
       "additionalProperties": true,
-      "description": "Additional metadata for this intelligence",
+      "description": "Additional metadata for this task",
       "properties": {
         "script": {
           "type": "string",
-          "description": "Code want to execute after **window.onload**. You only need to pass function body. And Default you will get following parameters - **resolve**, **reject**, **intelligence**, **axios**. You need to resolve(data) or reject(err), and will send data or err to Retailer. If you need producer to execute your code, Only work with **HEADLESSBROSWER** producer"
+          "description": "Code want to execute after **window.onload**. You only need to pass function body. And Default you will get following parameters - **resolve**, **reject**, **task**, **axios**. You need to resolve(data) or reject(err), and will send data or err to Retailer. If you need producer to execute your code, Only work with **HEADLESSBROSWER** producer"
         }
       }
     },
@@ -206,7 +206,7 @@
     },
     "timestamp": {
       "type": ["integer", "null"],
-      "description": "Timestamp of when this intelligence was assigned to an producer",
+      "description": "Timestamp of when this task was assigned to an producer",
       "examples": [1553974629109]
     },
     "version": {
@@ -231,14 +231,14 @@
     },
     "permission": {
       "type": "string",
-      "description": "Control who can run this intelligence. Private mean only matched **securityKey** can run, public mean any matched producer can collect. If your metadata has script, then it will be forced to private.",
+      "description": "Control who can run this task. Private mean only matched **securityKey** can run, public mean any matched producer can collect. If your metadata has script, then it will be forced to private.",
       "default": "PRIVATE",
       "enum": ["PRIVATE", "PUBLIC"]
     },
     "url": {
       "type": "string",
       "format": "uri",
-      "description": "Target URL for this intelligence.",
+      "description": "Target URL for this task.",
       "examples": ["https://json-schema.org"]
     },
     "name": {
@@ -277,7 +277,7 @@
     "dataset": {
       "type": "object",
       "additionalProperties": true,
-      "description": "All data that was collected by producer when it executed intelligence. You also can use **metadata.script** to add more properties",
+      "description": "All data that was collected by producer when it executed task. You also can use **metadata.script** to add more properties",
       "properties": {
         "url": {
           "type": "string",

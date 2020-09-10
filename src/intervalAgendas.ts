@@ -1,39 +1,39 @@
 import {
-  updateTimeoutIntelligences,
-  checkAnalystServicesHealth,
+  updateTimeoutTasks,
+  checkRetailerServicesHealth,
   removeTimeoutTaskJob
 } from "./apis/agendas/helpers";
 const { getConfig } = require("./config");
 const logger = require("./util/logger");
-let __updateTimeoutIntelligencesIntervalHandler = null;
-let __checkAnalystServicesHealthIntervalHandler = null;
+let __updateTimeoutTasksIntervalHandler = null;
+let __checkRetailerServicesHealthIntervalHandler = null;
 let __removeTimeoutTaskJobIntervalHandler = null;
 
 export async function setupIntervalAgendas() {
   try {
-    await updateTimeoutIntelligences();
-    await checkAnalystServicesHealth();
+    await updateTimeoutTasks();
+    await checkRetailerServicesHealth();
     await removeTimeoutTaskJob();
-    clearInterval(__updateTimeoutIntelligencesIntervalHandler);
-    clearInterval(__checkAnalystServicesHealthIntervalHandler);
+    clearInterval(__updateTimeoutTasksIntervalHandler);
+    clearInterval(__checkRetailerServicesHealthIntervalHandler);
     clearInterval(__removeTimeoutTaskJobIntervalHandler);
-    const intelligenceTimeout = getConfig("INTELLIGENCE_TIMEOUT_CHECK_TIME");
+    const taskTimeout = getConfig("TASK_TIMEOUT_CHECK_TIME");
     const intervalCheckAS = getConfig("RETAILER_STATE_CHECK_TIME");
     const timeoutCreatedAt = getConfig("TASK_JOB_TIMEOUT")*0.2;
-    __updateTimeoutIntelligencesIntervalHandler = setInterval(() => {
-      logger.info("start updateTimeoutIntelligences ... ", {
+    __updateTimeoutTasksIntervalHandler = setInterval(() => {
+      logger.info("start updateTimeoutTasks ... ", {
         function: "setupIntervalAgendas",
-        intelligenceTimeout,
+        taskTimeout,
       });
-      updateTimeoutIntelligences();
-    }, intelligenceTimeout);
+      updateTimeoutTasks();
+    }, taskTimeout);
 
-    __checkAnalystServicesHealthIntervalHandler = setInterval(() => {
-      logger.info("start checkAnalystServicesHealth ... ", {
+    __checkRetailerServicesHealthIntervalHandler = setInterval(() => {
+      logger.info("start checkRetailerServicesHealth ... ", {
         function: "setupIntervalAgendas",
-        intelligenceTimeout,
+        taskTimeout,
       });
-      checkAnalystServicesHealth();
+      checkRetailerServicesHealth();
     }, intervalCheckAS);
 
     __removeTimeoutTaskJobIntervalHandler = setInterval(() => {
@@ -46,7 +46,7 @@ export async function setupIntervalAgendas() {
 
     logger.info("successful setupIntervalAgendas", {
       function: "setupIntervalAgendas",
-      intelligenceTimeout,
+      taskTimeout,
       intervalCheckAS,
     });
   } catch (err) {

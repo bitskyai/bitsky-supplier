@@ -1,7 +1,7 @@
 openapi: 3.0.1
 info:
   title: DIA Engine
-  description: Decentralized Intelligence Agency
+  description: Decentralized Task Agency
   termsOfService: http://swagger.io/terms/
   contact:
     email: help.bitskyai@gmail.com
@@ -13,11 +13,11 @@ servers:
   - url: http://localhost:9099/
 tags:
   - name: retailer
-    description: Service of Intelligence
+    description: Service of Task
   - name: server
-    description: Decentralized Intelligence Agency
-  - name: intelligences
-    description: Intelligences want to collect
+    description: Decentralized Task Agency
+  - name: tasks
+    description: Tasks want to collect
 paths:
   /apis/retailers:
     get:
@@ -401,13 +401,13 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /apis/manangement/intelligences:
+  /apis/manangement/tasks:
     get:
       tags:
-        - intelligences
-      summary: Get intelligences
+        - tasks
+      summary: Get tasks
       description: Operation Index - 0019
-      operationId: getIntelligencesForManagement
+      operationId: getTasksForManagement
       parameters:
         - in: query
           name: cursor
@@ -416,7 +416,7 @@ paths:
             $ref: "#/components/schemas/Cursor"
         - in: query
           name: limit
-          description: How many intelligences for each page
+          description: How many tasks for each page
           schema:
             type: integer
             default: 50
@@ -427,20 +427,20 @@ paths:
             type: string
         - in: query
           name: state
-          description: search intelligence's state that is contained state.
+          description: search task's state that is contained state.
           schema:
             type: string
             example:
               - PAUSED,TIMEOUT
       responses:
         200:
-          description: Get intelligences successful
+          description: Get tasks successful
           content:
             application/json:
               schema:
                 type: object
                 required:
-                  - intelligences
+                  - tasks
                 properties:
                   previousCursor:
                     $ref: "#/components/schemas/Cursor"
@@ -448,17 +448,17 @@ paths:
                     $ref: "#/components/schemas/Cursor"
                   total:
                     type: integer
-                    description: Total number of intelligences
-                  intelligences:
+                    description: Total number of tasks
+                  tasks:
                     type: array
                     items:
                       $ref: "./src/schemas/task.json"
     delete:
       tags:
-        - intelligences
-      summary: Delete intelligences from database
+        - tasks
+      summary: Delete tasks from database
       description: Operation Index - 0022
-      operationId: deleteIntelligencesForManagement
+      operationId: deleteTasksForManagement
       parameters:
         - in: query
           name: url
@@ -466,7 +466,7 @@ paths:
           schema:
             type: string
       requestBody:
-        description: Pause all passed Intelligences
+        description: Pause all passed Tasks
         required: true
         content:
           application/json:
@@ -474,17 +474,17 @@ paths:
               type: array
               items:
                 type: string
-                description: Intelligences Global Id
+                description: Tasks Global Id
       responses:
         204:
           description: Delete successful
-  /apis/manangement/intelligences/pause:
+  /apis/manangement/tasks/pause:
     post:
       tags:
-        - intelligences
-      summary: Pause all matched intelligences.
+        - tasks
+      summary: Pause all matched tasks.
       description: Operation Index - 0020. **ids** priority high than **query parameters(`url`)**, if you pass both, only **ids** will be executed
-      operationId: pauseIntelligencesForManagement
+      operationId: pauseTasksForManagement
       parameters:
         - in: query
           name: url
@@ -492,7 +492,7 @@ paths:
           schema:
             type: string
       requestBody:
-        description: Pause all passed Intelligences
+        description: Pause all passed Tasks
         required: true
         content:
           application/json:
@@ -500,17 +500,17 @@ paths:
               type: array
               items:
                 type: string
-                description: Intelligences Global Id
+                description: Tasks Global Id
       responses:
         204:
-          description: Pasuse all intelligences successful
-  /apis/manangement/intelligences/resume:
+          description: Pasuse all tasks successful
+  /apis/manangement/tasks/resume:
     post:
       tags:
-        - intelligences
-      summary: Get intelligences
+        - tasks
+      summary: Get tasks
       description: Operation Index - 0021. **ids** priority high than **query parameters(`url`)**, if you pass both, only **ids** will be executed
-      operationId: resumeIntelligencesForManagement
+      operationId: resumeTasksForManagement
       parameters:
         - in: query
           name: url
@@ -518,7 +518,7 @@ paths:
           schema:
             type: string
       requestBody:
-        description: Resume all passed Intelligences
+        description: Resume all passed Tasks
         required: true
         content:
           application/json:
@@ -526,17 +526,17 @@ paths:
               type: array
               items:
                 type: string
-                description: Intelligences Global Id
+                description: Tasks Global Id
       responses:
         204:
-          description: Resume all intelligences successful
-  /apis/intelligences:
+          description: Resume all tasks successful
+  /apis/tasks:
     get:
       tags:
-        - intelligences
-      summary: Get intelligences for producers to execute
+        - tasks
+      summary: Get tasks for producers to execute
       description: Operation Index - 0005
-      operationId: getIntelligences
+      operationId: getTasks
       parameters:
         - in: query
           name: type
@@ -555,7 +555,7 @@ paths:
             $ref: "#/components/schemas/GlobalId"
         - in: query
           name: limit
-          description: How many intelligences want to get
+          description: How many tasks want to get
           schema:
             type: number
         - in: query
@@ -569,7 +569,7 @@ paths:
               - public
       responses:
         200:
-          description: Intelligences for collected
+          description: Tasks for collected
           content:
             application/json:
               schema:
@@ -578,12 +578,12 @@ paths:
                   $ref: "./src/schemas/task.json"
     post:
       tags:
-        - intelligences
-      summary: Add intelligences to collecting list
+        - tasks
+      summary: Add tasks to collecting list
       description: Operation Index - 0006
-      operationId: addIntelligences
+      operationId: addTasks
       requestBody:
-        description: Need to collect intelligences
+        description: Need to collect tasks
         required: true
         content:
           application/json:
@@ -593,7 +593,7 @@ paths:
                 $ref: "./src/schemas/task.json"
       responses:
         200:
-          description: Extract intelligences successful
+          description: Extract tasks successful
           content:
             application/json:
               schema:
@@ -602,12 +602,12 @@ paths:
           description: Cannot find specific Retailer, please make sure you registered
     put:
       tags:
-        - intelligences
-      summary: Update intelligences
+        - tasks
+      summary: Update tasks
       description: Operation Index - 0007
-      operationId: updateIntelligences
+      operationId: updateTasks
       requestBody:
-        description: Update intelligences
+        description: Update tasks
         required: true
         content:
           application/json:
@@ -620,14 +620,14 @@ paths:
                     properties:
                       operation:
                         type: string
-                        description: what kind of operation want to do to this intelligence. This will not be save to Intelligence.
+                        description: what kind of operation want to do to this task. This will not be save to Task.
                         default: DELETE
                         enum:
                           - DELETE
                           - UPDATE
       responses:
         200:
-          description: Extract intelligences successful
+          description: Extract tasks successful
           content:
             application/json:
               schema:
@@ -636,14 +636,14 @@ paths:
           description: Cannot find specific Retailer, please make sure you registered
     delete:
       tags:
-        - intelligences
-      summary: Delete intelligences from collecting list
+        - tasks
+      summary: Delete tasks from collecting list
       description: Operation Index - 0008
-      operationId: deleteIntelligences
+      operationId: deleteTasks
       parameters:
         - in: query
           name: gids
-          description: Intelligences' Global Id that want to delete
+          description: Tasks' Global Id that want to delete
           schema:
             type: array
             items:
@@ -679,12 +679,12 @@ components:
       properties:
         successful:
           type: array
-          description: Successful Intelligence global_id
+          description: Successful Task global_id
           items:
             $ref: "#/components/schemas/GlobalId"
         fail:
           type: array
-          description: Fail Intelligence global_id
+          description: Fail Task global_id
           items:
             $ref: "#/components/schemas/GlobalId"
     HealthStatus:
@@ -697,7 +697,7 @@ components:
         description:
           type: string
           description: DIA description.
-          example: "Decentralized Intelligence Agency"
+          example: "Decentralized Task Agency"
         version:
           type: string
           description: DIA version

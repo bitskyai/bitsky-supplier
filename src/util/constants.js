@@ -11,25 +11,25 @@ const CONFIG = {
   X_JOB_ID: "x-bitsky-job-id", // each request is a job
   X_SECURITY_KEY_HEADER: "x-bitsky-security-key", // This is an http request header, used for follow service to identify who send this request
   SECURITY_KEY_IN_DB: "securityKey",
-  INTELLIGENCE_TIMEOUT_CHECK_TIME: 60*1000, // HOW frequently to check intelligence timeout
+  TASK_TIMEOUT_CHECK_TIME: 60*1000, // HOW frequently to check task timeout
   TASK_JOB_TIMEOUT: 60*1000, // Timeout value for a task job
   RETAILER_STATE_CHECK_TIME: 10 * 1000, // How frequently to check Retailer state
-  TIMEOUT_VALUE_FOR_INTELLIGENCE: 5 * 60 * 1000,
-  MAX_FAIL_NUMBER_FOR_INTELLIGENCE: 3, // Max fail number for an intelligence, if more then this fail number, this intelligence will be moved to history
+  TIMEOUT_VALUE_FOR_TASK: 5 * 60 * 1000,
+  MAX_FAIL_NUMBER_FOR_TASK: 3, // Max fail number for an task, if more then this fail number, this task will be moved to history
   LOG_FILES_PATH: "./public/log",
   LOG_MAX_SIZE: 50*1024*1024, // 50MB
   ERROR_LOG_FILE_NAME: "error.log",
   COMBINED_LOG_FILE_NAME: "combined.log",
   NODE_ENV: "development",
-  EACH_TIME_INTELLIGENCES_NUMBER: 1,
+  EACH_TIME_TASKS_NUMBER: 1,
   SERVICE_NAME: packageJson.name,
   LOG_LEVEL: "info",
   PORT: 9099, // server port number
   MONGODB_URI: `mongodb://localhost:27017/${packageJson.name}`,
   DEFAULT_HEALTH_METHOD: "GET",
   DEFAULT_HEALTH_PATH: "/health",
-  DEFAULT_INTELLIGENCES_METHOD: "POST",
-  DEFAULT_INTELLIGENCES_PATH: "/apis/tasks"
+  DEFAULT_TASKS_METHOD: "POST",
+  DEFAULT_TASKS_PATH: "/apis/tasks"
 };
 
 const DEFAULT_DB_CONFIG = {
@@ -55,8 +55,8 @@ const DEFAULT_MONGODB = {
 const COLLECTIONS_NAME = {
   retailers: "retailers",
   producers: "producers",
-  intelligences: "intelligences",
-  intelligencesHistory: "intelligences_history",
+  tasks: "tasks",
+  tasksHistory: "tasks_history",
   serverInfo: "server_info",
   history: "history",
   log: "log",
@@ -64,7 +64,7 @@ const COLLECTIONS_NAME = {
   unknownData: "unknown_data"
 };
 
-const INTELLIGENCE_STATE = {
+const TASK_STATE = {
   draft: "DRAFT",
   configured: "CONFIGURED",
   finished: "FINISHED",
@@ -109,7 +109,7 @@ const DEFAULT_RETAILER = {
   }
 };
 
-const DEFAULT_INTELLIGENCE = {
+const DEFAULT_TASK = {
   system: {
     state: "CONFIGURED",
     version: "1.0.0",
@@ -138,11 +138,11 @@ module.exports = {
   CONFIG,
   COLLECTIONS_NAME,
   DEFAULT_RETAILER,
-  INTELLIGENCE_STATE,
+  TASK_STATE,
   PRODUCER_STATE,
   RETAILER_STATE,
   PERMISSIONS,
-  DEFAULT_INTELLIGENCE,
+  DEFAULT_TASK,
   DEFAULT_PRODUCER,
   DEFAULT_DB_CONFIG,
   DEFAULT_SQLITE,

@@ -1,15 +1,15 @@
 const _ = require("lodash");
 import { getRepository, getMongoRepository } from "typeorm";
 const ObjectId = require("mongodb").ObjectID;
-import Intelligence from "../entity/Intelligence";
-import IntelligenceHistory from "../entity/IntelligenceHistory";
+import Task from "../entity/Task";
+import TaskHistory from "../entity/TaskHistory";
 const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
 const utils = require("../util/utils");
 const { getConfig } = require("../config");
 const retailerHelpers = require("../apis/retailers/helpers");
 const {
-  INTELLIGENCE_STATE,
+  TASK_STATE,
   RETAILER_STATE,
   PERMISSIONS,
   DEFAULT_RETAILER,
@@ -17,246 +17,246 @@ const {
 import { isMongo } from "../util/dbConfiguration";
 import { updateProducerDB } from "./Producer.ctrl";
 
-export function flattenToObject(intelligences) {
-  function toObject(intelligence) {
+export function flattenToObject(tasks) {
+  function toObject(task) {
     let obj: any = {};
-    if (_.get(intelligence, "global_id")) {
-      obj.globalId = intelligence.global_id;
+    if (_.get(task, "global_id")) {
+      obj.globalId = task.global_id;
     }
-    if (_.get(intelligence, "type")) {
-      obj.type = intelligence.type;
+    if (_.get(task, "type")) {
+      obj.type = task.type;
     }
-    if (_.get(intelligence, "name")) {
-      obj.name = intelligence.name;
+    if (_.get(task, "name")) {
+      obj.name = task.name;
     }
-    if (_.get(intelligence, "description")) {
-      obj.description = intelligence.description;
+    if (_.get(task, "description")) {
+      obj.description = task.description;
     }
-    if (_.get(intelligence, "retailer_global_id")) {
+    if (_.get(task, "retailer_global_id")) {
       !obj.retailer ? (obj.retailer = {}) : "";
-      obj.retailer.globalId = intelligence.retailer_global_id;
+      obj.retailer.globalId = task.retailer_global_id;
     }
-    if (_.get(intelligence, "retailer_state")) {
+    if (_.get(task, "retailer_state")) {
       !obj.retailer ? (obj.retailer = {}) : "";
-      obj.retailer.state = intelligence.retailer_state;
+      obj.retailer.state = task.retailer_state;
     }
-    if (_.get(intelligence, "permission")) {
-      obj.permission = intelligence.permission;
+    if (_.get(task, "permission")) {
+      obj.permission = task.permission;
     }
-    if (_.get(intelligence, "priority")) {
-      obj.priority = intelligence.priority;
+    if (_.get(task, "priority")) {
+      obj.priority = task.priority;
     }
-    if (_.get(intelligence, "permission")) {
-      obj.permission = intelligence.permission;
+    if (_.get(task, "permission")) {
+      obj.permission = task.permission;
     }
-    if (_.get(intelligence, "suitable_producers")) {
-      obj.suitableProducers = intelligence.suitable_producers;
+    if (_.get(task, "suitable_producers")) {
+      obj.suitableProducers = task.suitable_producers;
     }
-    if (_.get(intelligence, "url")) {
-      obj.url = intelligence.url;
+    if (_.get(task, "url")) {
+      obj.url = task.url;
     }
-    if (_.get(intelligence, "metadata")) {
-      obj.metadata = intelligence.metadata;
+    if (_.get(task, "metadata")) {
+      obj.metadata = task.metadata;
     }
-    if (_.get(intelligence, "metadata")) {
-      obj.dataset = intelligence.dataset;
+    if (_.get(task, "metadata")) {
+      obj.dataset = task.dataset;
     }
-    if (_.get(intelligence, "system_state")) {
+    if (_.get(task, "system_state")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.state = intelligence.system_state;
+      obj.system.state = task.system_state;
     }
-    if (_.get(intelligence, "system_security_key")) {
+    if (_.get(task, "system_security_key")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.securityKey = intelligence.system_security_key;
+      obj.system.securityKey = task.system_security_key;
     }
-    if (_.get(intelligence, "system_created_at")) {
+    if (_.get(task, "system_created_at")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.created = intelligence.system_created_at;
+      obj.system.created = task.system_created_at;
     }
-    if (_.get(intelligence, "system_modified_at")) {
+    if (_.get(task, "system_modified_at")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.modified = intelligence.system_modified_at;
+      obj.system.modified = task.system_modified_at;
     }
-    if (_.get(intelligence, "system_started_at")) {
+    if (_.get(task, "system_started_at")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.startedAt = intelligence.system_started_at;
+      obj.system.startedAt = task.system_started_at;
     }
-    if (_.get(intelligence, "system_ended_at")) {
+    if (_.get(task, "system_ended_at")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.endedAt = intelligence.system_ended_at;
+      obj.system.endedAt = task.system_ended_at;
     }
-    if (_.get(intelligence, "system_version")) {
+    if (_.get(task, "system_version")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.version = intelligence.system_version;
+      obj.system.version = task.system_version;
     }
-    if (_.get(intelligence, "system_failures_number")) {
+    if (_.get(task, "system_failures_number")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.failuresNumber = intelligence.system_failures_number;
+      obj.system.failuresNumber = task.system_failures_number;
     }
-    if (_.get(intelligence, "system_failures_reason")) {
+    if (_.get(task, "system_failures_reason")) {
       !obj.system ? (obj.system = {}) : "";
-      obj.system.failuresReason = intelligence.system_failures_reason;
+      obj.system.failuresReason = task.system_failures_reason;
     }
-    if (_.get(intelligence, "system_producer_global_id")) {
-      !obj.system ? (obj.system = {}) : "";
-      !obj.system.producer ? (obj.system.producer = {}) : "";
-      obj.system.producer.globalId = intelligence.system_producer_global_id;
-    }
-    if (_.get(intelligence, "system_producer_type")) {
+    if (_.get(task, "system_producer_global_id")) {
       !obj.system ? (obj.system = {}) : "";
       !obj.system.producer ? (obj.system.producer = {}) : "";
-      obj.system.producer.type = intelligence.system_producer_type;
+      obj.system.producer.globalId = task.system_producer_global_id;
     }
-    if (_.get(intelligence, "system_producer_retry_times")) {
+    if (_.get(task, "system_producer_type")) {
       !obj.system ? (obj.system = {}) : "";
       !obj.system.producer ? (obj.system.producer = {}) : "";
-      obj.system.producer.retryTimes = intelligence.system_producer_retry_times;
+      obj.system.producer.type = task.system_producer_type;
     }
-    if (_.get(intelligence, "system_producer_started_at")) {
+    if (_.get(task, "system_producer_retry_times")) {
       !obj.system ? (obj.system = {}) : "";
       !obj.system.producer ? (obj.system.producer = {}) : "";
-      obj.system.producer.startedAt = intelligence.system_producer_started_at;
+      obj.system.producer.retryTimes = task.system_producer_retry_times;
     }
-    if (_.get(intelligence, "system_producer_ended_at")) {
+    if (_.get(task, "system_producer_started_at")) {
       !obj.system ? (obj.system = {}) : "";
       !obj.system.producer ? (obj.system.producer = {}) : "";
-      obj.system.producer.endedAt = intelligence.system_producer_ended_at;
+      obj.system.producer.startedAt = task.system_producer_started_at;
+    }
+    if (_.get(task, "system_producer_ended_at")) {
+      !obj.system ? (obj.system = {}) : "";
+      !obj.system.producer ? (obj.system.producer = {}) : "";
+      obj.system.producer.endedAt = task.system_producer_ended_at;
     }
 
     return obj;
   }
 
-  if (_.isArray(intelligences)) {
+  if (_.isArray(tasks)) {
     let arr = [];
-    for (let i = 0; i < intelligences.length; i++) {
-      arr.push(toObject(intelligences[i]));
+    for (let i = 0; i < tasks.length; i++) {
+      arr.push(toObject(tasks[i]));
     }
     return arr;
   } else {
-    return toObject(intelligences);
+    return toObject(tasks);
   }
 }
 
-export function objectsToIntelligences(intelligences, intelligenceInstances) {
-  function objectToIntelligences(intelligence, intelligenceInstance) {
-    if (!intelligenceInstance) {
-      intelligenceInstance = new Intelligence();
+export function objectsToTasks(tasks, taskInstances) {
+  function objectToTasks(task, taskInstance) {
+    if (!taskInstance) {
+      taskInstance = new Task();
     }
-    if (_.get(intelligence, "globalId")) {
-      intelligenceInstance.global_id = intelligence.globalId;
+    if (_.get(task, "globalId")) {
+      taskInstance.global_id = task.globalId;
     }
-    if (_.get(intelligence, "type")) {
-      intelligenceInstance.type = intelligence.type;
+    if (_.get(task, "type")) {
+      taskInstance.type = task.type;
     }
-    if (_.get(intelligence, "name")) {
-      intelligenceInstance.name = intelligence.name;
+    if (_.get(task, "name")) {
+      taskInstance.name = task.name;
     }
-    if (_.get(intelligence, "desciption")) {
-      intelligenceInstance.desciption = intelligence.desciption;
+    if (_.get(task, "desciption")) {
+      taskInstance.desciption = task.desciption;
     }
-    if (_.get(intelligence, "retailer.globalId")) {
-      intelligenceInstance.retailer_global_id = intelligence.retailer.globalId;
+    if (_.get(task, "retailer.globalId")) {
+      taskInstance.retailer_global_id = task.retailer.globalId;
     }
-    if (_.get(intelligence, "retailer.state")) {
-      intelligenceInstance.retailer_state = intelligence.retailer.state;
+    if (_.get(task, "retailer.state")) {
+      taskInstance.retailer_state = task.retailer.state;
     }
-    if (_.get(intelligence, "permission")) {
-      intelligenceInstance.permission = intelligence.permission;
+    if (_.get(task, "permission")) {
+      taskInstance.permission = task.permission;
     }
-    if (_.get(intelligence, "priority")) {
-      intelligenceInstance.priority = intelligence.priority;
+    if (_.get(task, "priority")) {
+      taskInstance.priority = task.priority;
     }
-    if (_.get(intelligence, "suitableProducers")) {
-      intelligenceInstance.suitable_producers = intelligence.suitableProducers;
+    if (_.get(task, "suitableProducers")) {
+      taskInstance.suitable_producers = task.suitableProducers;
     }
-    if (_.get(intelligence, "url")) {
-      intelligenceInstance.url = intelligence.url;
+    if (_.get(task, "url")) {
+      taskInstance.url = task.url;
     }
-    if (_.get(intelligence, "metadata")) {
-      intelligenceInstance.metadata = intelligence.metadata;
+    if (_.get(task, "metadata")) {
+      taskInstance.metadata = task.metadata;
     }
-    if (_.get(intelligence, "dataset")) {
-      intelligenceInstance.dataset = intelligence.dataset;
+    if (_.get(task, "dataset")) {
+      taskInstance.dataset = task.dataset;
     }
-    if (_.get(intelligence, "system.state")) {
-      intelligenceInstance.system_state = intelligence.system.state;
+    if (_.get(task, "system.state")) {
+      taskInstance.system_state = task.system.state;
     }
-    if (_.get(intelligence, "system.securityKey")) {
-      intelligenceInstance.system_security_key =
-        intelligence.system.securityKey;
+    if (_.get(task, "system.securityKey")) {
+      taskInstance.system_security_key =
+        task.system.securityKey;
     }
-    if (_.get(intelligence, "system.created")) {
-      intelligenceInstance.system_created_at = intelligence.system.created;
+    if (_.get(task, "system.created")) {
+      taskInstance.system_created_at = task.system.created;
     }
-    if (_.get(intelligence, "system.modified")) {
-      intelligenceInstance.system_modified_at = intelligence.system.modified;
+    if (_.get(task, "system.modified")) {
+      taskInstance.system_modified_at = task.system.modified;
     }
-    if (_.get(intelligence, "system.startedAt")) {
-      intelligenceInstance.system_started_at = intelligence.system.startedAt;
+    if (_.get(task, "system.startedAt")) {
+      taskInstance.system_started_at = task.system.startedAt;
     }
-    if (_.get(intelligence, "system.endedAt")) {
-      intelligenceInstance.system_ended_at = intelligence.system.endedAt;
+    if (_.get(task, "system.endedAt")) {
+      taskInstance.system_ended_at = task.system.endedAt;
     }
-    if (_.get(intelligence, "system.producer.globalId")) {
-      intelligenceInstance.system_producer_global_id =
-        intelligence.system.producer.globalId;
+    if (_.get(task, "system.producer.globalId")) {
+      taskInstance.system_producer_global_id =
+        task.system.producer.globalId;
     }
-    if (_.get(intelligence, "system.producer.type")) {
-      intelligenceInstance.system_producer_type = intelligence.system.producer.type;
+    if (_.get(task, "system.producer.type")) {
+      taskInstance.system_producer_type = task.system.producer.type;
     }
-    if (_.get(intelligence, "system.producer.retryTimes")) {
-      intelligenceInstance.system_producer_retry_times =
-        intelligence.system.producer.retryTimes;
+    if (_.get(task, "system.producer.retryTimes")) {
+      taskInstance.system_producer_retry_times =
+        task.system.producer.retryTimes;
     }
-    if (_.get(intelligence, "system.producer.startedAt")) {
-      intelligenceInstance.system_producer_started_at =
-        intelligence.system.producer.startedAt;
+    if (_.get(task, "system.producer.startedAt")) {
+      taskInstance.system_producer_started_at =
+        task.system.producer.startedAt;
     }
-    if (_.get(intelligence, "system.producer.endedAt")) {
-      intelligenceInstance.system_producer_ended_at =
-        intelligence.system.producer.endedAt;
+    if (_.get(task, "system.producer.endedAt")) {
+      taskInstance.system_producer_ended_at =
+        task.system.producer.endedAt;
     }
-    if (_.get(intelligence, "system.version")) {
-      intelligenceInstance.system_version = intelligence.system.version;
+    if (_.get(task, "system.version")) {
+      taskInstance.system_version = task.system.version;
     }
-    if (_.get(intelligence, "system.failuresNumber")) {
-      intelligenceInstance.system_failures_number =
-        intelligence.system.failuresNumber;
+    if (_.get(task, "system.failuresNumber")) {
+      taskInstance.system_failures_number =
+        task.system.failuresNumber;
     }
-    if (_.get(intelligence, "system.failuresReason")) {
-      intelligenceInstance.system_failures_reason =
-        intelligence.system.failuresReason;
+    if (_.get(task, "system.failuresReason")) {
+      taskInstance.system_failures_reason =
+        task.system.failuresReason;
     }
 
-    return intelligenceInstance;
+    return taskInstance;
   }
-  if (_.isArray(intelligences)) {
+  if (_.isArray(tasks)) {
     let arr = [];
-    for (let i = 0; i < intelligences.length; i++) {
+    for (let i = 0; i < tasks.length; i++) {
       arr.push(
-        objectToIntelligences(
-          intelligences[i],
-          intelligenceInstances && intelligenceInstances[i]
+        objectToTasks(
+          tasks[i],
+          taskInstances && taskInstances[i]
         )
       );
     }
     return arr;
   } else {
-    return objectToIntelligences(intelligences, intelligenceInstances);
+    return objectToTasks(tasks, taskInstances);
   }
 }
 
-export async function addIntelligencesDB(intelligences) {
+export async function addTasksDB(tasks) {
   try {
-    const repo = getRepository(Intelligence);
-    let intelligenceInstances: any = objectsToIntelligences(
-      intelligences,
+    const repo = getRepository(Task);
+    let taskInstances: any = objectsToTasks(
+      tasks,
       null
     );
     let generatedMaps = [];
     // everytime insert 5 items
-    while (intelligenceInstances.length) {
-      let insertData = intelligenceInstances.splice(0, 5);
+    while (taskInstances.length) {
+      let insertData = taskInstances.splice(0, 5);
       let result = await repo.insert(insertData);
       generatedMaps.push(result.generatedMaps);
     }
@@ -267,19 +267,19 @@ export async function addIntelligencesDB(intelligences) {
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->addIntelligencesDB"
+      "TaskAndHistory.ctrl->addTasksDB"
     );
-    logger.error(`addIntelligencesDB fail ${error.message}`, {
+    logger.error(`addTasksDB fail ${error.message}`, {
       error,
       parameters: {
-        intelligences,
+        tasks,
       },
     });
     throw error;
   }
 }
 
-export async function getIntelligencesOrHistoryForManagementDB(
+export async function getTasksOrHistoryForManagementDB(
   cursor: string,
   url: string,
   state: string,
@@ -289,13 +289,13 @@ export async function getIntelligencesOrHistoryForManagementDB(
   ids?: string[]
 ) {
   try {
-    let modified: any, id: string, intelligences: object[], total: number;
+    let modified: any, id: string, tasks: object[], total: number;
     if (limit) {
       limit = limit * 1;
     }
-    let repoName = Intelligence;
+    let repoName = Task;
     if (history) {
-      repoName = IntelligenceHistory;
+      repoName = TaskHistory;
     }
 
     if (isMongo()) {
@@ -358,11 +358,11 @@ export async function getIntelligencesOrHistoryForManagementDB(
         system_modified_at: "DESC",
         _id: "DESC",
       };
-      intelligences = await repo.find(nQuery);
+      tasks = await repo.find(nQuery);
     } else {
-      const intelligenceQuery = await getRepository(
+      const taskQuery = await getRepository(
         repoName
-      ).createQueryBuilder("intelligence");
+      ).createQueryBuilder("task");
       // After use *where*, then need to use *andWhere*
       let andWhere = false;
       if (securityKey) {
@@ -373,9 +373,9 @@ export async function getIntelligencesOrHistoryForManagementDB(
           funName = "where";
           andWhere = true;
         }
-        intelligenceQuery[
+        taskQuery[
           funName
-        ]("intelligence.system_security_key = :securityKey", { securityKey });
+        ]("task.system_security_key = :securityKey", { securityKey });
       }
 
       if (url) {
@@ -386,7 +386,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
           funName = "where";
           andWhere = true;
         }
-        intelligenceQuery[funName]("intelligence.url LIKE :url", {
+        taskQuery[funName]("task.url LIKE :url", {
           url: `%${url}%`,
         });
       }
@@ -400,8 +400,8 @@ export async function getIntelligencesOrHistoryForManagementDB(
           funName = "where";
           andWhere = true;
         }
-        intelligenceQuery[funName](
-          "intelligence.system_state IN (:...states)",
+        taskQuery[funName](
+          "task.system_state IN (:...states)",
           {
             states,
           }
@@ -409,12 +409,12 @@ export async function getIntelligencesOrHistoryForManagementDB(
       }
 
       if (ids && ids.length) {
-        intelligenceQuery.where("intelligence.global_id IN (:...ids)", {
+        taskQuery.where("task.global_id IN (:...ids)", {
           ids,
         });
       }
 
-      total = await intelligenceQuery.getCount();
+      total = await taskQuery.getCount();
       if (cursor) {
         let parseCursor = utils.atob(cursor);
         parseCursor = /^(.*):_:_:_(.*)$/.exec(parseCursor);
@@ -429,9 +429,9 @@ export async function getIntelligencesOrHistoryForManagementDB(
 
       if (limit) {
         limit = limit * 1;
-        intelligenceQuery.limit(limit);
+        taskQuery.limit(limit);
       }
-      intelligenceQuery.orderBy({ system_modified_at: "DESC", id: "DESC" });
+      taskQuery.orderBy({ system_modified_at: "DESC", id: "DESC" });
       if (modified && id) {
         modified = modified * 1;
         let funName: string;
@@ -441,19 +441,19 @@ export async function getIntelligencesOrHistoryForManagementDB(
           funName = "where";
           andWhere = true;
         }
-        intelligenceQuery[
+        taskQuery[
           funName
         ](
-          "intelligence.system_modified_at < :modified OR (intelligence.system_modified_at = :modified AND intelligence.id < :id)",
+          "task.system_modified_at < :modified OR (task.system_modified_at = :modified AND task.id < :id)",
           { modified, id }
         );
       }
 
-      intelligences = await intelligenceQuery.getMany();
+      tasks = await taskQuery.getMany();
     }
-    const lastItem: any = intelligences[intelligences.length - 1];
+    const lastItem: any = tasks[tasks.length - 1];
     let nextCursor = null;
-    if (lastItem && intelligences.length >= limit) {
+    if (lastItem && tasks.length >= limit) {
       nextCursor = utils.btoa(
         `${lastItem.system_modified_at}:_:_:_${lastItem.id}`
       );
@@ -465,7 +465,7 @@ export async function getIntelligencesOrHistoryForManagementDB(
     return {
       previousCursor: cursor,
       nextCursor: nextCursor,
-      intelligences: flattenToObject(intelligences),
+      tasks: flattenToObject(tasks),
       total: total,
     };
   } catch (err) {
@@ -474,9 +474,9 @@ export async function getIntelligencesOrHistoryForManagementDB(
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->getIntelligencesForManagementDB"
+      "TaskAndHistory.ctrl->getTasksForManagementDB"
     );
-    logger.error(`getIntelligencesForManagementDB fail ${error.message}`, {
+    logger.error(`getTasksForManagementDB fail ${error.message}`, {
       error,
       parameters: {
         cursor,
@@ -492,8 +492,8 @@ export async function getIntelligencesOrHistoryForManagementDB(
   }
 }
 
-// Update all matched intelligences' retailer state
-export async function updateIntelligencesRetailerStateForManagementDB(
+// Update all matched tasks' retailer state
+export async function updateTasksRetailerStateForManagementDB(
   retailerGID: string,
   state: string,
   dontUpdateModified?: boolean
@@ -501,7 +501,7 @@ export async function updateIntelligencesRetailerStateForManagementDB(
   try {
     state = _.toUpper(state);
     if (isMongo()) {
-      const repo = await getMongoRepository(Intelligence);
+      const repo = await getMongoRepository(Task);
       let query: any = {};
       query.retailer_global_id = {
         $eq: retailerGID,
@@ -524,14 +524,14 @@ export async function updateIntelligencesRetailerStateForManagementDB(
       if(!dontUpdateModified){
         updateData.system_modified_at = Date.now();
       }
-      const intelligenceQuery = await getRepository(Intelligence)
-        .createQueryBuilder("intelligence")
-        .update(Intelligence)
+      const taskQuery = await getRepository(Task)
+        .createQueryBuilder("task")
+        .update(Task)
         .set(updateData)
-        .where("intelligence.retailer_global_id = :id", {
+        .where("task.retailer_global_id = :id", {
           id: retailerGID,
         });
-      return await intelligenceQuery.execute();
+      return await taskQuery.execute();
     }
   } catch (err) {
     let error = new HTTPError(
@@ -539,17 +539,17 @@ export async function updateIntelligencesRetailerStateForManagementDB(
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->updateIntelligencesRetailerStateForManagementDB"
+      "TaskAndHistory.ctrl->updateTasksRetailerStateForManagementDB"
     );
     logger.error(
-      `updateIntelligencesRetailerStateForManagementDB, error:${error.message}`,
+      `updateTasksRetailerStateForManagementDB, error:${error.message}`,
       { error }
     );
     throw error;
   }
 }
 
-export async function updateIntelligencesStateForManagementDB(
+export async function updateTasksStateForManagementDB(
   state: any,
   url: string,
   selectedState: string,
@@ -562,16 +562,16 @@ export async function updateIntelligencesStateForManagementDB(
     state = _.toUpper(state);
     // Don't allow user to mass update draft status to other status
     // Don't update same status
-    let states = [INTELLIGENCE_STATE.draft, state];
+    let states = [TASK_STATE.draft, state];
     if (
-      state === INTELLIGENCE_STATE.configured ||
-      state === INTELLIGENCE_STATE.paused
+      state === TASK_STATE.configured ||
+      state === TASK_STATE.paused
     ) {
-      states.push(INTELLIGENCE_STATE.running);
+      states.push(TASK_STATE.running);
     }
 
     if (isMongo()) {
-      const repo = await getMongoRepository(Intelligence);
+      const repo = await getMongoRepository(Task);
       const query: any = {};
       const mongoDBUdpateData: any = {
         $set: {
@@ -614,15 +614,15 @@ export async function updateIntelligencesStateForManagementDB(
       // any value less than `startedAt`, it will set to timeout, whatever what state you pass
       if (timeoutStartedAt) {
         // Only timeout currently is in  `RUNNING` state, other state don't need timeout
-        query.system_state.$in = [INTELLIGENCE_STATE.running];
+        query.system_state.$in = [TASK_STATE.running];
         query.system_started_at = {
           $lt: timeoutStartedAt,
         };
         mongoDBUdpateData.$set.system_producer_ended_at = Date.now();
         mongoDBUdpateData.$set.system_ended_at = Date.now();
-        mongoDBUdpateData.$set.system_state = INTELLIGENCE_STATE.timeout;
+        mongoDBUdpateData.$set.system_state = TASK_STATE.timeout;
         mongoDBUdpateData.$set.system_failures_reason =
-          "Producer collect intelligence timeout. Engine automatically set to TIMEOUT status";
+          "Producer collect task timeout. Engine automatically set to TIMEOUT status";
         // Since this is set by system, so don't auto increase fail number
         // Actually, it isn't easy to auto increase `system_failures_number` ^_^
       }
@@ -630,9 +630,9 @@ export async function updateIntelligencesStateForManagementDB(
       return await repo.updateMany(query, mongoDBUdpateData);
     } else {
       // SQL
-      const intelligenceQuery = getRepository(Intelligence)
-        .createQueryBuilder("intelligence")
-        .update(Intelligence);
+      const taskQuery = getRepository(Task)
+        .createQueryBuilder("task")
+        .update(Task);
 
       const sqlUpdateData: any = {
         system_state: state,
@@ -644,32 +644,32 @@ export async function updateIntelligencesStateForManagementDB(
         sqlUpdateData.system_modified_at = () => Date.now().toString();
       }
 
-      intelligenceQuery.where("intelligence.system_state NOT IN (:...states)", {
+      taskQuery.where("task.system_state NOT IN (:...states)", {
         states,
       });
 
       if (securityKey) {
-        intelligenceQuery.andWhere(
-          "intelligence.system_security_key = :securityKey",
+        taskQuery.andWhere(
+          "task.system_security_key = :securityKey",
           { securityKey }
         );
       }
 
       if (ids && ids.length) {
-        intelligenceQuery.andWhere("intelligence.global_id IN (:...ids)", {
+        taskQuery.andWhere("task.global_id IN (:...ids)", {
           ids,
         });
       }
 
       if (url) {
-        intelligenceQuery.andWhere("intelligence.url LIKE :url", {
+        taskQuery.andWhere("task.url LIKE :url", {
           url: `%${url}%`,
         });
       }
 
       if (selectedState) {
-        intelligenceQuery.andWhere(
-          "intelligence.system_state IN (:...selectedState)",
+        taskQuery.andWhere(
+          "task.system_state IN (:...selectedState)",
           {
             selectedState: selectedState.split(","),
           }
@@ -677,25 +677,25 @@ export async function updateIntelligencesStateForManagementDB(
       }
 
       if (timeoutStartedAt) {
-        intelligenceQuery.andWhere(
-          "intelligence.system_started_at < :timeoutStartedAt",
+        taskQuery.andWhere(
+          "task.system_started_at < :timeoutStartedAt",
           { timeoutStartedAt }
         );
-        intelligenceQuery.andWhere(
-          "intelligence.system_state IN (:...requiredStates)",
+        taskQuery.andWhere(
+          "task.system_state IN (:...requiredStates)",
           {
-            requiredStates: [INTELLIGENCE_STATE.running],
+            requiredStates: [TASK_STATE.running],
           }
         );
         sqlUpdateData.system_producer_ended_at = Date.now();
         sqlUpdateData.system_ended_at = Date.now();
-        sqlUpdateData.system_state = INTELLIGENCE_STATE.timeout;
+        sqlUpdateData.system_state = TASK_STATE.timeout;
         sqlUpdateData.system_failures_reason =
-          "Producer collect intelligence timeout. Engine automatically set to TIMEOUT status";
+          "Producer collect task timeout. Engine automatically set to TIMEOUT status";
       }
 
-      intelligenceQuery.set(sqlUpdateData);
-      return await intelligenceQuery.execute();
+      taskQuery.set(sqlUpdateData);
+      return await taskQuery.execute();
     }
   } catch (err) {
     let error = new HTTPError(
@@ -703,17 +703,17 @@ export async function updateIntelligencesStateForManagementDB(
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->updateIntelligencesStateForManagementDB"
+      "TaskAndHistory.ctrl->updateTasksStateForManagementDB"
     );
     logger.error(
-      `updateIntelligencesStateForManagementDB, error: ${error.message}`,
+      `updateTasksStateForManagementDB, error: ${error.message}`,
       { error }
     );
     throw error;
   }
 }
 
-export async function deleteIntelligencesOrHistoryForManagementDB(
+export async function deleteTasksOrHistoryForManagementDB(
   url: string,
   selectedState: string,
   ids: string[],
@@ -721,9 +721,9 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
   history?: boolean
 ) {
   try {
-    let repoName = Intelligence;
+    let repoName = Task;
     if (history) {
-      repoName = IntelligenceHistory;
+      repoName = TaskHistory;
     }
     if (isMongo()) {
       const repo = await getMongoRepository(repoName);
@@ -753,7 +753,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
     } else {
       // SQL
       console.log("repoName: ", repoName);
-      const intelligenceQuery = await getRepository(repoName)
+      const taskQuery = await getRepository(repoName)
         .createQueryBuilder()
         .delete()
         .from(repoName);
@@ -767,7 +767,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
           funName = "where";
           andWhere = true;
         }
-        intelligenceQuery[funName]("system_security_key = :securityKey", {
+        taskQuery[funName]("system_security_key = :securityKey", {
           securityKey,
         });
       }
@@ -780,7 +780,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
           funName = "where";
           andWhere = true;
         }
-        intelligenceQuery[funName]("global_id IN (:...ids)", {
+        taskQuery[funName]("global_id IN (:...ids)", {
           ids,
         });
       }
@@ -793,7 +793,7 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
           funName = "where";
           andWhere = true;
         }
-        intelligenceQuery[funName]("url LIKE :url", {
+        taskQuery[funName]("url LIKE :url", {
           url: `%${url}%`,
         });
       }
@@ -806,14 +806,14 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
           funName = "where";
           andWhere = true;
         }
-        intelligenceQuery[funName](
-          "intelligence.system_state IN (:...states)",
+        taskQuery[funName](
+          "task.system_state IN (:...states)",
           {
             states: selectedState.split(","),
           }
         );
       }
-      return await intelligenceQuery.execute();
+      return await taskQuery.execute();
     }
   } catch (err) {
     let error = new HTTPError(
@@ -821,22 +821,22 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->deleteIntelligencesForManagementDB"
+      "TaskAndHistory.ctrl->deleteTasksForManagementDB"
     );
-    logger.error(`deleteIntelligencesForManagementDB, error:${error.message}`, {
+    logger.error(`deleteTasksForManagementDB, error:${error.message}`, {
       error,
     });
     throw error;
   }
 }
 
-export async function deleteIntelligencesByRetailerForManagementDB(
+export async function deleteTasksByRetailerForManagementDB(
   retailerGID: string,
   securityKey: string
 ) {
   try {
     if (isMongo()) {
-      const repo = await getMongoRepository(Intelligence);
+      const repo = await getMongoRepository(Task);
       let query: any = {};
 
       if (securityKey) {
@@ -849,22 +849,22 @@ export async function deleteIntelligencesByRetailerForManagementDB(
       return await repo.deleteMany(query);
     } else {
       // SQL
-      const intelligenceQuery = await getRepository(Intelligence)
-        .createQueryBuilder("intelligence")
+      const taskQuery = await getRepository(Task)
+        .createQueryBuilder("task")
         .delete()
-        .from(Intelligence)
-        .where("intelligence.retailer_global_id = :id", {
+        .from(Task)
+        .where("task.retailer_global_id = :id", {
           id: retailerGID,
         });
 
       if (securityKey) {
-        intelligenceQuery.andWhere(
-          "intelligence.system_security_key = :securityKey",
+        taskQuery.andWhere(
+          "task.system_security_key = :securityKey",
           { securityKey }
         );
       }
 
-      return await intelligenceQuery.execute();
+      return await taskQuery.execute();
     }
   } catch (err) {
     let error = new HTTPError(
@@ -872,45 +872,45 @@ export async function deleteIntelligencesByRetailerForManagementDB(
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->deleteIntelligencesByRetailerForManagementDB"
+      "TaskAndHistory.ctrl->deleteTasksByRetailerForManagementDB"
     );
     logger.error(
-      `deleteIntelligencesByRetailerForManagementDB, error:${error.message}`,
+      `deleteTasksByRetailerForManagementDB, error:${error.message}`,
       { error }
     );
     throw error;
   }
 }
 
-export async function getIntelligencesForProducerDB(
+export async function getTasksForProducerDB(
   producerConfig: any,
   securityKey: string
 ) {
   try {
-    let intelligences = [];
+    let tasks = [];
     let concurrent = Number(producerConfig.concurrent);
     if (isNaN(concurrent)) {
       // if concurrent isn't a number, then use default value
-      concurrent = getConfig("EACH_TIME_INTELLIGENCES_NUMBER");
+      concurrent = getConfig("EACH_TIME_TASKS_NUMBER");
     }
     let permission = PERMISSIONS.private;
     if (!producerConfig.private) {
       permission = PERMISSIONS.public;
     }
     let repo;
-    // logger.debug("getIntelligencesForProducerDB->producerConfig: %s", producerConfig);
-    // logger.debug("getIntelligencesForProducerDB->securityKey: %s", securityKey);
+    // logger.debug("getTasksForProducerDB->producerConfig: %s", producerConfig);
+    // logger.debug("getTasksForProducerDB->securityKey: %s", securityKey);
     if (isMongo()) {
-      repo = await getMongoRepository(Intelligence);
+      repo = await getMongoRepository(Task);
       let query: any = {
         where: {},
       };
       query.where.system_state = {
         $nin: [
-          INTELLIGENCE_STATE.draft,
-          INTELLIGENCE_STATE.running,
-          INTELLIGENCE_STATE.finished,
-          INTELLIGENCE_STATE.paused,
+          TASK_STATE.draft,
+          TASK_STATE.running,
+          TASK_STATE.finished,
+          TASK_STATE.paused,
         ],
       };
       query.where.retailer_state = {
@@ -928,121 +928,121 @@ export async function getIntelligencesForProducerDB(
         priority: "ASC",
       };
 
-      // logger.debug("getIntelligencesForProducerDB->query", query);
+      // logger.debug("getTasksForProducerDB->query", query);
 
-      // if security key provide, get all intelligences for this security key first
+      // if security key provide, get all tasks for this security key first
       if (securityKey) {
         query.where.system_security_key = securityKey;
-        intelligences = await repo.find(query);
-        // if permission doesn't exit or producer is public then try to see any public intelligences need to collect
+        tasks = await repo.find(query);
+        // if permission doesn't exit or producer is public then try to see any public tasks need to collect
         if (
           (!permission || _.upperCase(permission) === PERMISSIONS.public) &&
-          (!intelligences || !intelligences.length)
+          (!tasks || !tasks.length)
         ) {
-          // if no intelligences for this securityKey and if this producer's permission is public then, get other intelligences that is public
+          // if no tasks for this securityKey and if this producer's permission is public then, get other tasks that is public
           delete query.where.system_security_key;
           query.where.permission = {
             $nin: [PERMISSIONS.private],
           };
 
-          intelligences = await repo.find(query);
+          tasks = await repo.find(query);
         }
       } else {
         // if securityKey is empty, this means it is on-primse mode, if a request was sent by UI Server, it always contains a securityKey, only if this request is directly sent to
-        // DIA-Engine, then it possible don't have securityKey, in this mode, then it should be able to get all permissions intelligences since they are belong to same user
-        intelligences = await repo.find(query);
+        // DIA-Engine, then it possible don't have securityKey, in this mode, then it should be able to get all permissions tasks since they are belong to same user
+        tasks = await repo.find(query);
       }
     } else {
       // SQL
-      const intelligenceQuery = await getRepository(
-        Intelligence
-      ).createQueryBuilder("intelligence");
+      const taskQuery = await getRepository(
+        Task
+      ).createQueryBuilder("task");
 
-      const intelligenceQueryNoSecurityKey = await getRepository(
-        Intelligence
-      ).createQueryBuilder("intelligence");
+      const taskQueryNoSecurityKey = await getRepository(
+        Task
+      ).createQueryBuilder("task");
 
-      intelligenceQuery.where("intelligence.system_state NOT IN (:...states)", {
+      taskQuery.where("task.system_state NOT IN (:...states)", {
         states: [
-          INTELLIGENCE_STATE.draft,
-          INTELLIGENCE_STATE.running,
-          INTELLIGENCE_STATE.finished,
-          INTELLIGENCE_STATE.paused,
+          TASK_STATE.draft,
+          TASK_STATE.running,
+          TASK_STATE.finished,
+          TASK_STATE.paused,
         ],
       });
-      intelligenceQuery.andWhere("intelligence.retailer_state = :state", {
+      taskQuery.andWhere("task.retailer_state = :state", {
         state: RETAILER_STATE.active,
       });
-      intelligenceQuery.andWhere(
-        "intelligence.suitable_producers LIKE :producerType",
+      taskQuery.andWhere(
+        "task.suitable_producers LIKE :producerType",
         { producerType: `%${_.toUpper(producerConfig.type)}%` }
       );
-      intelligenceQuery.orderBy({
+      taskQuery.orderBy({
         retailer_global_id: "DESC",
         priority: "ASC",
       });
-      intelligenceQuery.limit(concurrent);
+      taskQuery.limit(concurrent);
 
-      intelligenceQueryNoSecurityKey.where(
-        "intelligence.system_state NOT IN (:...states)",
+      taskQueryNoSecurityKey.where(
+        "task.system_state NOT IN (:...states)",
         {
           states: [
-            INTELLIGENCE_STATE.draft,
-            INTELLIGENCE_STATE.running,
-            INTELLIGENCE_STATE.finished,
-            INTELLIGENCE_STATE.paused,
+            TASK_STATE.draft,
+            TASK_STATE.running,
+            TASK_STATE.finished,
+            TASK_STATE.paused,
           ],
         }
       );
-      intelligenceQueryNoSecurityKey.andWhere(
-        "intelligence.retailer_state = :state",
+      taskQueryNoSecurityKey.andWhere(
+        "task.retailer_state = :state",
         {
           state: RETAILER_STATE.active,
         }
       );
-      intelligenceQueryNoSecurityKey.andWhere(
-        "intelligence.suitable_producers LIKE :producerType",
+      taskQueryNoSecurityKey.andWhere(
+        "task.suitable_producers LIKE :producerType",
         { producerType: `%${_.toUpper(producerConfig.type)}%` }
       );
-      intelligenceQueryNoSecurityKey.orderBy({
+      taskQueryNoSecurityKey.orderBy({
         retailer_global_id: "DESC",
         priority: "ASC",
       });
-      intelligenceQueryNoSecurityKey.limit(concurrent);
-      // if security key provide, get all intelligences for this security key first
+      taskQueryNoSecurityKey.limit(concurrent);
+      // if security key provide, get all tasks for this security key first
       if (securityKey) {
-        intelligenceQuery.andWhere(
-          "intelligence.system_security_key = :securityKey",
+        taskQuery.andWhere(
+          "task.system_security_key = :securityKey",
           { securityKey }
         );
-        intelligences = await intelligenceQuery.getMany();
+        tasks = await taskQuery.getMany();
 
         if (
           (!permission || _.upperCase(permission) === PERMISSIONS.public) &&
-          (!intelligences || !intelligences.length)
+          (!tasks || !tasks.length)
         ) {
-          // if no intelligences for this securityKey and if this producer's permission is public then, get other intelligences that is public
-          intelligenceQueryNoSecurityKey.andWhere(
-            "intelligence.permission NOT IN (:...permissions)",
+          // if no tasks for this securityKey and if this producer's permission is public then, get other tasks that is public
+          taskQueryNoSecurityKey.andWhere(
+            "task.permission NOT IN (:...permissions)",
             {
               permissions: [PERMISSIONS.private],
             }
           );
-          intelligences = await intelligenceQueryNoSecurityKey.getMany();
+          tasks = await taskQueryNoSecurityKey.getMany();
         }
       } else {
         // if securityKey is empty, this means it is on-primse mode, if a request was sent by UI Server, it always contains a securityKey, only if this request is directly sent to
-        // DIA-Engine, then it possible don't have securityKey, in this mode, then it should be able to get all permissions intelligences since they are belong to same user
-        intelligences = await intelligenceQuery.getMany();
+        // DIA-Engine, then it possible don't have securityKey, in this mode, then it should be able to get all permissions tasks since they are belong to same user
+        tasks = await taskQuery.getMany();
       }
     }
 
-    intelligences = flattenToObject(intelligences);
+    tasks = flattenToObject(tasks);
 
     let gids = [];
     let retailers = {};
-    for (let i = 0; i < intelligences.length; i++) {
-      let item = intelligences[i] || {};
+    for (let i = 0; i < tasks.length; i++) {
+      let item = tasks[i] || {};
       gids.push(item.globalId);
       if (retailers[item.retailer.globalId]) {
         item.retailer = retailers[item.retailer.globalId];
@@ -1060,7 +1060,7 @@ export async function getIntelligencesForProducerDB(
       }
 
       // Comment: 07/30/2019
-      // Reason: Since this intelligence is reassigned, so it always need to update producer information
+      // Reason: Since this task is reassigned, so it always need to update producer information
       // if (!item.producer) {
       //   item.producer = {
       //     globalId: producerGid,
@@ -1078,13 +1078,13 @@ export async function getIntelligencesForProducerDB(
       system_started_at: Date.now(),
       system_ended_at: Date.now(),
       system_modified_at: Date.now(),
-      system_state: INTELLIGENCE_STATE.running,
+      system_state: TASK_STATE.running,
       system_producer_global_id: producerConfig.globalId,
       system_producer_type: _.toUpper(producerConfig.type),
     };
 
     if (isMongo()) {
-      // Update intelligences that return to producer
+      // Update tasks that return to producer
       await repo.updateMany(
         {
           global_id: {
@@ -1097,11 +1097,11 @@ export async function getIntelligencesForProducerDB(
       );
     } else {
       // SQL
-      let query = await getRepository(Intelligence)
-        .createQueryBuilder("intelligence")
-        .update(Intelligence)
+      let query = await getRepository(Task)
+        .createQueryBuilder("task")
+        .update(Task)
         .set(updateData);
-      query.where("intelligence.global_id IN (:...gids)", {
+      query.where("task.global_id IN (:...gids)", {
         gids,
       });
       await query.execute();
@@ -1116,12 +1116,12 @@ export async function getIntelligencesForProducerDB(
       },
     });
 
-    // TODO: 2019/11/10 need to rethink about this logic, since intelligences already send back to producers
+    // TODO: 2019/11/10 need to rethink about this logic, since tasks already send back to producers
     //        if we check for now, it is meaningless, better way is let producer to tell. For example, if collect
-    //        intelligences fail, then check Retailer or direct know retailer is inactive
+    //        tasks fail, then check Retailer or direct know retailer is inactive
 
     // Check Retailer status in parallel
-    // // After get intelligences that need to collect, during sametime to check whether this Retailer is active.
+    // // After get tasks that need to collect, during sametime to check whether this Retailer is active.
     // for (let gid in retailers) {
     //   let retailer = retailers[gid];
     //   // if this retailer isn't in check status progress, then check it
@@ -1135,16 +1135,16 @@ export async function getIntelligencesForProducerDB(
     //     })();
     //   }
     // }
-    return intelligences;
+    return tasks;
   } catch (err) {
     let error = new HTTPError(
       500,
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->getIntelligencesForProducerDB"
+      "TaskAndHistory.ctrl->getTasksForProducerDB"
     );
-    logger.error(`getIntelligencesForProducerDB, error:${error.message}`, {
+    logger.error(`getTasksForProducerDB, error:${error.message}`, {
       error,
     });
     throw error;
@@ -1152,11 +1152,11 @@ export async function getIntelligencesForProducerDB(
 }
 
 /**
- * Get intelligences by globalIds
- * @param gids - intelligences globalId
+ * Get tasks by globalIds
+ * @param gids - tasks globalId
  * @param securityKey - security key
  */
-export async function getIntelligencesDB(gids: string[], securityKey: string) {
+export async function getTasksDB(gids: string[], securityKey: string) {
   try {
     if (!gids) {
       return [];
@@ -1171,26 +1171,26 @@ export async function getIntelligencesDB(gids: string[], securityKey: string) {
       query.where.global_id = {
         $in: gids,
       };
-      const repo = await getMongoRepository(Intelligence);
-      let intelligences = await repo.find(query);
-      intelligences = flattenToObject(intelligences);
-      return intelligences;
+      const repo = await getMongoRepository(Task);
+      let tasks = await repo.find(query);
+      tasks = flattenToObject(tasks);
+      return tasks;
     } else {
       // sql
-      const intelligenceQuery = await getRepository(
-        Intelligence
-      ).createQueryBuilder("intelligence");
-      intelligenceQuery.where("intelligence.global_id IN (:...gids)", { gids });
+      const taskQuery = await getRepository(
+        Task
+      ).createQueryBuilder("task");
+      taskQuery.where("task.global_id IN (:...gids)", { gids });
       if (securityKey) {
-        intelligenceQuery.andWhere(
-          "intelligence.system_security_key = :securityKey",
+        taskQuery.andWhere(
+          "task.system_security_key = :securityKey",
           { securityKey }
         );
       }
 
-      let intelligences = await intelligenceQuery.getMany();
-      intelligences = flattenToObject(intelligences);
-      return intelligences;
+      let tasks = await taskQuery.getMany();
+      tasks = flattenToObject(tasks);
+      return tasks;
     }
   } catch (err) {
     let error = new HTTPError(
@@ -1198,14 +1198,14 @@ export async function getIntelligencesDB(gids: string[], securityKey: string) {
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->getIntelligencesDB"
+      "TaskAndHistory.ctrl->getTasksDB"
     );
-    logger.error(`getIntelligencesDB, error:${error.message}`, { error });
+    logger.error(`getTasksDB, error:${error.message}`, { error });
     throw error;
   }
 }
 
-export async function deleteIntelligencesDB(
+export async function deleteTasksDB(
   gids: string[],
   securityKey: string
 ) {
@@ -1218,13 +1218,13 @@ export async function deleteIntelligencesDB(
       query.global_id = {
         $in: gids,
       };
-      const repo = getMongoRepository(Intelligence);
+      const repo = getMongoRepository(Task);
       return await repo.deleteMany(query);
     } else {
-      return await getRepository(Intelligence)
-        .createQueryBuilder("intelligence")
+      return await getRepository(Task)
+        .createQueryBuilder("task")
         .delete()
-        .where("intelligence.global_id IN (:...gids)", { gids })
+        .where("task.global_id IN (:...gids)", { gids })
         .execute();
     }
   } catch (err) {
@@ -1233,52 +1233,52 @@ export async function deleteIntelligencesDB(
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->deleteIntelligencesDB"
+      "TaskAndHistory.ctrl->deleteTasksDB"
     );
-    logger.error(`deleteIntelligencesDB, error:${error.message}`, { error });
+    logger.error(`deleteTasksDB, error:${error.message}`, { error });
     throw error;
   }
 }
 /**
- * Update intelligences one by one
- * Used for the updating information for each intelligences is different
- * @param intelligences{object[]}
+ * Update tasks one by one
+ * Used for the updating information for each tasks is different
+ * @param tasks{object[]}
  */
-export async function updateEachIntelligencesDB(intelligences: any[]) {
+export async function updateEachTasksDB(tasks: any[]) {
   try {
     let repo;
     if (isMongo()) {
-      repo = getMongoRepository(Intelligence);
+      repo = getMongoRepository(Task);
     } else {
-      repo = getRepository(Intelligence);
+      repo = getRepository(Task);
     }
-    for (let i = 0; i < intelligences.length; i++) {
-      let intelligence = intelligences[i];
-      intelligence = objectsToIntelligences(intelligence, {});
+    for (let i = 0; i < tasks.length; i++) {
+      let task = tasks[i];
+      task = objectsToTasks(task, {});
       if (isMongo()) {
-        logger.debug(`updateEachIntelligencesDB->isMongo`, {
+        logger.debug(`updateEachTasksDB->isMongo`, {
           i,
-          global_id: intelligence.global_id,
+          global_id: task.global_id,
         });
         await repo.updateOne(
           {
-            global_id: intelligence.global_id,
+            global_id: task.global_id,
           },
           {
-            $set: intelligence,
+            $set: task,
           }
         );
       } else {
-        logger.debug(`updateEachIntelligencesDB->sqlite`, {
+        logger.debug(`updateEachTasksDB->sqlite`, {
           i,
-          global_id: intelligence.global_id,
+          global_id: task.global_id,
         });
         await repo
-          .createQueryBuilder("intelligence")
-          .update(Intelligence)
-          .set(intelligence)
-          .where("intelligence.global_id = :gloalId", {
-            gloalId: intelligence.global_id,
+          .createQueryBuilder("task")
+          .update(Task)
+          .set(task)
+          .where("task.global_id = :gloalId", {
+            gloalId: task.global_id,
           })
           .execute();
       }
@@ -1289,26 +1289,26 @@ export async function updateEachIntelligencesDB(intelligences: any[]) {
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->updateEachIntelligencesDB"
+      "TaskAndHistory.ctrl->updateEachTasksDB"
     );
-    logger.error(`updateEachIntelligencesDB fail ${error.message}`, {
+    logger.error(`updateEachTasksDB fail ${error.message}`, {
       error,
     });
     throw error;
   }
 }
 
-export async function addIntelligenceHistoryDB(intelligences) {
+export async function addTaskHistoryDB(tasks) {
   try {
-    const repo = getRepository(IntelligenceHistory);
-    let intelligenceInstances: any = objectsToIntelligences(
-      intelligences,
+    const repo = getRepository(TaskHistory);
+    let taskInstances: any = objectsToTasks(
+      tasks,
       null
     );
     let generatedMaps = [];
     // everytime insert 10 items
-    while (intelligenceInstances.length) {
-      let insertData = intelligenceInstances.splice(0, 10);
+    while (taskInstances.length) {
+      let insertData = taskInstances.splice(0, 10);
       let result = await repo.insert(insertData);
       generatedMaps.push(result.generatedMaps);
     }
@@ -1319,9 +1319,9 @@ export async function addIntelligenceHistoryDB(intelligences) {
       err,
       {},
       "00005000001",
-      "IntelligenceHistory.ctrl->addIntelligenceHistoryDB"
+      "TaskHistory.ctrl->addTaskHistoryDB"
     );
-    logger.error(`addIntelligenceHistoryDB, error:${error.message}`, { error });
+    logger.error(`addTaskHistoryDB, error:${error.message}`, { error });
     throw error;
   }
 }

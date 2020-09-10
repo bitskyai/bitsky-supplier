@@ -4,7 +4,7 @@ const uuidv4 = require('uuid/v4');
 
 const retailerSchema = require("../schemas/retailer.json");
 const producerSchema = require("../schemas/producer.json");
-const intelligenceSchema = require("../schemas/task.json");
+const taskSchema = require("../schemas/task.json");
 const UnknownData = require("../data_models/UnknownData");
 const { logUnknownDataToDB } = require("./db");
 const logger = require("./logger");
@@ -221,13 +221,13 @@ function validateProducer(producerData) {
 }
 
 /**
- * Based on Intelligence Schema to validate an intelligence
- * @param {object} intelligenceData - intelligence data want to be validated
+ * Based on Task Schema to validate an task
+ * @param {object} taskData - task data want to be validated
  * @returns {ValidateResult}
  */
-function validateIntelligence(intelligenceData) {
+function validateTask(taskData) {
   var ajv = new Ajv();
-  let valid = ajv.validate(intelligenceSchema, intelligenceData);
+  let valid = ajv.validate(taskSchema, taskData);
   return {
 	  valid,
 	  errors: ajv.errors
@@ -353,7 +353,7 @@ module.exports = {
   omit,
   validateProducer,
   validateProducerAndUpdateState,
-  validateIntelligence,
+  validateTask,
   validateRetailer,
   validateRetailerAndUpdateState,
   convertStringToRegExp

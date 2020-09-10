@@ -2,14 +2,14 @@ const _ = require("lodash");
 const { HTTPError } = require("../../util/error");
 const logger = require("../../util/logger");
 import {
-  getIntelligencesOrHistoryForManagementDB,
-  deleteIntelligencesOrHistoryForManagementDB,
-} from "../../dbController/IntelligenceAndHistory.ctrl";
-const addIntelligences = require("../intelligences/helpers").addIntelligences;
+  getTasksOrHistoryForManagementDB,
+  deleteTasksOrHistoryForManagementDB,
+} from "../../dbController/TaskAndHistory.ctrl";
+const addTasks = require("../tasks/helpers").addTasks;
 import { getRetailer } from "../retailers/helpers";
 //================================================================
-// Following APIs are designed for CRUD intelligences
-async function getIntelligencesHistoryForManagement(
+// Following APIs are designed for CRUD tasks
+async function getTasksHistoryForManagement(
   cursor: string,
   url: string,
   state: string,
@@ -17,7 +17,7 @@ async function getIntelligencesHistoryForManagement(
   securityKey: string
 ) {
   try {
-    return await getIntelligencesOrHistoryForManagementDB(
+    return await getTasksOrHistoryForManagementDB(
       cursor,
       url,
       state,
@@ -33,17 +33,17 @@ async function getIntelligencesHistoryForManagement(
 /**
  * ids priority high then url, if you pass both then only ids will be executed
  * @param {string} url - url for filter
- * @param {array} ids - Intelligences Global Id
+ * @param {array} ids - Tasks Global Id
  * @param {string} securityKey - security key string
  */
-async function deleteIntelligencesHistoryForManagement(
+async function deleteTasksHistoryForManagement(
   url: string,
   state: string,
   ids: string[],
   securityKey: string
 ) {
   try {
-    let result = await deleteIntelligencesOrHistoryForManagementDB(
+    let result = await deleteTasksOrHistoryForManagementDB(
       url,
       state,
       ids,
@@ -59,10 +59,10 @@ async function deleteIntelligencesHistoryForManagement(
 /**
  * ids priority high then url, if you pass both then only ids will be executed
  * @param {string} url - url for filter
- * @param {array} ids - Intelligences Global Id
+ * @param {array} ids - Tasks Global Id
  * @param {string} securityKey - security key string
  */
-async function rerunIntelligencesForManagement(
+async function rerunTasksForManagement(
   url: string,
   state: string,
   ids: string[],
@@ -70,10 +70,10 @@ async function rerunIntelligencesForManagement(
 ) {
   try {
     logger.info(`url: ${url}, state: ${state}, ids: ${ids}`, {
-      function: "rerunIntelligencesForManagement",
+      function: "rerunTasksForManagement",
     });
     console.log(`url: ${url}, state: ${state}, ids: ${ids}`);
-    const result = await getIntelligencesOrHistoryForManagementDB(
+    const result = await getTasksOrHistoryForManagementDB(
       null,
       url,
       state,
@@ -82,21 +82,21 @@ async function rerunIntelligencesForManagement(
       true,
       ids
     );
-    logger.debug(`Total Intelligences: ${result.total}`, {
-      function: "rerunIntelligencesForManagement",
+    logger.debug(`Total Tasks: ${result.total}`, {
+      function: "rerunTasksForManagement",
     });
     let retailersState = {};
-    let intelligences = result.intelligences;
-    for (let i = 0; i < intelligences.length; i++) {
+    let tasks = result.tasks;
+    for (let i = 0; i < tasks.length; i++) {
       // update retailer state
-      let retailerId = intelligences[i].retailer.globalId;
+      let retailerId = tasks[i].retailer.globalId;
       if(!retailersState[retailerId]){
         let retailer = await getRetailer(retailerId, securityKey);
         retailersState[retailerId] = retailer.system.state;
       }
-      intelligences[i].retailer.state = retailersState[retailerId];
+      tasks[i].retailer.state = retailersState[retailerId];
     }
-    await addIntelligences(intelligences, securityKey);
+    await addTasks(tasks, securityKey);
     return {
       total: result.total,
     };
@@ -106,7 +106,7 @@ async function rerunIntelligencesForManagement(
 }
 
 module.exports = {
-  deleteIntelligencesHistoryForManagement,
-  getIntelligencesHistoryForManagement,
-  rerunIntelligencesForManagement,
+  deleteTasksHistoryForManagement,
+  getTasksHistoryForManagement,
+  rerunTasksForManagement,
 };

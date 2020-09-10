@@ -2,9 +2,9 @@ import * as _ from "lodash";
 import { LessThan } from "typeorm";
 const { getConfig } = require("../../config");
 const logger = require("../../util/logger");
-const { INTELLIGENCE_STATE } = require("../../util/constants");
+const { TASK_STATE } = require("../../util/constants");
 const { HTTPError } = require("../../util/error");
-import { updateIntelligencesStateForManagementDB } from "../../dbController/IntelligenceAndHistory.ctrl";
+import { updateTasksStateForManagementDB } from "../../dbController/TaskAndHistory.ctrl";
 import { removeTimeoutJob } from "../../dbController/TasksJobQueue.ctrl";
 import { getNeedCheckHealthRetailersDB } from "../../dbController/Retailer.ctrl";
 const { updateRetailerState } = require("../retailers/helpers");
@@ -12,18 +12,18 @@ const { updateRetailerState } = require("../retailers/helpers");
 /**
  * Update all
  */
-export async function updateTimeoutIntelligences(securityKey?) {
+export async function updateTimeoutTasks(securityKey?) {
   try {
-    const intelligenceTimeout = getConfig("TIMEOUT_VALUE_FOR_INTELLIGENCE");
-    const startedAt = Date.now() - intelligenceTimeout;
-    logger.info(`Update intelligences if they are timeout`, {
-      function: "updateTimeoutIntelligences",
-      intelligenceTimeout,
+    const taskTimeout = getConfig("TIMEOUT_VALUE_FOR_TASK");
+    const startedAt = Date.now() - taskTimeout;
+    logger.info(`Update tasks if they are timeout`, {
+      function: "updateTimeoutTasks",
+      taskTimeout,
       startedAt,
       securityKey,
     });
-    await updateIntelligencesStateForManagementDB(
-      INTELLIGENCE_STATE.timeout,
+    await updateTasksStateForManagementDB(
+      TASK_STATE.timeout,
       null,
       null,
       null,
@@ -37,38 +37,38 @@ export async function updateTimeoutIntelligences(securityKey?) {
       err = new HTTPError(500, err);
     }
     logger.error(
-      `Update intelligences if they are timeout fail. Error: ${err.message}`,
-      { error: err, function: "updateTimeoutIntelligences" }
+      `Update tasks if they are timeout fail. Error: ${err.message}`,
+      { error: err, function: "updateTimeoutTasks" }
     );
     throw err;
   }
 }
 
-export async function checkAnalystServicesHealth(securityKey?) {
+export async function checkRetailerServicesHealth(securityKey?) {
   try {
     const intervalCheckAS = getConfig("RETAILER_STATE_CHECK_TIME");
     const lastPing = Date.now() - intervalCheckAS;
-    const analystServices = await getNeedCheckHealthRetailersDB(
+    const retailerServices = await getNeedCheckHealthRetailersDB(
       lastPing,
       securityKey
     );
-    logger.info(`Check Analyst Service Health`, {
-      function: "checkAnalystServicesHealth",
+    logger.info(`Check Retailer Service Health`, {
+      function: "checkRetailerServicesHealth",
       intervalCheckAS,
       lastPing,
-      analystServices: analystServices.length,
+      retailerServices: retailerServices.length,
     });
-    for (let i = 0; i < analystServices.length; i++) {
-      await updateRetailerState(analystServices[i].globalId, analystServices[i], true);
+    for (let i = 0; i < retailerServices.length; i++) {
+      await updateRetailerState(retailerServices[i].globalId, retailerServices[i], true);
     }
   } catch (err) {
     if (!(err instanceof HTTPError)) {
       // if it isn't HTTPError instance
       err = new HTTPError(500, err);
     }
-    logger.error(`Check Analyst Service Health fail. Error: ${err.message}`, {
+    logger.error(`Check Retailer Service Health fail. Error: ${err.message}`, {
       error: err,
-      function: "checkAnalystServicesHealth",
+      function: "checkRetailerServicesHealth",
     });
     throw err;
   }

@@ -466,8 +466,8 @@ async function unregisterProducer(gid: string, securityKey: string) {
     // //     $eq: securityKey
     // //   };
     // // }
-    // // remove all intelligences that this producer created
-    // await remove(COLLECTIONS_NAME.intelligences, {
+    // // remove all tasks that this producer created
+    // await remove(COLLECTIONS_NAME.tasks, {
     //   query
     // });
 

@@ -69,7 +69,7 @@
     },
     "callback": {
       "type": "object",
-      "description": "RESTFul API for where collected intelligences should send to",
+      "description": "RESTFul API for where collected tasks should send to",
       "required": ["method", "path"],
       "properties": {
         "method": {
@@ -150,7 +150,7 @@
     },
     "timestamp": {
       "type": ["integer", "null", "string"],
-      "description": "Timestamp of when this intelligence was assigned to an producer",
+      "description": "Timestamp of when this task was assigned to an producer",
       "examples": [1553974629109]
     },
     "version": {
@@ -170,7 +170,7 @@
     "url": {
       "type": "string",
       "format": "uri",
-      "description": "Target URL for this intelligence.",
+      "description": "Target URL for this task.",
       "examples": ["https://json-schema.org"]
     },
     "name": {
