@@ -199,10 +199,10 @@ paths:
       tags:
         - producer
       description: Operation Index - 0012
-      operationId: getAgents
+      operationId: getProducers
       responses:
         200:
-          description: Get Agents successful
+          description: Get Producers successful
           content:
             application/json:
               schema:
@@ -212,11 +212,11 @@ paths:
     post:
       tags:
         - producer
-      summary: Register an Agent.
+      summary: Register an Producer.
       description: Operation Index - 0013
-      operationId: registerAgent
+      operationId: registerProducer
       requestBody:
-        description: Need to register Agent information
+        description: Need to register Producer information
         required: true
         content:
           application/json:
@@ -245,14 +245,14 @@ paths:
     get:
       tags:
         - producer
-      summary: Get an Agent
+      summary: Get an Producer
       description: Operation Index - 0014
-      operationId: getAgent
+      operationId: getProducer
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of Agent
+          description: global_id of Producer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
@@ -269,7 +269,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         404:
-          description: Cannot find specific Agent
+          description: Cannot find specific Producer
           content:
             application/json:
               schema:
@@ -277,18 +277,18 @@ paths:
     put:
       tags:
         - producer
-      summary: Update an Agent
+      summary: Update an Producer
       description: Operation Index - 0015
-      operationId: updateAgent
+      operationId: updateProducer
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of Agent
+          description: global_id of Producer
           schema:
             $ref: "#/components/schemas/GlobalId"
       requestBody:
-        description: Agent information need to update
+        description: Producer information need to update
         required: true
         content:
           application/json:
@@ -296,9 +296,9 @@ paths:
               $ref: "./src/schemas/producer.json"
       responses:
         204:
-          description: Update Agent successful
+          description: Update Producer successful
         404:
-          description: Cannot find specific Agent
+          description: Cannot find specific Producer
           content:
             application/json:
               schema:
@@ -306,19 +306,19 @@ paths:
     delete:
       tags:
         - producer
-      summary: Unregister an Agent
+      summary: Unregister an Producer
       description: Operation Index - 0016
-      operationId: unregisterAgent
+      operationId: unregisterProducer
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of Agent
+          description: global_id of Producer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Delete Agent successful
+          description: Delete Producer successful
           content:
             application/json:
               schema:
@@ -327,7 +327,7 @@ paths:
                   global_id:
                     $ref: "#/components/schemas/GlobalId"
         404:
-          description: Cannot find specific Agent
+          description: Cannot find specific Producer
           content:
             application/json:
               schema:
@@ -339,9 +339,9 @@ paths:
     post:
       tags:
         - producer
-      summary: Activate an Agent status
+      summary: Activate an Producer status
       description: Operation Index - 0017
-      operationId: activateAgentStatus
+      operationId: activateProducerStatus
       parameters:
         - in: path
           name: gid
@@ -351,7 +351,7 @@ paths:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Update a Agent successful
+          description: Update a Producer successful
           content:
             application/json:
               schema:
@@ -363,7 +363,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         404:
-          description: Cannot find specific Agent
+          description: Cannot find specific Producer
           content:
             application/json:
               schema:
@@ -372,9 +372,9 @@ paths:
     post:
       tags:
         - producer
-      summary: Activate an Agent status
+      summary: Activate an Producer status
       description: Operation Index - 0018
-      operationId: deactivateAgentStatus
+      operationId: deactivateProducerStatus
       parameters:
         - in: path
           name: gid
@@ -384,7 +384,7 @@ paths:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Update a Agent successful
+          description: Update a Producer successful
           content:
             application/json:
               schema:
@@ -396,7 +396,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         404:
-          description: Cannot find specific Agent
+          description: Cannot find specific Producer
           content:
             application/json:
               schema:
@@ -534,14 +534,14 @@ paths:
     get:
       tags:
         - intelligences
-      summary: Get intelligences for agents to execute
+      summary: Get intelligences for producers to execute
       description: Operation Index - 0005
       operationId: getIntelligences
       parameters:
         - in: query
           name: type
           required: true
-          description: Agent Type
+          description: Producer Type
           schema:
             type: string
             enum:
@@ -550,7 +550,7 @@ paths:
         - in: query
           name: gid
           required: true
-          description: Agent Global Id
+          description: Producer Global Id
           schema:
             $ref: "#/components/schemas/GlobalId"
         - in: query

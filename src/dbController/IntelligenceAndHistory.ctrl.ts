@@ -15,7 +15,7 @@ const {
   DEFAULT_RETAILER,
 } = require("../util/constants");
 import { isMongo } from "../util/dbConfiguration";
-import { updateAgentDB } from "./Agent.ctrl";
+import { updateProducerDB } from "./Producer.ctrl";
 
 export function flattenToObject(intelligences) {
   function toObject(intelligence) {
@@ -49,8 +49,8 @@ export function flattenToObject(intelligences) {
     if (_.get(intelligence, "permission")) {
       obj.permission = intelligence.permission;
     }
-    if (_.get(intelligence, "suitable_agents")) {
-      obj.suitableProducers = intelligence.suitable_agents;
+    if (_.get(intelligence, "suitable_producers")) {
+      obj.suitableProducers = intelligence.suitable_producers;
     }
     if (_.get(intelligence, "url")) {
       obj.url = intelligence.url;
@@ -97,30 +97,30 @@ export function flattenToObject(intelligences) {
       !obj.system ? (obj.system = {}) : "";
       obj.system.failuresReason = intelligence.system_failures_reason;
     }
-    if (_.get(intelligence, "system_agent_global_id")) {
+    if (_.get(intelligence, "system_producer_global_id")) {
       !obj.system ? (obj.system = {}) : "";
       !obj.system.producer ? (obj.system.producer = {}) : "";
-      obj.system.producer.globalId = intelligence.system_agent_global_id;
+      obj.system.producer.globalId = intelligence.system_producer_global_id;
     }
-    if (_.get(intelligence, "system_agent_type")) {
+    if (_.get(intelligence, "system_producer_type")) {
       !obj.system ? (obj.system = {}) : "";
       !obj.system.producer ? (obj.system.producer = {}) : "";
-      obj.system.producer.type = intelligence.system_agent_type;
+      obj.system.producer.type = intelligence.system_producer_type;
     }
-    if (_.get(intelligence, "system_agent_retry_times")) {
+    if (_.get(intelligence, "system_producer_retry_times")) {
       !obj.system ? (obj.system = {}) : "";
       !obj.system.producer ? (obj.system.producer = {}) : "";
-      obj.system.producer.retryTimes = intelligence.system_agent_retry_times;
+      obj.system.producer.retryTimes = intelligence.system_producer_retry_times;
     }
-    if (_.get(intelligence, "system_agent_started_at")) {
+    if (_.get(intelligence, "system_producer_started_at")) {
       !obj.system ? (obj.system = {}) : "";
       !obj.system.producer ? (obj.system.producer = {}) : "";
-      obj.system.producer.startedAt = intelligence.system_agent_started_at;
+      obj.system.producer.startedAt = intelligence.system_producer_started_at;
     }
-    if (_.get(intelligence, "system_agent_ended_at")) {
+    if (_.get(intelligence, "system_producer_ended_at")) {
       !obj.system ? (obj.system = {}) : "";
       !obj.system.producer ? (obj.system.producer = {}) : "";
-      obj.system.producer.endedAt = intelligence.system_agent_ended_at;
+      obj.system.producer.endedAt = intelligence.system_producer_ended_at;
     }
 
     return obj;
@@ -167,7 +167,7 @@ export function objectsToIntelligences(intelligences, intelligenceInstances) {
       intelligenceInstance.priority = intelligence.priority;
     }
     if (_.get(intelligence, "suitableProducers")) {
-      intelligenceInstance.suitable_agents = intelligence.suitableProducers;
+      intelligenceInstance.suitable_producers = intelligence.suitableProducers;
     }
     if (_.get(intelligence, "url")) {
       intelligenceInstance.url = intelligence.url;
@@ -198,22 +198,22 @@ export function objectsToIntelligences(intelligences, intelligenceInstances) {
       intelligenceInstance.system_ended_at = intelligence.system.endedAt;
     }
     if (_.get(intelligence, "system.producer.globalId")) {
-      intelligenceInstance.system_agent_global_id =
+      intelligenceInstance.system_producer_global_id =
         intelligence.system.producer.globalId;
     }
     if (_.get(intelligence, "system.producer.type")) {
-      intelligenceInstance.system_agent_type = intelligence.system.producer.type;
+      intelligenceInstance.system_producer_type = intelligence.system.producer.type;
     }
     if (_.get(intelligence, "system.producer.retryTimes")) {
-      intelligenceInstance.system_agent_retry_times =
+      intelligenceInstance.system_producer_retry_times =
         intelligence.system.producer.retryTimes;
     }
     if (_.get(intelligence, "system.producer.startedAt")) {
-      intelligenceInstance.system_agent_started_at =
+      intelligenceInstance.system_producer_started_at =
         intelligence.system.producer.startedAt;
     }
     if (_.get(intelligence, "system.producer.endedAt")) {
-      intelligenceInstance.system_agent_ended_at =
+      intelligenceInstance.system_producer_ended_at =
         intelligence.system.producer.endedAt;
     }
     if (_.get(intelligence, "system.version")) {
@@ -618,11 +618,11 @@ export async function updateIntelligencesStateForManagementDB(
         query.system_started_at = {
           $lt: timeoutStartedAt,
         };
-        mongoDBUdpateData.$set.system_agent_ended_at = Date.now();
+        mongoDBUdpateData.$set.system_producer_ended_at = Date.now();
         mongoDBUdpateData.$set.system_ended_at = Date.now();
         mongoDBUdpateData.$set.system_state = INTELLIGENCE_STATE.timeout;
         mongoDBUdpateData.$set.system_failures_reason =
-          "Agent collect intelligence timeout. Engine automatically set to TIMEOUT status";
+          "Producer collect intelligence timeout. Engine automatically set to TIMEOUT status";
         // Since this is set by system, so don't auto increase fail number
         // Actually, it isn't easy to auto increase `system_failures_number` ^_^
       }
@@ -687,11 +687,11 @@ export async function updateIntelligencesStateForManagementDB(
             requiredStates: [INTELLIGENCE_STATE.running],
           }
         );
-        sqlUpdateData.system_agent_ended_at = Date.now();
+        sqlUpdateData.system_producer_ended_at = Date.now();
         sqlUpdateData.system_ended_at = Date.now();
         sqlUpdateData.system_state = INTELLIGENCE_STATE.timeout;
         sqlUpdateData.system_failures_reason =
-          "Agent collect intelligence timeout. Engine automatically set to TIMEOUT status";
+          "Producer collect intelligence timeout. Engine automatically set to TIMEOUT status";
       }
 
       intelligenceQuery.set(sqlUpdateData);
@@ -882,24 +882,24 @@ export async function deleteIntelligencesByRetailerForManagementDB(
   }
 }
 
-export async function getIntelligencesForAgentDB(
-  agentConfig: any,
+export async function getIntelligencesForProducerDB(
+  producerConfig: any,
   securityKey: string
 ) {
   try {
     let intelligences = [];
-    let concurrent = Number(agentConfig.concurrent);
+    let concurrent = Number(producerConfig.concurrent);
     if (isNaN(concurrent)) {
       // if concurrent isn't a number, then use default value
       concurrent = getConfig("EACH_TIME_INTELLIGENCES_NUMBER");
     }
     let permission = PERMISSIONS.private;
-    if (!agentConfig.private) {
+    if (!producerConfig.private) {
       permission = PERMISSIONS.public;
     }
     let repo;
-    // logger.debug("getIntelligencesForAgentDB->agentConfig: %s", agentConfig);
-    // logger.debug("getIntelligencesForAgentDB->securityKey: %s", securityKey);
+    // logger.debug("getIntelligencesForProducerDB->producerConfig: %s", producerConfig);
+    // logger.debug("getIntelligencesForProducerDB->securityKey: %s", securityKey);
     if (isMongo()) {
       repo = await getMongoRepository(Intelligence);
       let query: any = {
@@ -916,9 +916,9 @@ export async function getIntelligencesForAgentDB(
       query.where.retailer_state = {
         $eq: RETAILER_STATE.active,
       };
-      query.where.suitable_agents = {
+      query.where.suitable_producers = {
         $elemMatch: {
-          $eq: _.toUpper(agentConfig.type),
+          $eq: _.toUpper(producerConfig.type),
         },
       };
 
@@ -928,7 +928,7 @@ export async function getIntelligencesForAgentDB(
         priority: "ASC",
       };
 
-      // logger.debug("getIntelligencesForAgentDB->query", query);
+      // logger.debug("getIntelligencesForProducerDB->query", query);
 
       // if security key provide, get all intelligences for this security key first
       if (securityKey) {
@@ -974,8 +974,8 @@ export async function getIntelligencesForAgentDB(
         state: RETAILER_STATE.active,
       });
       intelligenceQuery.andWhere(
-        "intelligence.suitable_agents LIKE :agentType",
-        { agentType: `%${_.toUpper(agentConfig.type)}%` }
+        "intelligence.suitable_producers LIKE :producerType",
+        { producerType: `%${_.toUpper(producerConfig.type)}%` }
       );
       intelligenceQuery.orderBy({
         retailer_global_id: "DESC",
@@ -1001,8 +1001,8 @@ export async function getIntelligencesForAgentDB(
         }
       );
       intelligenceQueryNoSecurityKey.andWhere(
-        "intelligence.suitable_agents LIKE :agentType",
-        { agentType: `%${_.toUpper(agentConfig.type)}%` }
+        "intelligence.suitable_producers LIKE :producerType",
+        { producerType: `%${_.toUpper(producerConfig.type)}%` }
       );
       intelligenceQueryNoSecurityKey.orderBy({
         retailer_global_id: "DESC",
@@ -1063,14 +1063,14 @@ export async function getIntelligencesForAgentDB(
       // Reason: Since this intelligence is reassigned, so it always need to update producer information
       // if (!item.producer) {
       //   item.producer = {
-      //     globalId: agentGid,
-      //     type: _.toUpper(agentConfig.type),
+      //     globalId: producerGid,
+      //     type: _.toUpper(producerConfig.type),
       //     started_at: Date.now()
       //   };
       // }
       item.system.producer = {
-        globalId: agentConfig.globalId,
-        type: _.toUpper(agentConfig.type),
+        globalId: producerConfig.globalId,
+        type: _.toUpper(producerConfig.type),
       };
     }
 
@@ -1079,8 +1079,8 @@ export async function getIntelligencesForAgentDB(
       system_ended_at: Date.now(),
       system_modified_at: Date.now(),
       system_state: INTELLIGENCE_STATE.running,
-      system_agent_global_id: agentConfig.globalId,
-      system_agent_type: _.toUpper(agentConfig.type),
+      system_producer_global_id: producerConfig.globalId,
+      system_producer_type: _.toUpper(producerConfig.type),
     };
 
     if (isMongo()) {
@@ -1107,16 +1107,16 @@ export async function getIntelligencesForAgentDB(
       await query.execute();
     }
 
-    // Update Agent Last Ping
+    // Update Producer Last Ping
     // Don't need to wait producer update finish
-    updateAgentDB(agentConfig.globalId, securityKey, {
+    updateProducerDB(producerConfig.globalId, securityKey, {
       system: {
         modified: Date.now(),
         lastPing: Date.now(),
       },
     });
 
-    // TODO: 2019/11/10 need to rethink about this logic, since intelligences already send back to agents
+    // TODO: 2019/11/10 need to rethink about this logic, since intelligences already send back to producers
     //        if we check for now, it is meaningless, better way is let producer to tell. For example, if collect
     //        intelligences fail, then check Retailer or direct know retailer is inactive
 
@@ -1142,9 +1142,9 @@ export async function getIntelligencesForAgentDB(
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->getIntelligencesForAgentDB"
+      "IntelligenceAndHistory.ctrl->getIntelligencesForProducerDB"
     );
-    logger.error(`getIntelligencesForAgentDB, error:${error.message}`, {
+    logger.error(`getIntelligencesForProducerDB, error:${error.message}`, {
       error,
     });
     throw error;

@@ -56,7 +56,7 @@
               "$ref": "#/definitions/globalId"
             },
             {
-              "title": "Connected Agent Serial Id",
+              "title": "Connected Producer Serial Id",
               "description": "The unique serial id of connected producer"
             }
           ]
@@ -70,7 +70,7 @@
       "$ref": "#/definitions/globalId"
     },
     "type": {
-      "$ref": "#/definitions/agentType"
+      "$ref": "#/definitions/producerType"
     },
     "name": {
       "$ref": "#/definitions/name"
@@ -111,7 +111,7 @@
       "description": "**undefined** means infinity. Browser has memory leak issue if continue to open urls. To avoid this, need to close window when reach max collect times. Collect Time equal to how many request send to DIA to get intelligence."
     },
     "idelTime": {
-      "title": "Agent Idel Time",
+      "title": "Producer Idel Time",
       "type": "integer",
       "description": "How long time browser need to wait to restart collect intelligences after close browser window. This time is used for browser to release memory.",
       "default": 0
@@ -203,10 +203,10 @@
       "type": "string",
       "examples": ["59f43b55-46a3-4efc-a960-018bcca91f46"]
     },
-    "agentType": {
-      "title": "Agent Type",
+    "producerType": {
+      "title": "Producer Type",
       "type": "string",
-      "description": "Agent type of this producer",
+      "description": "Producer type of this producer",
       "enum": ["SERVICE", "HEADLESSBROWSER"]
     },
     "permission": {

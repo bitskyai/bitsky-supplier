@@ -45,7 +45,7 @@ export abstract class BaseIntelligence extends Base {
   priority: number;
 
   @Column("simple-array")
-  suitable_agents: string[];
+  suitable_producers: string[];
 
   @Column()
   url: string;
@@ -95,27 +95,27 @@ export abstract class BaseIntelligence extends Base {
   @Column({
     nullable: true
   })
-  system_agent_global_id: string;
+  system_producer_global_id: string;
 
   @Column({
     nullable: true
   })
-  system_agent_type: string;
+  system_producer_type: string;
 
   @Column({
     nullable: true
   })
-  system_agent_retry_times: number;
+  system_producer_retry_times: number;
 
   @Column({
     nullable: true
   })
-  system_agent_started_at: number;
+  system_producer_started_at: number;
 
   @Column({
     nullable: true
   })
-  system_agent_ended_at: number;
+  system_producer_ended_at: number;
 
   @Column({
     nullable: true

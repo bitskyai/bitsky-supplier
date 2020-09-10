@@ -5,12 +5,12 @@ const { getConfig } = require("../config");
 const { HTTPError } = require("../util/error");
 import { isMongo } from "../util/dbConfiguration";
 
-export async function addATaskJob(globalId, agentGlobalId) {
+export async function addATaskJob(globalId, producerGlobalId) {
   try {
     const repo = getRepository(TasksJobQueue);
     const job = await repo.save({
       global_id: globalId,
-      agent_global_id: agentGlobalId,
+      producer_global_id: producerGlobalId,
     });
     return job;
   } catch (err) {

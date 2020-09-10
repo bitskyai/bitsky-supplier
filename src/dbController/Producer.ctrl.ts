@@ -1,10 +1,10 @@
 const _ = require("lodash");
 import { getRepository } from "typeorm";
-import Agent from "../entity/Agent";
+import Producer from "../entity/Producer";
 const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
 
-function flattenToObject(agents) {
+function flattenToObject(producers) {
   function toObject(producer) {
     let obj: any = {};
     obj.globalId = producer.global_id;
@@ -69,14 +69,14 @@ function flattenToObject(agents) {
     return obj;
   }
 
-  if (_.isArray(agents)) {
+  if (_.isArray(producers)) {
     let arr = [];
-    for (let i = 0; i < agents.length; i++) {
-      arr.push(toObject(agents[i]));
+    for (let i = 0; i < producers.length; i++) {
+      arr.push(toObject(producers[i]));
     }
     return arr;
   } else {
-    return toObject(agents);
+    return toObject(producers);
   }
 }
 
@@ -84,120 +84,120 @@ function flattenToObject(agents) {
  *
  * @param producer{object} - the producer object
  */
-function objectToAgent(producer, agentInstance) {
-  if (!agentInstance) {
-    agentInstance = new Agent();
+function objectToProducer(producer, producerInstance) {
+  if (!producerInstance) {
+    producerInstance = new Producer();
   }
   if (_.get(producer, "globalId")) {
-    agentInstance.global_id = producer.globalId;
+    producerInstance.global_id = producer.globalId;
   }
   if (_.get(producer, "type")) {
-    agentInstance.type = producer.type;
+    producerInstance.type = producer.type;
   }
   if (_.get(producer, "name")) {
-    agentInstance.name = producer.name;
+    producerInstance.name = producer.name;
   }
   if (_.get(producer, "description")) {
-    agentInstance.description = producer.description;
+    producerInstance.description = producer.description;
   }
   if (_.get(producer, "private")) {
-    agentInstance.private = producer.private;
+    producerInstance.private = producer.private;
   }
   if (_.get(producer, "permission")) {
-    agentInstance.permission = producer.permission;
+    producerInstance.permission = producer.permission;
   }
   if (_.get(producer, "concurrent")) {
-    agentInstance.concurrent = producer.concurrent;
+    producerInstance.concurrent = producer.concurrent;
   }
   if (_.get(producer, "pollingInterval")) {
-    agentInstance.polling_interval = producer.pollingInterval;
+    producerInstance.polling_interval = producer.pollingInterval;
   }
   if (_.get(producer, "maxWaitingTime")) {
-    agentInstance.max_waiting_time = producer.maxWaitingTime;
+    producerInstance.max_waiting_time = producer.maxWaitingTime;
   }
   if (_.get(producer, "maxCollect")) {
-    agentInstance.max_collect = producer.maxCollect;
+    producerInstance.max_collect = producer.maxCollect;
   }
   if (_.get(producer, "idelTime")) {
-    agentInstance.idel_time = producer.idelTime;
+    producerInstance.idel_time = producer.idelTime;
   }
   if (_.get(producer, "timeout")) {
-    agentInstance.timeout = producer.timeout;
+    producerInstance.timeout = producer.timeout;
   }
   if (_.get(producer, "maxRetry")) {
-    agentInstance.max_retry = producer.maxRetry;
+    producerInstance.max_retry = producer.maxRetry;
   }
   if (_.get(producer, "baseURL")) {
-    agentInstance.base_url = producer.baseURL;
+    producerInstance.base_url = producer.baseURL;
   }
   if (_.get(producer, "health.method")) {
-    agentInstance.health_method = producer.health.method;
+    producerInstance.health_method = producer.health.method;
   }
 
   if (_.get(producer, "health.path")) {
-    agentInstance.health_path = producer.health.path;
+    producerInstance.health_path = producer.health.path;
   }
 
   if (_.get(producer, "system.state")) {
-    agentInstance.system_state = producer.system.state;
+    producerInstance.system_state = producer.system.state;
   }
 
   if (_.get(producer, "system.version")) {
-    agentInstance.system_version = producer.system.version;
+    producerInstance.system_version = producer.system.version;
   }
 
   if (_.get(producer, "system.securityKey")) {
-    agentInstance.system_security_key = producer.system.securityKey;
+    producerInstance.system_security_key = producer.system.securityKey;
   }else{
     if(_.get(producer, "system.securityKey") !== undefined){
-      agentInstance.system_security_key = null;
+      producerInstance.system_security_key = null;
     }
   }
 
   if (_.get(producer, "system.created")) {
-    agentInstance.system_created_at = producer.system.created;
+    producerInstance.system_created_at = producer.system.created;
   }else{
     if(_.get(producer, "system.created") !== undefined){
-      agentInstance.system_created_at = null;
+      producerInstance.system_created_at = null;
     }
   }
 
   if (_.get(producer, "system.modified")) {
-    agentInstance.system_modified_at = producer.system.modified;
+    producerInstance.system_modified_at = producer.system.modified;
   }else{
     if(_.get(producer, "system.modified") !== undefined){
-      agentInstance.system_modified_at = null;
+      producerInstance.system_modified_at = null;
     }
   }
 
   if (_.get(producer, "system.lastPing")) {
-    agentInstance.system_last_ping = producer.system.lastPing;
+    producerInstance.system_last_ping = producer.system.lastPing;
   }else{
     if(_.get(producer, "system.lastPing") !== undefined){
-      agentInstance.system_last_ping = null;
+      producerInstance.system_last_ping = null;
     }
   }
 
   if (_.get(producer, "system.serialId")) {
-    agentInstance.system_serial_id = producer.system.serialId;
+    producerInstance.system_serial_id = producer.system.serialId;
   }else{
     if(_.get(producer, "system.serialId") !== undefined){
-      agentInstance.system_serial_id = null;
+      producerInstance.system_serial_id = null;
     }
   }
 
-  return agentInstance;
+  return producerInstance;
 }
 
-export async function addAgentDB(producer) {
+export async function addProducerDB(producer) {
   try {
-    const repo = getRepository(Agent);
-    let agentInstance = objectToAgent(producer, null);
-    console.log("agentInstance: ", agentInstance);
-    await repo.save(agentInstance);
+    const repo = getRepository(Producer);
+    let producerInstance = objectToProducer(producer, null);
+    console.log("producerInstance: ", producerInstance);
+    await repo.save(producerInstance);
     return {
-      _id: agentInstance.id,
-      globalId: agentInstance.global_id,
+      _id: producerInstance.id,
+      globalId: producerInstance.global_id,
     };
   } catch (err) {
     let error = new HTTPError(
@@ -205,39 +205,39 @@ export async function addAgentDB(producer) {
       err,
       {},
       "00005000001",
-      "Agent.ctrl->addAgentDB"
+      "Producer.ctrl->addProducerDB"
     );
-    logger.error("addAgentDB, error:", error);
+    logger.error("addProducerDB, error:", error);
     throw error;
   }
 }
 
-export async function getAgentsDB(securityKey: string) {
+export async function getProducersDB(securityKey: string) {
   try {
-    const repo = getRepository(Agent);
+    const repo = getRepository(Producer);
     let query: any = {};
     if (securityKey) {
       query.system_security_key = securityKey;
     }
-    let agents = await repo.find(query);
-    agents = flattenToObject(agents);
-    return agents;
+    let producers = await repo.find(query);
+    producers = flattenToObject(producers);
+    return producers;
   } catch (err) {
     let error = new HTTPError(
       500,
       err,
       {},
       "00005000001",
-      "Agent.ctrl->getAgentsDB"
+      "Producer.ctrl->getProducersDB"
     );
-    logger.error("getAgentsDB, error:", error);
+    logger.error("getProducersDB, error:", error);
     throw error;
   }
 }
 
-export async function getAgentByGlobalIdDB(gid: string, securityKey: string) {
+export async function getProducerByGlobalIdDB(gid: string, securityKey: string) {
   try {
-    const repo = getRepository(Agent);
+    const repo = getRepository(Producer);
     let query: any = {
       global_id: gid,
     };
@@ -257,19 +257,19 @@ export async function getAgentByGlobalIdDB(gid: string, securityKey: string) {
         err,
         {},
         "00005000001",
-        "Agent.ctrl->getAgentByGlobalIdDB"
+        "Producer.ctrl->getProducerByGlobalIdDB"
       );
     }
     // if(err.statusCode === 404){
-    //   logger.info(`getAgentByGlobalIdDB, cannot find producer by globalId - ${gid}`);
+    //   logger.info(`getProducerByGlobalIdDB, cannot find producer by globalId - ${gid}`);
     // }else{
-    //   logger.error(`getAgentByGlobalIdDB, error: ${err.message}`, {error: err});
+    //   logger.error(`getProducerByGlobalIdDB, error: ${err.message}`, {error: err});
     // }
     throw err;
   }
 }
 
-export async function updateAgentDB(gid, securityKey, producer) {
+export async function updateProducerDB(gid, securityKey, producer) {
   try {
     if(!producer||!gid){
       // if producer doesn't exist or gid doesn't exist, don't need to update
@@ -284,7 +284,7 @@ export async function updateAgentDB(gid, securityKey, producer) {
     if (securityKey) {
       query.system_security_key = securityKey;
     }
-    const repo = getRepository(Agent);
+    const repo = getRepository(Producer);
 
     if(!producer.system){
       producer.system = {};
@@ -292,9 +292,9 @@ export async function updateAgentDB(gid, securityKey, producer) {
 
     // update last modified
     producer.system.modified = Date.now();
-    producer = objectToAgent(producer, {});
+    producer = objectToProducer(producer, {});
 
-    // console.log(`updateAgentDB->producer: `, producer);
+    // console.log(`updateProducerDB->producer: `, producer);
 
     const result = await repo.update(query, producer);
     return result;
@@ -304,14 +304,14 @@ export async function updateAgentDB(gid, securityKey, producer) {
       err,
       {},
       "00005000001",
-      "Agent.ctrl->updateAgentDB"
+      "Producer.ctrl->updateProducerDB"
     );
-    logger.error("updateAgentDB, error:", error);
+    logger.error("updateProducerDB, error:", error);
     throw error;
   }
 }
 
-export async function deleteAgentDB(gid: string, securityKey: string) {
+export async function deleteProducerDB(gid: string, securityKey: string) {
   try {
     let query: any = {
       global_id: gid,
@@ -319,7 +319,7 @@ export async function deleteAgentDB(gid: string, securityKey: string) {
     if (securityKey) {
       query.system_security_key = securityKey;
     }
-    const repo = getRepository(Agent);
+    const repo = getRepository(Producer);
     let result = await repo.delete(query);
     return result;
   } catch (err) {
@@ -328,9 +328,9 @@ export async function deleteAgentDB(gid: string, securityKey: string) {
       err,
       {},
       "00005000001",
-      "Agent.ctrl->deleteAgentDB"
+      "Producer.ctrl->deleteProducerDB"
     );
-    logger.error("deleteAgentDB, error:", error);
+    logger.error("deleteProducerDB, error:", error);
     throw error;
   }
 }

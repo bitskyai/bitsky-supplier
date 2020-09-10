@@ -1,30 +1,30 @@
 const _ = require("lodash");
 const semver = require("semver");
-const { CONFIG, AGENT_STATE, DEFAULT_AGENT } = require("../../util/constants");
+const { CONFIG, PRODUCER_STATE, DEFAULT_PRODUCER } = require("../../util/constants");
 const { HTTPError } = require("../../util/error");
 
 import {
-  addAgentDB,
-  getAgentsDB,
-  getAgentByGlobalIdDB,
-  updateAgentDB,
-  deleteAgentDB,
-} from "../../dbController/Agent.ctrl";
+  addProducerDB,
+  getProducersDB,
+  getProducerByGlobalIdDB,
+  updateProducerDB,
+  deleteProducerDB,
+} from "../../dbController/Producer.ctrl";
 const {
-  validateAgentAndUpdateState,
+  validateProducerAndUpdateState,
   generateGlobalId,
 } = require("../../util/utils");
 // const logger = require("../../util/logger");
 
 /**
  * Check an producer exist or not, if exist return this producer
- * @param {string} gid - Agent global ID
+ * @param {string} gid - Producer global ID
  * @param {string} securityKey - request security key if passed
  * @returns {Object} - producer
  */
-async function checkAgentExistByGlobalID(gid, securityKey) {
+async function checkProducerExistByGlobalID(gid, securityKey) {
   try {
-    let producer = await getAgentByGlobalIdDB(gid, securityKey);
+    let producer = await getProducerByGlobalIdDB(gid, securityKey);
     // producer doesn't exist
     if (!producer) {
       throw new HTTPError(
@@ -43,15 +43,15 @@ async function checkAgentExistByGlobalID(gid, securityKey) {
 }
 
 /**
- * Register an Agent to DIA.
+ * Register an Producer to DIA.
  * Follow KISS principle, you need to make sure your **globalId** is unique.
- * Currently, **globalId** is only way for **Agent** Identity.
- * @param {object} Agent - Agent need to be register
+ * Currently, **globalId** is only way for **Producer** Identity.
+ * @param {object} Producer - Producer need to be register
  * @param {string} securityKey - The securityKey that previous service send, used to identify who send this request
  *
  * @returns {object}
  */
-async function registerAgent(producer, securityKey) {
+async function registerProducer(producer, securityKey) {
   try {
     // validate producer
     // TODO: change to validate based on schema
@@ -61,9 +61,9 @@ async function registerAgent(producer, securityKey) {
 
     // TODO: Think about whether we need to support Dynamic Generate **globalId**.
     // Comment 07/12/2019: after several time thinking, I think we should automatically generate **globalId**, so I comment this code.
-    // Use globalId to find Agent.
-    // let agentInDB = await findOneByGlobalId(
-    //   COLLECTIONS_NAME.agents,
+    // Use globalId to find Producer.
+    // let producerInDB = await findOneByGlobalId(
+    //   COLLECTIONS_NAME.producers,
     //   producer.globalId,
     //   {
     //     projection: {
@@ -72,7 +72,7 @@ async function registerAgent(producer, securityKey) {
     //   }
     // );
     // // globalId must be unique
-    // if (agentInDB) {
+    // if (producerInDB) {
     //   // globalId already exist
     //   throw new HTTPError(
     //     400,
@@ -91,10 +91,10 @@ async function registerAgent(producer, securityKey) {
     producer.globalId = generateGlobalId("producer");
     producer.type = _.toUpper(producer.type);
     // Before validate, default set producer state to DRAFT
-    // producer.state = AGENT_STATE.draft;
-    // when create an producer, default version is 1.0.0, the reason of 1.0.0 is because currently Agent Schema version is 1.0.0, make sure the main version is same with schema
+    // producer.state = PRODUCER_STATE.draft;
+    // when create an producer, default version is 1.0.0, the reason of 1.0.0 is because currently Producer Schema version is 1.0.0, make sure the main version is same with schema
     // producer.version = '1.0.0';
-    producer = _.merge({}, DEFAULT_AGENT, producer);
+    producer = _.merge({}, DEFAULT_PRODUCER, producer);
 
     // if securityKey exist, then add securityKey to producer
     if (securityKey) {
@@ -104,8 +104,8 @@ async function registerAgent(producer, securityKey) {
     producer.system.modified = Date.now();
     producer.system.lastPing = null;
     // Validate producer, based on validate result to update producer state, don't allow user to direct change producer state
-    producer = validateAgentAndUpdateState(producer);
-    let result = await addAgentDB(producer);
+    producer = validateProducerAndUpdateState(producer);
+    let result = await addProducerDB(producer);
     return result;
   } catch (err) {
     // Already HTTPError, then throw it
@@ -115,12 +115,12 @@ async function registerAgent(producer, securityKey) {
 
 /**
  * OperationIndex: 0002
- * Get a Agent by globalId
+ * Get a Producer by globalId
  * @param {string} gid - globalId
  *
  * @returns {object}
  */
-async function getAgent(
+async function getProducer(
   gid: string,
   securityKey: string,
   serialId: string,
@@ -139,7 +139,7 @@ async function getAgent(
         "00144000001"
       );
     }
-    let producer = await getAgentByGlobalIdDB(gid, securityKey);
+    let producer = await getProducerByGlobalIdDB(gid, securityKey);
     if (!producer) {
       throw new HTTPError(
         404,
@@ -168,7 +168,7 @@ async function getAgent(
     }
 
     // console.log(
-    //   `getAgent, gid: ${gid}, serialId: ${serialId}, jobId: ${jobId}`
+    //   `getProducer, gid: ${gid}, serialId: ${serialId}, jobId: ${jobId}`
     // );
 
     // If pass `serialId` and `serialId` isn't same with `producer.system.serialId`
@@ -190,23 +190,23 @@ async function getAgent(
       );
     }
 
-    let updateAgent: any = {
+    let updateProducer: any = {
       system: {},
     };
 
     if (requestedWith !== CONFIG.REQUESTED_WITH_ENGINE_UI) {
       // if it isn't called by engine-ui then update last ping, otherwise don't need
-      updateAgent.system.lastPing = Date.now();
+      updateProducer.system.lastPing = Date.now();
     }
 
     if (type && serialId && !producer.system.serialId) {
       // need to update producer serialId, so this means producer was connected, before disconnect, don't allow connect
       // first producer connect to this
       // only user pass `type` and `serialId` then update serialId
-      updateAgent.system.serialId = serialId;
+      updateProducer.system.serialId = serialId;
     }
 
-    await updateAgentDB(gid, securityKey, updateAgent);
+    await updateProducerDB(gid, securityKey, updateProducer);
 
     return producer;
   } catch (err) {
@@ -216,24 +216,24 @@ async function getAgent(
 
 /**
  * OperationIndex: 0010
- * Get a Agents
+ * Get a Producers
  * @param {string} securityKey - current user's security key
  *
  * @returns {object}
  */
-async function getAgents(securityKey) {
+async function getProducers(securityKey) {
   try {
-    let agents = await getAgentsDB(securityKey);
-    return agents;
+    let producers = await getProducersDB(securityKey);
+    return producers;
   } catch (err) {
     throw err;
   }
 }
 
-async function updateAgent(gid, producer, securityKey) {
+async function updateProducer(gid, producer, securityKey) {
   try {
-    // Make sure can find Agent, if cannot, the it will throw 404 error
-    let originalAgent = await checkAgentExistByGlobalID(gid, securityKey);
+    // Make sure can find Producer, if cannot, the it will throw 404 error
+    let originalProducer = await checkProducerExistByGlobalID(gid, securityKey);
 
     // Remove cannot update fields
     delete producer._id;
@@ -243,19 +243,19 @@ async function updateAgent(gid, producer, securityKey) {
       delete producer.system.created;
     }
 
-    // let originalAgent = await getAgent(gid, securityKey);
-    let obj = _.merge({}, originalAgent, producer);
+    // let originalProducer = await getProducer(gid, securityKey);
+    let obj = _.merge({}, originalProducer, producer);
     obj.system.modified = Date.now();
 
     // state before validation
-    let agentState = obj.system.state;
+    let producerState = obj.system.state;
     // Validate producer, based on validate result to update producer state, don't allow user to direct change producer state
-    obj = validateAgentAndUpdateState(obj);
+    obj = validateProducerAndUpdateState(obj);
 
     // if producer state is **active** or **deleted**, then return error
     if (
-      _.toUpper(obj.system.state) === _.toUpper(AGENT_STATE.active) ||
-      _.toUpper(obj.system.state) === _.toUpper(AGENT_STATE.deleted)
+      _.toUpper(obj.system.state) === _.toUpper(PRODUCER_STATE.active) ||
+      _.toUpper(obj.system.state) === _.toUpper(PRODUCER_STATE.deleted)
     ) {
       throw new HTTPError(
         400,
@@ -268,7 +268,7 @@ async function updateAgent(gid, producer, securityKey) {
     }
 
     // if state change, then we need to update minor version, otherwise only need to update patch version
-    if (agentState !== obj.system.state) {
+    if (producerState !== obj.system.state) {
       // this means state change, then need to update minor
       obj.system.version = semver.inc(obj.system.version || "1.0.0", "minor");
     } else {
@@ -276,7 +276,7 @@ async function updateAgent(gid, producer, securityKey) {
     }
 
     // let result = await updateOne(
-    //   COLLECTIONS_NAME.agents,
+    //   COLLECTIONS_NAME.producers,
     //   {
     //     globalId: {
     //       $eq: gid
@@ -288,7 +288,7 @@ async function updateAgent(gid, producer, securityKey) {
     // );
     // return result;
 
-    let result = await updateAgentDB(gid, securityKey, obj);
+    let result = await updateProducerDB(gid, securityKey, obj);
     return result;
   } catch (err) {
     throw err;
@@ -301,17 +301,17 @@ async function updateAgent(gid, producer, securityKey) {
  * @param {string} gid - producer globalId
  * @param {string} securityKey - current user's security key
  */
-async function disconnectAgent(gid, securityKey, jobId) {
+async function disconnectProducer(gid, securityKey, jobId) {
   try {
-    let originalAgent: any = await checkAgentExistByGlobalID(gid, securityKey);
+    let originalProducer: any = await checkProducerExistByGlobalID(gid, securityKey);
 
     // change state to **active**
     const version = semver.inc(
-      originalAgent.system.version || "1.0.0",
+      originalProducer.system.version || "1.0.0",
       "major"
     );
 
-    const updateAgent = {
+    const updateProducer = {
       globalId: generateGlobalId("producer"),
       system: {
         serialId: "",
@@ -320,9 +320,9 @@ async function disconnectAgent(gid, securityKey, jobId) {
       },
     };
 
-    await updateAgentDB(gid, securityKey, updateAgent);
+    await updateProducerDB(gid, securityKey, updateProducer);
     return {
-      globalId: updateAgent.globalId,
+      globalId: updateProducer.globalId,
     };
   } catch (err) {
     throw err;
@@ -335,15 +335,15 @@ async function disconnectAgent(gid, securityKey, jobId) {
  * @param {string} gid - producer globalId
  * @param {string} securityKey - current user's security key
  */
-async function activateAgent(gid, securityKey) {
+async function activateProducer(gid, securityKey) {
   try {
-    let originalAgent: any = await checkAgentExistByGlobalID(gid, securityKey);
-    originalAgent = validateAgentAndUpdateState(originalAgent);
+    let originalProducer: any = await checkProducerExistByGlobalID(gid, securityKey);
+    originalProducer = validateProducerAndUpdateState(originalProducer);
 
     // if it is draft state then throw an error
-    if (originalAgent.system.state === AGENT_STATE.draft) {
+    if (originalProducer.system.state === PRODUCER_STATE.draft) {
       throw new HTTPError(400, null, { globalId: gid }, "0017400001");
-    } else if (originalAgent.system.state === AGENT_STATE.deleted) {
+    } else if (originalProducer.system.state === PRODUCER_STATE.deleted) {
       // **delete** then tell user cannot find, since we didn't show deleted producer in user's producer list
       throw new HTTPError(
         404,
@@ -353,36 +353,36 @@ async function activateAgent(gid, securityKey) {
         gid,
         securityKey
       );
-    } else if (originalAgent.system.state === AGENT_STATE.active) {
+    } else if (originalProducer.system.state === PRODUCER_STATE.active) {
       // If an producer's state is active, don't need to update it again
       return {
-        state: originalAgent.system.state,
+        state: originalProducer.system.state,
       };
     }
 
     // change state to **active**
-    originalAgent.system.state = _.toUpper(AGENT_STATE.active);
-    originalAgent.system.version = semver.inc(
-      originalAgent.system.version || "1.0.0",
+    originalProducer.system.state = _.toUpper(PRODUCER_STATE.active);
+    originalProducer.system.version = semver.inc(
+      originalProducer.system.version || "1.0.0",
       "minor"
     );
     // let result = await updateOne(
-    //   COLLECTIONS_NAME.agents,
+    //   COLLECTIONS_NAME.producers,
     //   {
     //     globalId: {
     //       $eq: gid
     //     }
     //   },
     //   {
-    //     $set: originalAgent
+    //     $set: originalProducer
     //   }
     // );
     // return {
-    //   state: originalAgent.system.state
+    //   state: originalProducer.system.state
     // };
-    let result = await updateAgentDB(gid, securityKey, originalAgent);
+    let result = await updateProducerDB(gid, securityKey, originalProducer);
     return {
-      state: originalAgent.system.state,
+      state: originalProducer.system.state,
     };
   } catch (err) {
     throw err;
@@ -394,15 +394,15 @@ async function activateAgent(gid, securityKey) {
  * @param {string} gid
  * @param {string} securityKey
  */
-async function deactivateAgent(gid, securityKey) {
+async function deactivateProducer(gid, securityKey) {
   try {
-    let originalAgent: any = await checkAgentExistByGlobalID(gid, securityKey);
-    // originalAgent = validateAgentAndUpdateState(originalAgent);
+    let originalProducer: any = await checkProducerExistByGlobalID(gid, securityKey);
+    // originalProducer = validateProducerAndUpdateState(originalProducer);
 
     // if it is draft state then throw an error
-    if (originalAgent.system.state === AGENT_STATE.draft) {
+    if (originalProducer.system.state === PRODUCER_STATE.draft) {
       throw new HTTPError(400, null, { globalId: gid }, "0018400001");
-    } else if (originalAgent.system.state === AGENT_STATE.deleted) {
+    } else if (originalProducer.system.state === PRODUCER_STATE.deleted) {
       // **delete** then tell user cannot find, since we didn't show deleted producer in user's producer list
       throw new HTTPError(
         404,
@@ -412,48 +412,48 @@ async function deactivateAgent(gid, securityKey) {
         gid,
         securityKey
       );
-    } else if (originalAgent.system.state != AGENT_STATE.active) {
+    } else if (originalProducer.system.state != PRODUCER_STATE.active) {
       // If an producer's state isn't active, don't need to update it again
       return {
-        state: originalAgent.system.state,
+        state: originalProducer.system.state,
       };
     }
 
     // change state to **configured**
-    originalAgent.system.state = _.toUpper(AGENT_STATE.configured);
-    originalAgent.system.version = semver.inc(
-      originalAgent.system.version || "1.0.0",
+    originalProducer.system.state = _.toUpper(PRODUCER_STATE.configured);
+    originalProducer.system.version = semver.inc(
+      originalProducer.system.version || "1.0.0",
       "minor"
     );
     // let result = await updateOne(
-    //   COLLECTIONS_NAME.agents,
+    //   COLLECTIONS_NAME.producers,
     //   {
     //     globalId: {
     //       $eq: gid
     //     }
     //   },
     //   {
-    //     $set: originalAgent
+    //     $set: originalProducer
     //   }
     // );
     // return {
-    //   state: originalAgent.system.state
+    //   state: originalProducer.system.state
     // };
-    let result = await updateAgentDB(gid, securityKey, originalAgent);
+    let result = await updateProducerDB(gid, securityKey, originalProducer);
     return {
-      state: originalAgent.system.state,
+      state: originalProducer.system.state,
     };
   } catch (err) {
     throw err;
   }
 }
 
-async function unregisterAgent(gid: string, securityKey: string) {
+async function unregisterProducer(gid: string, securityKey: string) {
   try {
     console.log("gid: ", gid, " securityKey: ", securityKey);
-    // Make sure can find Agent, if cannot, the it will throw 404 error
-    await checkAgentExistByGlobalID(gid, securityKey);
-    let result = await deleteAgentDB(gid, securityKey);
+    // Make sure can find Producer, if cannot, the it will throw 404 error
+    await checkProducerExistByGlobalID(gid, securityKey);
+    let result = await deleteProducerDB(gid, securityKey);
     return result;
     // let query = {
     //   "producer.globalId": {
@@ -471,19 +471,19 @@ async function unregisterAgent(gid: string, securityKey: string) {
     //   query
     // });
 
-    // let agentQuery = {
+    // let producerQuery = {
     //   globalId: {
     //     $eq: gid
     //   }
     // };
     // if (securityKey) {
-    //   agentQuery[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
+    //   producerQuery[`system.${CONFIG.SECURITY_KEY_IN_DB}`] = {
     //     $eq: securityKey
     //   };
     // }
 
-    // // remove this Agent in agents collection
-    // let result = await remove(COLLECTIONS_NAME.agents, agentQuery);
+    // // remove this Producer in producers collection
+    // let result = await remove(COLLECTIONS_NAME.producers, producerQuery);
     // return result;
   } catch (err) {
     throw err;
@@ -491,12 +491,12 @@ async function unregisterAgent(gid: string, securityKey: string) {
 }
 
 module.exports = {
-  registerAgent,
-  getAgent,
-  updateAgent,
-  unregisterAgent,
-  activateAgent,
-  deactivateAgent,
-  disconnectAgent,
-  getAgents,
+  registerProducer,
+  getProducer,
+  updateProducer,
+  unregisterProducer,
+  activateProducer,
+  deactivateProducer,
+  disconnectProducer,
+  getProducers,
 };

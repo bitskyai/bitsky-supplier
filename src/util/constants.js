@@ -54,7 +54,7 @@ const DEFAULT_MONGODB = {
 
 const COLLECTIONS_NAME = {
   retailers: "retailers",
-  agents: "agents",
+  producers: "producers",
   intelligences: "intelligences",
   intelligencesHistory: "intelligences_history",
   serverInfo: "server_info",
@@ -74,7 +74,7 @@ const INTELLIGENCE_STATE = {
   timeout: "TIMEOUT"
 };
 
-const AGENT_STATE = {
+const PRODUCER_STATE = {
   draft: "DRAFT",
   configured: "CONFIGURED",
   active: "ACTIVE",
@@ -121,7 +121,7 @@ const DEFAULT_INTELLIGENCE = {
   priority: 100
 };
 
-const DEFAULT_AGENT = {
+const DEFAULT_PRODUCER = {
   system: {
     version: "1.0.0",
     state: "DRAFT"
@@ -139,11 +139,11 @@ module.exports = {
   COLLECTIONS_NAME,
   DEFAULT_RETAILER,
   INTELLIGENCE_STATE,
-  AGENT_STATE,
+  PRODUCER_STATE,
   RETAILER_STATE,
   PERMISSIONS,
   DEFAULT_INTELLIGENCE,
-  DEFAULT_AGENT,
+  DEFAULT_PRODUCER,
   DEFAULT_DB_CONFIG,
   DEFAULT_SQLITE,
   DEFAULT_MONGODB

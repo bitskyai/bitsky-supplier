@@ -11,7 +11,7 @@ const self = require('./apis/self');
 const retailers = require('./apis/retailers');
 const intelligences = require('./apis/intelligences');
 const intelligencesHistory = require('./apis/intelligenceshistory');
-const agents = require('./apis/producers');
+const producers = require('./apis/producers');
 const health = require('./apis/health');
 
 function createAPIRouters(app){
@@ -28,7 +28,7 @@ function createAPIRouters(app){
   retailers.router(router);
   intelligences.router(router);
   intelligencesHistory.router(router);
-  agents.router(router);
+  producers.router(router);
 
 
   return router;

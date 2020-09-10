@@ -12,5 +12,5 @@ if (isMongo()) {
 // Will use JSON schema to validation
 export abstract class BaseTasksJobQueue extends Base {
   @Column()
-  agent_global_id: string;
+  producer_global_id: string;
 }

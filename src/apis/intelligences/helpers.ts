@@ -5,7 +5,7 @@ const {
   DEFAULT_RETAILER,
   INTELLIGENCE_STATE,
   PERMISSIONS,
-  AGENT_STATE,
+  PRODUCER_STATE,
   RETAILER_STATE,
   DEFAULT_INTELLIGENCE,
 } = require("../../util/constants");
@@ -19,7 +19,7 @@ import {
   getIntelligencesOrHistoryForManagementDB,
   updateIntelligencesStateForManagementDB,
   deleteIntelligencesOrHistoryForManagementDB,
-  getIntelligencesForAgentDB,
+  getIntelligencesForProducerDB,
   getIntelligencesDB,
   updateEachIntelligencesDB,
   deleteIntelligencesDB,
@@ -137,7 +137,7 @@ async function deleteIntelligencesForManagement(
 }
 
 //================================================================
-// Following APIs are designed for Agent CRUD Intelligences
+// Following APIs are designed for Producer CRUD Intelligences
 /**
  * Create intelligences
  *
@@ -156,7 +156,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
     //   started_at: 0,
     //   ended_at: 0,
     //   status: "CONFIGURED",
-    //   suitable_agents: ['HEADLESSBROWSER']
+    //   suitable_producers: ['HEADLESSBROWSER']
     // };
     let defaultIntelligence = DEFAULT_INTELLIGENCE;
     // TODO: data validation need to improve
@@ -188,12 +188,12 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
       intelligence.system.created = Date.now();
       intelligence.system.modified = Date.now();
       intelligence.system.securityKey = securityKey;
-      intelligence.system.state = AGENT_STATE.configured;
+      intelligence.system.state = PRODUCER_STATE.configured;
 
       // Make sure producer type is uppercase
       intelligence.suitableProducers = intelligence.suitableProducers.map(
-        (agentType) => {
-          return _.toUpper(agentType);
+        (producerType) => {
+          return _.toUpper(producerType);
         }
       );
       // since just recieve Retailer request, so set the state to **ACTIVE**
@@ -288,24 +288,24 @@ async function waitUntilTopTask(globalId) {
 
 /**
  * @typedef {Object} IntelligencesAndConfig
- * @property {object} producer - Agent Configuration
+ * @property {object} producer - Producer Configuration
  * @property {array} intelligences - Intelligences Array
  */
 /**
- * Get intelligences by Agent Global ID and Security Key
+ * Get intelligences by Producer Global ID and Security Key
  *
  * Operation Index - 0005
  *
- * @param {string} agentGid - Agent Global ID
+ * @param {string} producerGid - Producer Global ID
  * @param {string} securityKey - Security Key
  *
  * @returns {IntelligencesAndConfig}
  */
-async function getIntelligences(agentGid: string, securityKey: string) {
+async function getIntelligences(producerGid: string, securityKey: string) {
   const taskJobGlobalId = utils.generateGlobalId("taskjob");
   try {
     // add a task job to the job queue
-    await addATaskJob(taskJobGlobalId, agentGid);
+    await addATaskJob(taskJobGlobalId, producerGid);
     await waitUntilTopTask(taskJobGlobalId);
     // TODO: need to improve intelligences schedule
     // 1. Think about if a lot of intelligences, how to schedule them
@@ -317,55 +317,55 @@ async function getIntelligences(agentGid: string, securityKey: string) {
       securityKey = undefined;
     }
 
-    logger.debug(`getIntelligences->agentGid: ${agentGid}`);
+    logger.debug(`getIntelligences->producerGid: ${producerGid}`);
     logger.debug(`getIntelligences->securityKey: ${securityKey}`);
     // Step 1: get producer configuration
-    let agentConfig = await producersHelpers.getAgent(agentGid, securityKey);
+    let producerConfig = await producersHelpers.getProducer(producerGid, securityKey);
     logger.debug(
-      `getIntelligences->agentConfig.system.securityKey: ${agentConfig.system.securityKey}`
+      `getIntelligences->producerConfig.system.securityKey: ${producerConfig.system.securityKey}`
     );
-    let agentSecurityKey = agentConfig.system.securityKey;
+    let producerSecurityKey = producerConfig.system.securityKey;
     // avoid UI side send undefined or null as string
-    if (agentSecurityKey === "undefined" || agentSecurityKey === "null") {
-      agentSecurityKey = undefined;
+    if (producerSecurityKey === "undefined" || producerSecurityKey === "null") {
+      producerSecurityKey = undefined;
     }
     // If security key doesn't match, then we assume this agnet doesn't belong to this user
     // For security issue, don't allow user do this
-    if (_.trim(agentSecurityKey) !== _.trim(securityKey)) {
+    if (_.trim(producerSecurityKey) !== _.trim(securityKey)) {
       logger.info(
-        "getIntelligences, agentConfig.system.securityKey isn' same with securityKey. ",
+        "getIntelligences, producerConfig.system.securityKey isn' same with securityKey. ",
         {
-          "agentConfig.system.securityKey": agentSecurityKey,
+          "producerConfig.system.securityKey": producerSecurityKey,
           securityKey: securityKey,
         }
       );
       throw new HTTPError(
         400,
         null,
-        { agentGlobalId: agentGid, securityKey },
+        { producerGlobalId: producerGid, securityKey },
         "00054000001",
-        agentGid,
+        producerGid,
         securityKey
       );
     }
 
     // default empty intelligences
     let intelligences = [];
-    agentConfig = utils.omit(agentConfig, ["_id", "securityKey"], ["system"]);
+    producerConfig = utils.omit(producerConfig, ["_id", "securityKey"], ["system"]);
 
     // if producer isn't active, then throw an error
-    if (_.toUpper(agentConfig.system.state) !== _.toUpper(AGENT_STATE.active)) {
+    if (_.toUpper(producerConfig.system.state) !== _.toUpper(PRODUCER_STATE.active)) {
       throw new HTTPError(
         400,
         null,
         {
-          producer: agentConfig,
+          producer: producerConfig,
         },
         "00054000002",
-        agentGid
+        producerGid
       );
     }
-    intelligences = await getIntelligencesForAgentDB(agentConfig, securityKey);
+    intelligences = await getIntelligencesForProducerDB(producerConfig, securityKey);
     await removeTaskJob(taskJobGlobalId);
     return intelligences;
   } catch (err) {
@@ -399,7 +399,7 @@ async function updateIntelligences(content, securityKey: string) {
       let intelligence = contentMap[item.globalId];
       // If this intelligence was failed, then increase **failuresNumber**
       // Any state isn't FINISHED, then think it is failed, need to increase failuresNumber
-      // if failuresNumber is <= max fail number, then let Agent try to collect it again
+      // if failuresNumber is <= max fail number, then let Producer try to collect it again
       if (
         (item.system.failuresNumber || 0) <
           CONFIG.MAX_FAIL_NUMBER_FOR_INTELLIGENCE &&
@@ -454,11 +454,11 @@ async function updateIntelligences(content, securityKey: string) {
         if (!item.system.producer) {
           item.system.producer = {};
         }
-        let passedAgent = contentMap[item.globalId].system.producer;
-        item.system.producer.globalId = passedAgent.globalId;
-        item.system.producer.type = passedAgent.type;
-        item.system.producer.startedAt = passedAgent.startedAt;
-        item.system.producer.endedAt = passedAgent.endedAt;
+        let passedProducer = contentMap[item.globalId].system.producer;
+        item.system.producer.globalId = passedProducer.globalId;
+        item.system.producer.type = passedProducer.type;
+        item.system.producer.startedAt = passedProducer.startedAt;
+        item.system.producer.endedAt = passedProducer.endedAt;
 
         intelligenceHistory.push(item);
       }

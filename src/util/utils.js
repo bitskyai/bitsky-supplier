@@ -3,12 +3,12 @@ const Ajv = require("ajv");
 const uuidv4 = require('uuid/v4');
 
 const retailerSchema = require("../schemas/retailer.json");
-const agentSchema = require("../schemas/producer.json");
+const producerSchema = require("../schemas/producer.json");
 const intelligenceSchema = require("../schemas/task.json");
 const UnknownData = require("../data_models/UnknownData");
 const { logUnknownDataToDB } = require("./db");
 const logger = require("./logger");
-const { AGENT_STATE, RETAILER_STATE } = require("./constants");
+const { PRODUCER_STATE, RETAILER_STATE } = require("./constants");
 const { CustomError } = require('./error');
 /**
  * Get a number value. If it doesn't contain valid number value, then return NaN
@@ -207,13 +207,13 @@ function omit(obj, omitKeys, iterateKeys) {
  */
 
 /**
- * Based on Agent Schema to validate an producer
- * @param {object} agentData - producer data want to be validate
+ * Based on Producer Schema to validate an producer
+ * @param {object} producerData - producer data want to be validate
  * @returns {ValidateResult}
  */
-function validateAgent(agentData) {
+function validateProducer(producerData) {
   var ajv = new Ajv();
-  let valid = ajv.validate(agentSchema, agentData);
+  let valid = ajv.validate(producerSchema, producerData);
   return {
 	  valid,
 	  errors: ajv.errors
@@ -249,38 +249,38 @@ function validateRetailer(retailerData) {
 }
 
 /**
- * Based on Agent Schema to validate producer and update producer state.
+ * Based on Producer Schema to validate producer and update producer state.
  * If producer state is active, then 
- * @param {object} agentData - producer data want to validate
+ * @param {object} producerData - producer data want to validate
  * @returns {object} - return validate producer with state be updated to correct
  */
-function validateAgentAndUpdateState(agentData) {
+function validateProducerAndUpdateState(producerData) {
   // Default to set producer state to draft, since producer state is required.
   // It is useful for new producer that need to be registered
-  if (!agentData.system.state) {
-    agentData.system.state = AGENT_STATE.draft;
+  if (!producerData.system.state) {
+    producerData.system.state = PRODUCER_STATE.draft;
   }
   // for **deleted** status don't need to validate
   // TODO: maybe need to retrun warning, when need then can change
-  if( _.toUpper(agentData.system.state) === _.toUpper(AGENT_STATE.deleted)){
-    return agentData;
+  if( _.toUpper(producerData.system.state) === _.toUpper(PRODUCER_STATE.deleted)){
+    return producerData;
   }
-  let validateResult = validateAgent(agentData);
+  let validateResult = validateProducer(producerData);
   // for active state, don't change its state
-  if(_.toUpper(agentData.system.state) === _.toUpper(AGENT_STATE.active)){
+  if(_.toUpper(producerData.system.state) === _.toUpper(PRODUCER_STATE.active)){
     if (!validateResult.valid) {
       // for active state, but it isn't valid, then this means something wrong, throw error
-      throw new CustomError(null, {agentData}, '00004000001', agentData.globalId);
+      throw new CustomError(null, {producerData}, '00004000001', producerData.globalId);
     }
     // if it is valid, then don't need to change state
   }else{
     if (validateResult.valid) {
-      agentData.system.state = _.toUpper(AGENT_STATE.configured);
+      producerData.system.state = _.toUpper(PRODUCER_STATE.configured);
     } else {
-      agentData.system.state = _.toUpper(AGENT_STATE.draft);
+      producerData.system.state = _.toUpper(PRODUCER_STATE.draft);
     }
   }
-  return agentData;
+  return producerData;
 }
 
 /**
@@ -351,8 +351,8 @@ module.exports = {
   logAnUnKnownData,
   getTodaySpecificTimeUTCTimestamp,
   omit,
-  validateAgent,
-  validateAgentAndUpdateState,
+  validateProducer,
+  validateProducerAndUpdateState,
   validateIntelligence,
   validateRetailer,
   validateRetailerAndUpdateState,

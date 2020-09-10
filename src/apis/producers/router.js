@@ -10,7 +10,7 @@ function registerRouter(router) {
       try {
         // TODO: need to improve how to handle security key
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-        let result = await helpers.registerAgent(_.get(req, "body"), securityKey);
+        let result = await helpers.registerProducer(_.get(req, "body"), securityKey);
         res.send(result);
       } catch (err) {
         // Already HTTPError, then throw it
@@ -27,7 +27,7 @@ function registerRouter(router) {
       try {
         // TODO: need to improve how to handle security key
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-        let result = await helpers.getAgents(securityKey);
+        let result = await helpers.getProducers(securityKey);
         res.send(result);
       } catch (err) {
         // Already HTTPError, then throw it
@@ -76,7 +76,7 @@ function registerRouter(router) {
             "00144000003"
           );
         }
-        let result = await helpers.getAgent(
+        let result = await helpers.getProducer(
           _.get(req, "params.gid"),
           securityKey,
           serialId,
@@ -101,7 +101,7 @@ function registerRouter(router) {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
         // let serialId = req.get(CONFIG.X_SERIAL_ID);
         let jobId = req.get(CONFIG.X_JOB_ID);
-        let result = await helpers.disconnectAgent(
+        let result = await helpers.disconnectProducer(
           _.get(req, "params.gid"),
           securityKey,
           jobId
@@ -121,7 +121,7 @@ function registerRouter(router) {
     router.put("/producers/:gid", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-        await helpers.updateAgent(
+        await helpers.updateProducer(
           _.get(req, "params.gid"),
           _.get(req, "body"),
           securityKey
@@ -141,7 +141,7 @@ function registerRouter(router) {
     router.delete("/producers/:gid", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-        await helpers.unregisterAgent(_.get(req, "params.gid"), securityKey);
+        await helpers.unregisterProducer(_.get(req, "params.gid"), securityKey);
         res.status(204).send();
       } catch (err) {
         // Already HTTPError, then throw its
@@ -158,7 +158,7 @@ function registerRouter(router) {
     router.post("/producers/:gid/activate", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-        let status = await helpers.activateAgent(_.get(req, "params.gid"), securityKey);
+        let status = await helpers.activateProducer(_.get(req, "params.gid"), securityKey);
         res.json(status);
       } catch (err) {
         // Already HTTPError, then throw it
@@ -175,7 +175,7 @@ function registerRouter(router) {
     router.post("/producers/:gid/deactivate", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-        let status = await helpers.deactivateAgent(_.get(req, "params.gid"), securityKey);
+        let status = await helpers.deactivateProducer(_.get(req, "params.gid"), securityKey);
         res.json(status);
       } catch (err) {
         // Already HTTPError, then throw it

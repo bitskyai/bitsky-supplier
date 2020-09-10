@@ -10,7 +10,7 @@ if (isMongo()) {
 
 // This reference to 'schemas/producer.json'
 // Will use JSON schema to validation
-export abstract class BaseAgent extends Base {
+export abstract class BaseProducer extends Base {
 
   // ["SERVICE", "HEADLESSBROWSER"]
   @Column()
