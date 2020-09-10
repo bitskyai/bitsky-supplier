@@ -12,7 +12,7 @@ info:
 servers:
   - url: http://localhost:9099/
 tags:
-  - name: soi
+  - name: retailer
     description: Service of Intelligence
   - name: server
     description: Decentralized Intelligence Agency
@@ -22,13 +22,13 @@ paths:
   /apis/retailers:
     get:
       tags:
-        - soi
-      summary: Get a list of SOIs
+        - retailer
+      summary: Get a list of Retailers
       description: Operation Index - 0011
-      operationId: getSOIs
+      operationId: getRetailers
       responses:
         200:
-          description: Get SOIs successful
+          description: Get Retailers successful
           content:
             application/json:
               schema:
@@ -37,12 +37,12 @@ paths:
                   $ref: "./src/schemas/retailer.json"
     post:
       tags:
-        - soi
-      summary: Register a SOI.
+        - retailer
+      summary: Register a Retailer.
       description: Operation Index - 0001
-      operationId: registerSOI
+      operationId: registerRetailer
       requestBody:
-        description: Need to register SOI information
+        description: Need to register Retailer information
         required: true
         content:
           application/json:
@@ -70,20 +70,20 @@ paths:
   /apis/retailers/{gid}:
     get:
       tags:
-        - soi
-      summary: Get a SOI.
+        - retailer
+      summary: Get a Retailer.
       description: Operation Index - 0002
-      operationId: getSOI
+      operationId: getRetailer
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of SOI
+          description: global_id of Retailer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Get a SOI successful
+          description: Get a Retailer successful
           content:
             application/json:
               schema:
@@ -95,26 +95,26 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         404:
-          description: Cannot find specific SOI
+          description: Cannot find specific Retailer
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
     put:
       tags:
-        - soi
-      summary: Update a SOI
+        - retailer
+      summary: Update a Retailer
       description: Operation Index - 0003
-      operationId: updateSOI
+      operationId: updateRetailer
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of SOI
+          description: global_id of Retailer
           schema:
             $ref: "#/components/schemas/GlobalId"
       requestBody:
-        description: SOI information need to update
+        description: Retailer information need to update
         required: true
         content:
           application/json:
@@ -122,29 +122,29 @@ paths:
               $ref: "./src/schemas/retailer.json"
       responses:
         204:
-          description: Update SOI successful
+          description: Update Retailer successful
         404:
-          description: Cannot find specific SOI
+          description: Cannot find specific Retailer
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
     delete:
       tags:
-        - soi
-      summary: Unregister a SOI
+        - retailer
+      summary: Unregister a Retailer
       description: Operation Index - 0004
-      operationId: unregisterSOI
+      operationId: unregisterRetailer
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of SOI
+          description: global_id of Retailer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Delete SOI successful
+          description: Delete Retailer successful
           content:
             application/json:
               schema:
@@ -153,7 +153,7 @@ paths:
                   global_id:
                     $ref: "#/components/schemas/GlobalId"
         404:
-          description: Cannot find specific SOI
+          description: Cannot find specific Retailer
           content:
             application/json:
               schema:
@@ -164,20 +164,20 @@ paths:
   /apis/retailers/{gid}/status:
     put:
       tags:
-        - soi
-      summary: Update a SOI status
+        - retailer
+      summary: Update a Retailer status
       description: Operation Index - 0010
-      operationId: updateSOIStatus
+      operationId: updateRetailerStatus
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of SOI
+          description: global_id of Retailer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Update a SOI successful
+          description: Update a Retailer successful
           content:
             application/json:
               schema:
@@ -189,7 +189,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         404:
-          description: Cannot find specific SOI
+          description: Cannot find specific Retailer
           content:
             application/json:
               schema:
@@ -599,7 +599,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/AddSuccess"
         404:
-          description: Cannot find specific SOI, please make sure you registered
+          description: Cannot find specific Retailer, please make sure you registered
     put:
       tags:
         - intelligences
@@ -633,7 +633,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/AddSuccess"
         404:
-          description: Cannot find specific SOI, please make sure you registered
+          description: Cannot find specific Retailer, please make sure you registered
     delete:
       tags:
         - intelligences
@@ -650,7 +650,7 @@ paths:
               $ref: "#/components/schemas/GlobalId"
       responses:
         204:
-          description: Update SOI successful
+          description: Update Retailer successful
   /health:
     get:
       tags:
@@ -660,7 +660,7 @@ paths:
       operationId: checkHealth
       responses:
         200:
-          description: SOI is active
+          description: Retailer is active
           content:
             application/json:
               schema:

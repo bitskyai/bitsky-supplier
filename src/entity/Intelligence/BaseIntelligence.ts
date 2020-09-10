@@ -27,12 +27,12 @@ export abstract class BaseIntelligence extends Base {
   desciption: string;
 
   @Column()
-  soi_global_id: string;
+  retailer_global_id: string;
 
   @Column({
     nullable: true
   })
-  soi_state: string;
+  retailer_state: string;
 
   @Column({
     nullable: true

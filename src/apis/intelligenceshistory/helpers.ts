@@ -6,7 +6,7 @@ import {
   deleteIntelligencesOrHistoryForManagementDB,
 } from "../../dbController/IntelligenceAndHistory.ctrl";
 const addIntelligences = require("../intelligences/helpers").addIntelligences;
-import { getSOI } from "../retailers/helpers";
+import { getRetailer } from "../retailers/helpers";
 //================================================================
 // Following APIs are designed for CRUD intelligences
 async function getIntelligencesHistoryForManagement(
@@ -85,16 +85,16 @@ async function rerunIntelligencesForManagement(
     logger.debug(`Total Intelligences: ${result.total}`, {
       function: "rerunIntelligencesForManagement",
     });
-    let soisState = {};
+    let retailersState = {};
     let intelligences = result.intelligences;
     for (let i = 0; i < intelligences.length; i++) {
-      // update soi state
-      let soiId = intelligences[i].soi.globalId;
-      if(!soisState[soiId]){
-        let soi = await getSOI(soiId, securityKey);
-        soisState[soiId] = soi.system.state;
+      // update retailer state
+      let retailerId = intelligences[i].retailer.globalId;
+      if(!retailersState[retailerId]){
+        let retailer = await getRetailer(retailerId, securityKey);
+        retailersState[retailerId] = retailer.system.state;
       }
-      intelligences[i].soi.state = soisState[soiId];
+      intelligences[i].retailer.state = retailersState[retailerId];
     }
     await addIntelligences(intelligences, securityKey);
     return {

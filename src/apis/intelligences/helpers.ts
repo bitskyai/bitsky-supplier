@@ -2,14 +2,14 @@ const _ = require("lodash");
 const { HTTPError } = require("../../util/error");
 const {
   CONFIG,
-  DEFAULT_SOI,
+  DEFAULT_RETAILER,
   INTELLIGENCE_STATE,
   PERMISSIONS,
   AGENT_STATE,
-  SOI_STATE,
+  RETAILER_STATE,
   DEFAULT_INTELLIGENCE,
 } = require("../../util/constants");
-const soisHelpers = require("../retailers/helpers");
+const retailersHelpers = require("../retailers/helpers");
 const producersHelpers = require("../producers/helpers");
 const logger = require("../../util/logger");
 const utils = require("../../util/utils");
@@ -31,7 +31,7 @@ import {
   removeTaskJob,
 } from "../../dbController/TasksJobQueue.ctrl";
 
-// To avoid running check soi status multiple times
+// To avoid running check retailer status multiple times
 // next check will not be started if previous job doesn't finish
 // TODO: when start thinking about load balance, then this data should be in memory cache, not inside service memory
 
@@ -161,8 +161,8 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
     let defaultIntelligence = DEFAULT_INTELLIGENCE;
     // TODO: data validation need to improve
     let validationError = [];
-    // hash table for soi globalId
-    let soiGlobalIds = {};
+    // hash table for retailer globalId
+    let retailerGlobalIds = {};
     intelligences = intelligences.map((intelligence: any) => {
       // remove data that cannot set by user
       delete intelligence.dataset;
@@ -196,9 +196,9 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
           return _.toUpper(agentType);
         }
       );
-      // since just recieve SOI request, so set the state to **ACTIVE**
-      if (!intelligence.soi.state) {
-        intelligence.soi.state = SOI_STATE.active;
+      // since just recieve Retailer request, so set the state to **ACTIVE**
+      if (!intelligence.retailer.state) {
+        intelligence.retailer.state = RETAILER_STATE.active;
       }
 
       let validateResult = utils.validateIntelligence(intelligence);
@@ -217,7 +217,7 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
       delete intelligence.system.failuresNumber;
 
       // Need to update globalId to globalId
-      soiGlobalIds[intelligence.soi.globalId] = 1;
+      retailerGlobalIds[intelligence.retailer.globalId] = 1;
       return intelligence;
     });
 
@@ -225,11 +225,11 @@ async function addIntelligences(intelligences: object[], securityKey: string) {
       throw new HTTPError(400, validationError, validationError, "00064000001");
     }
 
-    // make sure soi existed
-    for (let soiGlobalId in soiGlobalIds) {
-      await soisHelpers.getSOI(soiGlobalId);
+    // make sure retailer existed
+    for (let retailerGlobalId in retailerGlobalIds) {
+      await retailersHelpers.getRetailer(retailerGlobalId);
     }
-    logger.debug("SOIs exist!", { soiGlobalIds });
+    logger.debug("Retailers exist!", { retailerGlobalIds });
     // let result = await insertMany(COLLECTIONS_NAME.intelligences, intelligences);
     // let result = await bulkUpdate(
     //   COLLECTIONS_NAME.intelligences,
@@ -310,7 +310,7 @@ async function getIntelligences(agentGid: string, securityKey: string) {
     // TODO: need to improve intelligences schedule
     // 1. Think about if a lot of intelligences, how to schedule them
     // make them can be more efficient
-    // 2. Think about the case that SOI is inactive
+    // 2. Think about the case that Retailer is inactive
 
     // avoid UI side send undefined or null as string
     if (securityKey === "undefined" || securityKey === "null") {

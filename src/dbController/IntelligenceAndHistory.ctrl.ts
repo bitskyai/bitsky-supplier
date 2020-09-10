@@ -7,12 +7,12 @@ const logger = require("../util/logger");
 const { HTTPError } = require("../util/error");
 const utils = require("../util/utils");
 const { getConfig } = require("../config");
-const soiHelpers = require("../apis/retailers/helpers");
+const retailerHelpers = require("../apis/retailers/helpers");
 const {
   INTELLIGENCE_STATE,
-  SOI_STATE,
+  RETAILER_STATE,
   PERMISSIONS,
-  DEFAULT_SOI,
+  DEFAULT_RETAILER,
 } = require("../util/constants");
 import { isMongo } from "../util/dbConfiguration";
 import { updateAgentDB } from "./Agent.ctrl";
@@ -32,13 +32,13 @@ export function flattenToObject(intelligences) {
     if (_.get(intelligence, "description")) {
       obj.description = intelligence.description;
     }
-    if (_.get(intelligence, "soi_global_id")) {
-      !obj.soi ? (obj.soi = {}) : "";
-      obj.soi.globalId = intelligence.soi_global_id;
+    if (_.get(intelligence, "retailer_global_id")) {
+      !obj.retailer ? (obj.retailer = {}) : "";
+      obj.retailer.globalId = intelligence.retailer_global_id;
     }
-    if (_.get(intelligence, "soi_state")) {
-      !obj.soi ? (obj.soi = {}) : "";
-      obj.soi.state = intelligence.soi_state;
+    if (_.get(intelligence, "retailer_state")) {
+      !obj.retailer ? (obj.retailer = {}) : "";
+      obj.retailer.state = intelligence.retailer_state;
     }
     if (_.get(intelligence, "permission")) {
       obj.permission = intelligence.permission;
@@ -154,11 +154,11 @@ export function objectsToIntelligences(intelligences, intelligenceInstances) {
     if (_.get(intelligence, "desciption")) {
       intelligenceInstance.desciption = intelligence.desciption;
     }
-    if (_.get(intelligence, "soi.globalId")) {
-      intelligenceInstance.soi_global_id = intelligence.soi.globalId;
+    if (_.get(intelligence, "retailer.globalId")) {
+      intelligenceInstance.retailer_global_id = intelligence.retailer.globalId;
     }
-    if (_.get(intelligence, "soi.state")) {
-      intelligenceInstance.soi_state = intelligence.soi.state;
+    if (_.get(intelligence, "retailer.state")) {
+      intelligenceInstance.retailer_state = intelligence.retailer.state;
     }
     if (_.get(intelligence, "permission")) {
       intelligenceInstance.permission = intelligence.permission;
@@ -492,9 +492,9 @@ export async function getIntelligencesOrHistoryForManagementDB(
   }
 }
 
-// Update all matched intelligences' soi state
-export async function updateIntelligencesSOIStateForManagementDB(
-  soiGID: string,
+// Update all matched intelligences' retailer state
+export async function updateIntelligencesRetailerStateForManagementDB(
+  retailerGID: string,
   state: string,
   dontUpdateModified?: boolean
 ) {
@@ -503,23 +503,23 @@ export async function updateIntelligencesSOIStateForManagementDB(
     if (isMongo()) {
       const repo = await getMongoRepository(Intelligence);
       let query: any = {};
-      query.soi_global_id = {
-        $eq: soiGID,
+      query.retailer_global_id = {
+        $eq: retailerGID,
       };
-      // update SOI state and modified_at
-      const soiState:any = {
+      // update Retailer state and modified_at
+      const retailerState:any = {
         $set: {
-          soi_state: state,
+          retailer_state: state,
         },
       }
       if(!dontUpdateModified){
-        soiState.$set.system_modified_at = Date.now();
+        retailerState.$set.system_modified_at = Date.now();
       }
-      return await repo.updateMany(query, soiState);
+      return await repo.updateMany(query, retailerState);
     } else {
       // SQL
       const updateData: any = {
-        soi_state: state,
+        retailer_state: state,
       };
       if(!dontUpdateModified){
         updateData.system_modified_at = Date.now();
@@ -528,8 +528,8 @@ export async function updateIntelligencesSOIStateForManagementDB(
         .createQueryBuilder("intelligence")
         .update(Intelligence)
         .set(updateData)
-        .where("intelligence.soi_global_id = :id", {
-          id: soiGID,
+        .where("intelligence.retailer_global_id = :id", {
+          id: retailerGID,
         });
       return await intelligenceQuery.execute();
     }
@@ -539,10 +539,10 @@ export async function updateIntelligencesSOIStateForManagementDB(
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->updateIntelligencesSOIStateForManagementDB"
+      "IntelligenceAndHistory.ctrl->updateIntelligencesRetailerStateForManagementDB"
     );
     logger.error(
-      `updateIntelligencesSOIStateForManagementDB, error:${error.message}`,
+      `updateIntelligencesRetailerStateForManagementDB, error:${error.message}`,
       { error }
     );
     throw error;
@@ -830,8 +830,8 @@ export async function deleteIntelligencesOrHistoryForManagementDB(
   }
 }
 
-export async function deleteIntelligencesBySOIForManagementDB(
-  soiGID: string,
+export async function deleteIntelligencesByRetailerForManagementDB(
+  retailerGID: string,
   securityKey: string
 ) {
   try {
@@ -843,8 +843,8 @@ export async function deleteIntelligencesBySOIForManagementDB(
         query.system_security_key = securityKey;
       }
 
-      query.soi_global_id = {
-        $in: [soiGID],
+      query.retailer_global_id = {
+        $in: [retailerGID],
       };
       return await repo.deleteMany(query);
     } else {
@@ -853,8 +853,8 @@ export async function deleteIntelligencesBySOIForManagementDB(
         .createQueryBuilder("intelligence")
         .delete()
         .from(Intelligence)
-        .where("intelligence.soi_global_id = :id", {
-          id: soiGID,
+        .where("intelligence.retailer_global_id = :id", {
+          id: retailerGID,
         });
 
       if (securityKey) {
@@ -872,10 +872,10 @@ export async function deleteIntelligencesBySOIForManagementDB(
       err,
       {},
       "00005000001",
-      "IntelligenceAndHistory.ctrl->deleteIntelligencesBySOIForManagementDB"
+      "IntelligenceAndHistory.ctrl->deleteIntelligencesByRetailerForManagementDB"
     );
     logger.error(
-      `deleteIntelligencesBySOIForManagementDB, error:${error.message}`,
+      `deleteIntelligencesByRetailerForManagementDB, error:${error.message}`,
       { error }
     );
     throw error;
@@ -913,8 +913,8 @@ export async function getIntelligencesForAgentDB(
           INTELLIGENCE_STATE.paused,
         ],
       };
-      query.where.soi_state = {
-        $eq: SOI_STATE.active,
+      query.where.retailer_state = {
+        $eq: RETAILER_STATE.active,
       };
       query.where.suitable_agents = {
         $elemMatch: {
@@ -924,7 +924,7 @@ export async function getIntelligencesForAgentDB(
 
       query.take = concurrent;
       query.order = {
-        soi_global_id: "DESC",
+        retailer_global_id: "DESC",
         priority: "ASC",
       };
 
@@ -970,15 +970,15 @@ export async function getIntelligencesForAgentDB(
           INTELLIGENCE_STATE.paused,
         ],
       });
-      intelligenceQuery.andWhere("intelligence.soi_state = :state", {
-        state: SOI_STATE.active,
+      intelligenceQuery.andWhere("intelligence.retailer_state = :state", {
+        state: RETAILER_STATE.active,
       });
       intelligenceQuery.andWhere(
         "intelligence.suitable_agents LIKE :agentType",
         { agentType: `%${_.toUpper(agentConfig.type)}%` }
       );
       intelligenceQuery.orderBy({
-        soi_global_id: "DESC",
+        retailer_global_id: "DESC",
         priority: "ASC",
       });
       intelligenceQuery.limit(concurrent);
@@ -995,9 +995,9 @@ export async function getIntelligencesForAgentDB(
         }
       );
       intelligenceQueryNoSecurityKey.andWhere(
-        "intelligence.soi_state = :state",
+        "intelligence.retailer_state = :state",
         {
-          state: SOI_STATE.active,
+          state: RETAILER_STATE.active,
         }
       );
       intelligenceQueryNoSecurityKey.andWhere(
@@ -1005,7 +1005,7 @@ export async function getIntelligencesForAgentDB(
         { agentType: `%${_.toUpper(agentConfig.type)}%` }
       );
       intelligenceQueryNoSecurityKey.orderBy({
-        soi_global_id: "DESC",
+        retailer_global_id: "DESC",
         priority: "ASC",
       });
       intelligenceQueryNoSecurityKey.limit(concurrent);
@@ -1040,23 +1040,23 @@ export async function getIntelligencesForAgentDB(
     intelligences = flattenToObject(intelligences);
 
     let gids = [];
-    let sois = {};
+    let retailers = {};
     for (let i = 0; i < intelligences.length; i++) {
       let item = intelligences[i] || {};
       gids.push(item.globalId);
-      if (sois[item.soi.globalId]) {
-        item.soi = sois[item.soi.globalId];
+      if (retailers[item.retailer.globalId]) {
+        item.retailer = retailers[item.retailer.globalId];
       } else {
-        let soi = await soiHelpers.getSOI(item.soi.globalId);
-        soi = _.merge({}, DEFAULT_SOI, soi);
+        let retailer = await retailerHelpers.getRetailer(item.retailer.globalId);
+        retailer = _.merge({}, DEFAULT_RETAILER, retailer);
         // remove unnecessary data
-        soi = utils.omit(
-          soi,
+        retailer = utils.omit(
+          retailer,
           ["_id", "securityKey", "created", "modified"],
           ["system"]
         );
-        sois[item.soi.globalId] = soi;
-        item.soi = sois[item.soi.globalId];
+        retailers[item.retailer.globalId] = retailer;
+        item.retailer = retailers[item.retailer.globalId];
       }
 
       // Comment: 07/30/2019
@@ -1118,20 +1118,20 @@ export async function getIntelligencesForAgentDB(
 
     // TODO: 2019/11/10 need to rethink about this logic, since intelligences already send back to agents
     //        if we check for now, it is meaningless, better way is let producer to tell. For example, if collect
-    //        intelligences fail, then check SOI or direct know soi is inactive
+    //        intelligences fail, then check Retailer or direct know retailer is inactive
 
-    // Check SOI status in parallel
-    // // After get intelligences that need to collect, during sametime to check whether this SOI is active.
-    // for (let gid in sois) {
-    //   let soi = sois[gid];
-    //   // if this soi isn't in check status progress, then check it
-    //   if (!__check_sois_status__[gid]) {
+    // Check Retailer status in parallel
+    // // After get intelligences that need to collect, during sametime to check whether this Retailer is active.
+    // for (let gid in retailers) {
+    //   let retailer = retailers[gid];
+    //   // if this retailer isn't in check status progress, then check it
+    //   if (!__check_retailers_status__[gid]) {
     //     (async () => {
-    //       // change soi status to true to avoid duplicate check in same time
-    //       __check_sois_status__[gid] = true;
-    //       await soisHelpers.updateSOIState(gid, soi);
+    //       // change retailer status to true to avoid duplicate check in same time
+    //       __check_retailers_status__[gid] = true;
+    //       await retailersHelpers.updateRetailerState(gid, retailer);
     //       // after finish, delete its value in hashmap
-    //       delete __check_sois_status__[gid];
+    //       delete __check_retailers_status__[gid];
     //     })();
     //   }
     // }

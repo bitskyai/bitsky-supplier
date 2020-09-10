@@ -4,7 +4,7 @@
   "type": "object",
   "title": "Task Schema",
   "version": "1.0.0",
-  "required": ["soi", "url"],
+  "required": ["retailer", "url"],
   "additionalProperties": false,
   "properties": {
     "system": {
@@ -128,16 +128,16 @@
     "description": {
       "$ref": "#/definitions/description"
     },
-    "soi": {
+    "retailer": {
       "type": "object",
-      "description": "After producer execute this intelligence, which SOI to send **callback** to",
+      "description": "After producer execute this intelligence, which Retailer to send **callback** to",
       "required": ["globalId"],
       "properties": {
         "globalId": {
           "$ref": "#/definitions/globalId"
         },
         "state": {
-          "$ref": "#/definitions/soiState"
+          "$ref": "#/definitions/retailerState"
         }
       }
     },
@@ -148,7 +148,7 @@
       "type": "integer",
       "minimum": 1,
       "default": 100,
-      "description": "Priority of this intelligence. Only compare priority for same SOI, doesn't compare cross SOI. Big value low priority. Priority value 1 is higher than priority value 2."
+      "description": "Priority of this intelligence. Only compare priority for same Retailer, doesn't compare cross Retailer. Big value low priority. Priority value 1 is higher than priority value 2."
     },
     "suitableProducers": {
       "type": "array",
@@ -170,7 +170,7 @@
       "properties": {
         "script": {
           "type": "string",
-          "description": "Code want to execute after **window.onload**. You only need to pass function body. And Default you will get following parameters - **resolve**, **reject**, **intelligence**, **axios**. You need to resolve(data) or reject(err), and will send data or err to SOI. If you need producer to execute your code, Only work with **HEADLESSBROSWER** producer"
+          "description": "Code want to execute after **window.onload**. You only need to pass function body. And Default you will get following parameters - **resolve**, **reject**, **intelligence**, **axios**. You need to resolve(data) or reject(err), and will send data or err to Retailer. If you need producer to execute your code, Only work with **HEADLESSBROSWER** producer"
         }
       }
     },
@@ -268,8 +268,8 @@
       "description": "State of this entitle",
       "enum": ["DRAFT", "CONFIGURED", "ACTIVE", "DELETED"]
     },
-    "soiState": {
-      "title": "SOI State",
+    "retailerState": {
+      "title": "Retailer State",
       "type": "string",
       "description": "State of this entitle",
       "enum": ["ACTIVE", "FAILED"]

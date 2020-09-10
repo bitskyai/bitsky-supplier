@@ -34,13 +34,13 @@
             },
             {
               "title": "Last Ping Time",
-              "description": "When last time check SOI health"
+              "description": "When last time check Retailer health"
             }
           ]
         },
         "pingFailReason": {
           "type": "string",
-          "description": "Why ping SOI fail, so user can know why it was fail"
+          "description": "Why ping Retailer fail, so user can know why it was fail"
         }
       }
     },
@@ -63,7 +63,7 @@
         },
         {
           "title": "Base URL",
-          "description": "Base URL of SOI"
+          "description": "Base URL of Retailer"
         }
       ]
     },
@@ -96,7 +96,7 @@
     },
     "health": {
       "type": "object",
-      "description": "RESTFul API for check SOI's health status",
+      "description": "RESTFul API for check Retailer's health status",
       "required": ["method", "path"],
       "properties": {
         "method": {

@@ -6,8 +6,8 @@ const { INTELLIGENCE_STATE } = require("../../util/constants");
 const { HTTPError } = require("../../util/error");
 import { updateIntelligencesStateForManagementDB } from "../../dbController/IntelligenceAndHistory.ctrl";
 import { removeTimeoutJob } from "../../dbController/TasksJobQueue.ctrl";
-import { getNeedCheckHealthSOIsDB } from "../../dbController/SOI.ctrl";
-const { updateSOIState } = require("../retailers/helpers");
+import { getNeedCheckHealthRetailersDB } from "../../dbController/Retailer.ctrl";
+const { updateRetailerState } = require("../retailers/helpers");
 
 /**
  * Update all
@@ -46,9 +46,9 @@ export async function updateTimeoutIntelligences(securityKey?) {
 
 export async function checkAnalystServicesHealth(securityKey?) {
   try {
-    const intervalCheckAS = getConfig("SOI_STATE_CHECK_TIME");
+    const intervalCheckAS = getConfig("RETAILER_STATE_CHECK_TIME");
     const lastPing = Date.now() - intervalCheckAS;
-    const analystServices = await getNeedCheckHealthSOIsDB(
+    const analystServices = await getNeedCheckHealthRetailersDB(
       lastPing,
       securityKey
     );
@@ -59,7 +59,7 @@ export async function checkAnalystServicesHealth(securityKey?) {
       analystServices: analystServices.length,
     });
     for (let i = 0; i < analystServices.length; i++) {
-      await updateSOIState(analystServices[i].globalId, analystServices[i], true);
+      await updateRetailerState(analystServices[i].globalId, analystServices[i], true);
     }
   } catch (err) {
     if (!(err instanceof HTTPError)) {

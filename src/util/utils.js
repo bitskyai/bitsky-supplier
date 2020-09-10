@@ -2,13 +2,13 @@ const _ = require("lodash");
 const Ajv = require("ajv");
 const uuidv4 = require('uuid/v4');
 
-const soiSchema = require("../schemas/retailer.json");
+const retailerSchema = require("../schemas/retailer.json");
 const agentSchema = require("../schemas/producer.json");
 const intelligenceSchema = require("../schemas/task.json");
 const UnknownData = require("../data_models/UnknownData");
 const { logUnknownDataToDB } = require("./db");
 const logger = require("./logger");
-const { AGENT_STATE, SOI_STATE } = require("./constants");
+const { AGENT_STATE, RETAILER_STATE } = require("./constants");
 const { CustomError } = require('./error');
 /**
  * Get a number value. If it doesn't contain valid number value, then return NaN
@@ -235,13 +235,13 @@ function validateIntelligence(intelligenceData) {
 }
 
 /**
- * Based on SOI Schema to validate a SOI
- * @param {object} soiData - producer data want to be validate
+ * Based on Retailer Schema to validate a Retailer
+ * @param {object} retailerData - producer data want to be validate
  * @returns {ValidateResult}
  */
-function validateSOI(soiData) {
+function validateRetailer(retailerData) {
   var ajv = new Ajv();
-  let valid = ajv.validate(soiSchema, soiData);
+  let valid = ajv.validate(retailerSchema, retailerData);
   return {
 	  valid,
 	  errors: ajv.errors
@@ -284,41 +284,41 @@ function validateAgentAndUpdateState(agentData) {
 }
 
 /**
- * Based on SOI Schema to validate SOI and update SOI state.
+ * Based on Retailer Schema to validate Retailer and update Retailer state.
 
- * @param {object} soiData - SOI data want to validate
- * @returns {object} - return validate soi with state be updated to correct
+ * @param {object} retailerData - Retailer data want to validate
+ * @returns {object} - return validate retailer with state be updated to correct
  */
-function validateSOIAndUpdateState(soiData) {
-  // Default to set SOI state to draft, since SOI state is required.
-  // It is useful for new SOI that need to be registered
-  if (!soiData.system.state) {
-    soiData.system.state = SOI_STATE.draft;
+function validateRetailerAndUpdateState(retailerData) {
+  // Default to set Retailer state to draft, since Retailer state is required.
+  // It is useful for new Retailer that need to be registered
+  if (!retailerData.system.state) {
+    retailerData.system.state = RETAILER_STATE.draft;
   }
   // for **deleted** status don't need to validate
   // TODO: maybe need to retrun warning, when need then can change
-  if( _.toUpper(soiData.system.state) === _.toUpper(soiData.deleted)){
-    return soiData;
+  if( _.toUpper(retailerData.system.state) === _.toUpper(retailerData.deleted)){
+    return retailerData;
   }
-  let validateResult = validateSOI(soiData);
-  console.log("validateSOIAndUpdateState->soiData: ", JSON.stringify(soiData));
-  console.log("validateSOIAndUpdateState->validateResult: ", JSON.stringify(validateResult));
+  let validateResult = validateRetailer(retailerData);
+  console.log("validateRetailerAndUpdateState->retailerData: ", JSON.stringify(retailerData));
+  console.log("validateRetailerAndUpdateState->validateResult: ", JSON.stringify(validateResult));
   // for active state, don't change its state
-  if(_.toUpper(soiData.system.state) === _.toUpper(SOI_STATE.active)){
+  if(_.toUpper(retailerData.system.state) === _.toUpper(RETAILER_STATE.active)){
     if (!validateResult.valid) {
       // for active state, but it isn't valid, then this means something wrong, throw error
-      // throw new CustomError(null, {soiData}, '00004000001', soiData.globalId);
-      soiData.system.state = _.toUpper(SOI_STATE.draft);
+      // throw new CustomError(null, {retailerData}, '00004000001', retailerData.globalId);
+      retailerData.system.state = _.toUpper(RETAILER_STATE.draft);
     }
     // if it is valid, then don't need to change state
   }else{
     if (validateResult.valid) {
-      soiData.system.state = _.toUpper(SOI_STATE.configured);
+      retailerData.system.state = _.toUpper(RETAILER_STATE.configured);
     } else {
-      soiData.system.state = _.toUpper(SOI_STATE.draft);
+      retailerData.system.state = _.toUpper(RETAILER_STATE.draft);
     }
   }
-  return soiData;
+  return retailerData;
 }
 
 function generateGlobalId(entityType){
@@ -354,7 +354,7 @@ module.exports = {
   validateAgent,
   validateAgentAndUpdateState,
   validateIntelligence,
-  validateSOI,
-  validateSOIAndUpdateState,
+  validateRetailer,
+  validateRetailerAndUpdateState,
   convertStringToRegExp
 };

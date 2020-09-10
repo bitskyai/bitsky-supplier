@@ -18,7 +18,7 @@ export async function setupIntervalAgendas() {
     clearInterval(__checkAnalystServicesHealthIntervalHandler);
     clearInterval(__removeTimeoutTaskJobIntervalHandler);
     const intelligenceTimeout = getConfig("INTELLIGENCE_TIMEOUT_CHECK_TIME");
-    const intervalCheckAS = getConfig("SOI_STATE_CHECK_TIME");
+    const intervalCheckAS = getConfig("RETAILER_STATE_CHECK_TIME");
     const timeoutCreatedAt = getConfig("TASK_JOB_TIMEOUT")*0.2;
     __updateTimeoutIntelligencesIntervalHandler = setInterval(() => {
       logger.info("start updateTimeoutIntelligences ... ", {

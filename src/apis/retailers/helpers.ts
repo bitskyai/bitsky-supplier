@@ -2,34 +2,34 @@ const _ = require("lodash");
 const { http } = require("../../util/http");
 const {
   CONFIG,
-  DEFAULT_SOI,
-  SOI_STATE
+  DEFAULT_RETAILER,
+  RETAILER_STATE
 } = require("../../util/constants");
 const { HTTPError } = require("../../util/error");
 const {
-  validateSOI,
-  validateSOIAndUpdateState,
+  validateRetailer,
+  validateRetailerAndUpdateState,
   generateGlobalId
 } = require("../../util/utils");
 import {
-  addSOIDB,
-  getSOIsDB,
-  getSOIByGlobalIdDB,
-  updateSOIDB,
-  deleteSOIDB
-} from "../../dbController/SOI.ctrl";
+  addRetailerDB,
+  getRetailersDB,
+  getRetailerByGlobalIdDB,
+  updateRetailerDB,
+  deleteRetailerDB
+} from "../../dbController/Retailer.ctrl";
 import {
-  updateIntelligencesSOIStateForManagementDB,
-  deleteIntelligencesBySOIForManagementDB
+  updateIntelligencesRetailerStateForManagementDB,
+  deleteIntelligencesByRetailerForManagementDB
 } from '../../dbController/IntelligenceAndHistory.ctrl'
 const logger = require("../../util/logger");
 
-async function checkSOIExistByGlobalID(gid, securityKey) {
+async function checkRetailerExistByGlobalID(gid, securityKey) {
   try {
-    let soi = await getSOIByGlobalIdDB(gid, securityKey);
+    let retailer = await getRetailerByGlobalIdDB(gid, securityKey);
 
-    // soi doesn't exist
-    if (!soi) {
+    // retailer doesn't exist
+    if (!retailer) {
       throw new HTTPError(
         404,
         null,
@@ -39,7 +39,7 @@ async function checkSOIExistByGlobalID(gid, securityKey) {
         securityKey
       );
     }
-    return soi;
+    return retailer;
   } catch (err) {
     throw err;
   }
@@ -47,16 +47,16 @@ async function checkSOIExistByGlobalID(gid, securityKey) {
 
 /**
  * OperationIndex: 0001
- * Register a SOI to DIA.
+ * Register a Retailer to DIA.
  * Follow KISS principle, you need to make sure your **globalId** is unique.
- * Currently, **globalId** is only way for **SOI** Identity.
- * @param {object} soi - SOI need to be register
+ * Currently, **globalId** is only way for **Retailer** Identity.
+ * @param {object} retailer - Retailer need to be register
  * @param {string} securityKey - The securityKey that previous service send, used to identify who send this request
  *
  * @returns {object}
  */
-async function registerSOI(
-  soi,
+async function registerRetailer(
+  retailer,
   securityKey
 ): Promise<
   | {
@@ -67,29 +67,29 @@ async function registerSOI(
 > {
   try {
     // Set default value
-    soi = _.merge({}, DEFAULT_SOI, soi);
+    retailer = _.merge({}, DEFAULT_RETAILER, retailer);
     // Update system information
-    soi.system.created = Date.now();
-    soi.system.modified = Date.now();
-    // if securityKey exist, then add securityKey to soi
+    retailer.system.created = Date.now();
+    retailer.system.modified = Date.now();
+    // if securityKey exist, then add securityKey to retailer
     if (securityKey) {
-      soi.system[CONFIG.SECURITY_KEY_IN_DB] = securityKey;
+      retailer.system[CONFIG.SECURITY_KEY_IN_DB] = securityKey;
     }
-    if (!soi.globalId) {
-      soi.globalId = generateGlobalId("soi");
+    if (!retailer.globalId) {
+      retailer.globalId = generateGlobalId("retailer");
     }
 
-    // validate soi
-    let validateResult = validateSOI(soi);
+    // validate retailer
+    let validateResult = validateRetailer(retailer);
     if (!validateResult.valid) {
-      // Don't allow user to Create/Update an invalid SOI, this will reduce the complex of maintain intelligences
-      throw new HTTPError(422, validateResult.errors, { soi }, "00014000002");
+      // Don't allow user to Create/Update an invalid Retailer, this will reduce the complex of maintain intelligences
+      throw new HTTPError(422, validateResult.errors, { retailer }, "00014000002");
     }
 
-    let insertOneWriteOpResultObject = await addSOIDB(soi);
+    let insertOneWriteOpResultObject = await addRetailerDB(retailer);
 
-    // After update SOI, need to update SOI state
-    await updateSOIState(soi.globalId, soi);
+    // After update Retailer, need to update Retailer state
+    await updateRetailerState(retailer.globalId, retailer);
     return {
       _id: insertOneWriteOpResultObject._id,
       globalId: insertOneWriteOpResultObject.globalId
@@ -102,12 +102,12 @@ async function registerSOI(
 
 /**
  * OperationIndex: 0002
- * Get a SOI by globalId
+ * Get a Retailer by globalId
  * @param {string} gid - globalId
  *
  * @returns {object}
  */
-export async function getSOI(gid, securityKey) {
+export async function getRetailer(gid, securityKey) {
   try {
     if (!gid) {
       throw new HTTPError(
@@ -119,8 +119,8 @@ export async function getSOI(gid, securityKey) {
         "00024000001"
       );
     }
-    let soi = await getSOIByGlobalIdDB(gid, securityKey);
-    if (!soi) {
+    let retailer = await getRetailerByGlobalIdDB(gid, securityKey);
+    if (!retailer) {
       throw new HTTPError(
         404,
         null,
@@ -131,7 +131,7 @@ export async function getSOI(gid, securityKey) {
         gid
       );
     }
-    return soi;
+    return retailer;
   } catch (err) {
     throw err;
   }
@@ -139,41 +139,41 @@ export async function getSOI(gid, securityKey) {
 
 /**
  * OperationIndex: 0010
- * Get a SOIs
+ * Get a Retailers
  * @param {string} securityKey - globalId
  *
  * @returns {object}
  */
-async function getSOIs(securityKey) {
+async function getRetailers(securityKey) {
   try {
-    let sois = await getSOIsDB(securityKey);
-    return sois;
+    let retailers = await getRetailersDB(securityKey);
+    return retailers;
   } catch (err) {
     throw err;
   }
 }
 
-async function updateSOI(gid, soi, securityKey) {
+async function updateRetailer(gid, retailer, securityKey) {
   try {
-    // Make sure can find SOI, if cannot, the it will throw 404 error
-    let originalSoi = await checkSOIExistByGlobalID(gid, securityKey);
+    // Make sure can find Retailer, if cannot, the it will throw 404 error
+    let originalRetailer = await checkRetailerExistByGlobalID(gid, securityKey);
 
     // Remove cannot update fields
-    delete soi._id;
-    delete soi.id;
-    delete soi.globalId;
-    if (soi.system) {
-      delete soi.system;
+    delete retailer._id;
+    delete retailer.id;
+    delete retailer.globalId;
+    if (retailer.system) {
+      delete retailer.system;
     }
 
-    // let originalSoi = await getSOI(gid, securityKey);
-    let obj = _.merge({}, originalSoi, soi);
+    // let originalRetailer = await getRetailer(gid, securityKey);
+    let obj = _.merge({}, originalRetailer, retailer);
     obj.system.modified = Date.now();
-    obj = validateSOIAndUpdateState(obj);
-    let result = await updateSOIDB(gid, securityKey, obj);
+    obj = validateRetailerAndUpdateState(obj);
+    let result = await updateRetailerDB(gid, securityKey, obj);
 
-    // After update SOI, need to update SOI state
-    await updateSOIState(gid, originalSoi);
+    // After update Retailer, need to update Retailer state
+    await updateRetailerState(gid, originalRetailer);
     return result;
   } catch (err) {
     throw err;
@@ -181,16 +181,16 @@ async function updateSOI(gid, soi, securityKey) {
 }
 
 /**
- * Check SOI Health
- * @param {string} baseURL - Base URL of SOI server
+ * Check Retailer Health
+ * @param {string} baseURL - Base URL of Retailer server
  * @param {string} method - HTTP method
  * @param {string} url - health path
  *
  * @returns {object} - {status: true/false, reason: err}
  */
-async function checkSOIHealth(baseURL, method, url) {
+async function checkRetailerHealth(baseURL, method, url) {
   try {
-    // Ping SOI server
+    // Ping Retailer server
     await http({
       baseURL: baseURL,
       method: method,
@@ -200,7 +200,7 @@ async function checkSOIHealth(baseURL, method, url) {
       status: true
     };
   } catch (err) {
-    logger.warn("[checkSOIHealth] Ping SOI fail", { err: err });
+    logger.warn("[checkRetailerHealth] Ping Retailer fail", { err: err });
     return {
       status: false,
       reason: err
@@ -209,57 +209,57 @@ async function checkSOIHealth(baseURL, method, url) {
 }
 
 /**
- * Update SOI state
- * @param {string} gid - SOI globalId
- * @param {object} originalSoi - Original SOI Data
+ * Update Retailer state
+ * @param {string} gid - Retailer globalId
+ * @param {object} originalRetailer - Original Retailer Data
  */
-async function updateSOIState(gid, originalSoi, dontUpdateModified?: boolean) {
+async function updateRetailerState(gid, originalRetailer, dontUpdateModified?: boolean) {
   try {
-    // if user didn't pass originalSoi, then get it
-    if (!originalSoi) {
-      originalSoi = await getSOI(gid, null);
+    // if user didn't pass originalRetailer, then get it
+    if (!originalRetailer) {
+      originalRetailer = await getRetailer(gid, null);
     }
 
-    // check whether need to check SOI State. To avoid performance issue, don't allow user check SOI state too frequently
+    // check whether need to check Retailer State. To avoid performance issue, don't allow user check Retailer state too frequently
     // TODO: maybe we need to think about support **FORCE** update
-    // 2019/12/21: comment to avoid sometimes ping SOI server return same state
-    // let lastPing = originalSoi.system.lastPing;
-    // if (Date.now() - lastPing < CONFIG.SOI_STATE_CHECK_TIME) {
-    //   // Don't need to check SOI state
+    // 2019/12/21: comment to avoid sometimes ping Retailer server return same state
+    // let lastPing = originalRetailer.system.lastPing;
+    // if (Date.now() - lastPing < CONFIG.RETAILER_STATE_CHECK_TIME) {
+    //   // Don't need to check Retailer state
     //   return {
-    //     state: originalSoi.system.state
+    //     state: originalRetailer.system.state
     //   };
     // }
 
-    // validate soi, SOI must be a valid SOI
-    let validateResult = validateSOI(originalSoi);
+    // validate retailer, Retailer must be a valid Retailer
+    let validateResult = validateRetailer(originalRetailer);
     if (!validateResult.valid) {
-      // Don't allow user to Create/Update an invalid SOI, this will reduce the complex of maintain intelligences
-      throw new HTTPError(422, validateResult.errors, { originalSoi }, "00014000002");
+      // Don't allow user to Create/Update an invalid Retailer, this will reduce the complex of maintain intelligences
+      throw new HTTPError(422, validateResult.errors, { originalRetailer }, "00014000002");
     }
 
     // default set to fail
-    let state = _.toUpper(SOI_STATE.failed);
+    let state = _.toUpper(RETAILER_STATE.failed);
     let pingFailReason = undefined;
-    let soiHealth = await checkSOIHealth(
-      originalSoi.baseURL,
-      originalSoi.health.method,
-      originalSoi.health.path
+    let retailerHealth = await checkRetailerHealth(
+      originalRetailer.baseURL,
+      originalRetailer.health.method,
+      originalRetailer.health.path
     );
-    if (soiHealth.status) {
-      // SOI is health
-      state = _.toUpper(SOI_STATE.active);
+    if (retailerHealth.status) {
+      // Retailer is health
+      state = _.toUpper(RETAILER_STATE.active);
     } else {
-      state = _.toUpper(SOI_STATE.failed);
-      if (typeof soiHealth.reason === "object") {
-        pingFailReason = JSON.stringify(soiHealth.reason);
+      state = _.toUpper(RETAILER_STATE.failed);
+      if (typeof retailerHealth.reason === "object") {
+        pingFailReason = JSON.stringify(retailerHealth.reason);
       } else {
-        pingFailReason = soiHealth.reason;
+        pingFailReason = retailerHealth.reason;
       }
     }
 
-    await updateIntelligencesSOIStateForManagementDB(gid, state, dontUpdateModified);
-    const soiSystemInfo:any = {
+    await updateIntelligencesRetailerStateForManagementDB(gid, state, dontUpdateModified);
+    const retailerSystemInfo:any = {
       system: {
         state: state,
         lastPing: Date.now(),
@@ -267,9 +267,9 @@ async function updateSOIState(gid, originalSoi, dontUpdateModified?: boolean) {
       }
     }
     if(!dontUpdateModified){
-      soiSystemInfo.system.modified = Date.now();
+      retailerSystemInfo.system.modified = Date.now();
     }
-    await updateSOIDB(gid, null, soiSystemInfo);
+    await updateRetailerDB(gid, null, retailerSystemInfo);
     return {
       state: state,
       reason: pingFailReason
@@ -279,14 +279,14 @@ async function updateSOIState(gid, originalSoi, dontUpdateModified?: boolean) {
   }
 }
 
-async function unregisterSOI(gid, securityKey) {
+async function unregisterRetailer(gid, securityKey) {
   try {
-    // Make sure can find SOI, if cannot, the it will throw 404 error
-    await checkSOIExistByGlobalID(gid, securityKey);
+    // Make sure can find Retailer, if cannot, the it will throw 404 error
+    await checkRetailerExistByGlobalID(gid, securityKey);
 
-    await deleteIntelligencesBySOIForManagementDB(gid, securityKey);
-    // remove this SOI in sois collection
-    let result = await deleteSOIDB(gid, securityKey);
+    await deleteIntelligencesByRetailerForManagementDB(gid, securityKey);
+    // remove this Retailer in retailers collection
+    let result = await deleteRetailerDB(gid, securityKey);
     return result;
   } catch (err) {
     throw err;
@@ -294,10 +294,10 @@ async function unregisterSOI(gid, securityKey) {
 }
 
 module.exports = {
-  registerSOI,
-  getSOI,
-  updateSOI,
-  unregisterSOI,
-  updateSOIState,
-  getSOIs
+  registerRetailer,
+  getRetailer,
+  updateRetailer,
+  unregisterRetailer,
+  updateRetailerState,
+  getRetailers
 };

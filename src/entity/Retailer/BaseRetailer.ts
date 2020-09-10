@@ -10,7 +10,7 @@ if (isMongo()) {
 
 // This reference to 'schemas/retailer.json'
 // Will use JSON schema to validation
-export abstract class BaseSOI extends Base {
+export abstract class BaseRetailer extends Base {
   @Column()
   name: string;
 

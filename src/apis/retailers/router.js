@@ -10,7 +10,7 @@ function registerRouter(router) {
       try {
         // TODO: need to improve how to handle security key
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-        let result = await helpers.registerSOI(_.get(req, "body"), securityKey);
+        let result = await helpers.registerRetailer(_.get(req, "body"), securityKey);
         res.send(result);
       } catch (err) {
         // Already HTTPError, then throw it
@@ -27,7 +27,7 @@ function registerRouter(router) {
       try {
         // TODO: need to improve how to handle security key
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-        let result = await helpers.getSOIs(securityKey);
+        let result = await helpers.getRetailers(securityKey);
         res.send(result);
       } catch (err) {
         // Already HTTPError, then throw it
@@ -43,7 +43,7 @@ function registerRouter(router) {
     router.get("/retailers/:gid", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-        let result = await helpers.getSOI(
+        let result = await helpers.getRetailer(
           _.get(req, "params.gid"),
           securityKey
         );
@@ -62,7 +62,7 @@ function registerRouter(router) {
     router.put("/retailers/:gid", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-        await helpers.updateSOI(
+        await helpers.updateRetailer(
           _.get(req, "params.gid"),
           _.get(req, "body"),
           securityKey
@@ -82,7 +82,7 @@ function registerRouter(router) {
     router.delete("/retailers/:gid", async (req, res, next) => {
       try {
         let securityKey = req.get(CONFIG.X_SECURITY_KEY_HEADER);
-        await helpers.unregisterSOI(_.get(req, "params.gid"), securityKey);
+        await helpers.unregisterRetailer(_.get(req, "params.gid"), securityKey);
         res.status(204).send();
       } catch (err) {
         // Already HTTPError, then throw its
@@ -97,7 +97,7 @@ function registerRouter(router) {
 
     router.put("/retailers/:gid/status", async (req, res, next) => {
       try {
-        let status = await helpers.updateSOIState(_.get(req, "params.gid"));
+        let status = await helpers.updateRetailerState(_.get(req, "params.gid"));
         res.json(status);
       } catch (err) {
         // Already HTTPError, then throw it

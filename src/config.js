@@ -17,9 +17,9 @@ function getFullConfig(){
     TASK_JOB_TIMEOUT: 
       Number(process.env.TASK_JOB_TIMEOUT) ||
       constants.CONFIG.TASK_JOB_TIMEOUT,
-    SOI_STATE_CHECK_TIME:
-      Number(process.env.SOI_STATE_CHECK_TIME) ||
-      constants.CONFIG.SOI_STATE_CHECK_TIME,
+    RETAILER_STATE_CHECK_TIME:
+      Number(process.env.RETAILER_STATE_CHECK_TIME) ||
+      constants.CONFIG.RETAILER_STATE_CHECK_TIME,
     TIMEOUT_VALUE_FOR_INTELLIGENCE:
       Number(process.env.TIMEOUT_VALUE_FOR_INTELLIGENCE) ||
       constants.CONFIG.TIMEOUT_VALUE_FOR_INTELLIGENCE,

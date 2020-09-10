@@ -13,7 +13,7 @@ const CONFIG = {
   SECURITY_KEY_IN_DB: "securityKey",
   INTELLIGENCE_TIMEOUT_CHECK_TIME: 60*1000, // HOW frequently to check intelligence timeout
   TASK_JOB_TIMEOUT: 60*1000, // Timeout value for a task job
-  SOI_STATE_CHECK_TIME: 10 * 1000, // How frequently to check SOI state
+  RETAILER_STATE_CHECK_TIME: 10 * 1000, // How frequently to check Retailer state
   TIMEOUT_VALUE_FOR_INTELLIGENCE: 5 * 60 * 1000,
   MAX_FAIL_NUMBER_FOR_INTELLIGENCE: 3, // Max fail number for an intelligence, if more then this fail number, this intelligence will be moved to history
   LOG_FILES_PATH: "./public/log",
@@ -53,7 +53,7 @@ const DEFAULT_MONGODB = {
 };
 
 const COLLECTIONS_NAME = {
-  sois: "sois",
+  retailers: "retailers",
   agents: "agents",
   intelligences: "intelligences",
   intelligencesHistory: "intelligences_history",
@@ -81,7 +81,7 @@ const AGENT_STATE = {
   deleted: "DELETED"
 };
 
-const SOI_STATE = {
+const RETAILER_STATE = {
   draft: "DRAFT",
   configured: "CONFIGURED",
   active: "ACTIVE",
@@ -93,8 +93,8 @@ const PERMISSIONS = {
   private: "PRIVATE"
 };
 
-const DEFAULT_SOI = {
-  name: `SOI ${Date.now()}`,
+const DEFAULT_RETAILER = {
+  name: `Retailer ${Date.now()}`,
   system: {
     state: "FAILED",
     version: "1.0.0"
@@ -137,10 +137,10 @@ const DEFAULT_AGENT = {
 module.exports = {
   CONFIG,
   COLLECTIONS_NAME,
-  DEFAULT_SOI,
+  DEFAULT_RETAILER,
   INTELLIGENCE_STATE,
   AGENT_STATE,
-  SOI_STATE,
+  RETAILER_STATE,
   PERMISSIONS,
   DEFAULT_INTELLIGENCE,
   DEFAULT_AGENT,
