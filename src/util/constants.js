@@ -3,10 +3,10 @@ const path = require('path');
 const packageJson = require("../../package.json");
 
 const CONFIG = {
-  REQUESTED_WITH_ENGINE_UI: "bitsky-ui", // Request by bitsky-ui
+  REQUESTED_WITH_SUPPLIER_UI: "bitsky-ui", // Request by bitsky-ui
   X_RESPONSED_WITH: "x-bitsky-responsed-with",
   X_REQUESTED_WITH: "x-bitsky-requested-with", // who send this request
-  DIA_UI: "x_bitsky_dia_ui",
+  BITSKY_UI: "x_bitsky_ui",
   X_SERIAL_ID: "x-bitsky-serial-id", // request serial id
   X_JOB_ID: "x-bitsky-job-id", // each request is a job
   X_SECURITY_KEY_HEADER: "x-bitsky-security-key", // This is an http request header, used for follow service to identify who send this request

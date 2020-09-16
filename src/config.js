@@ -50,8 +50,8 @@ function getFullConfig(){
 
 /**
  * Overwrite config object. Change config have two way:
- * 1. Use environment variables. This is useful use command line to start **dia-engine**
- * 2. Directly call overwriteConfig function. This is useful programmaly start **dia-engine**. For example: when use **dia-engine** inside electron
+ * 1. Use environment variables. This is useful use command line to start **bitsky-supplier**
+ * 2. Directly call overwriteConfig function. This is useful programmaly start **bitsky-supplier**. For example: when use **bitsky-supplier** inside electron
  * @param {object} obj - config object that want to overwrite config
  */
 function overwriteConfig(obj) {

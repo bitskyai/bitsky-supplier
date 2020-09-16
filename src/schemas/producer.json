@@ -46,7 +46,7 @@
             },
             {
               "title": "Last Ping Time",
-              "description": "When last time this producer ping DIA server"
+              "description": "When last time this producer ping BitSky server"
             }
           ]
         },
@@ -108,7 +108,7 @@
     "maxCollect": {
       "title": "Max Collect Tasks",
       "type": "integer",
-      "description": "**undefined** means infinity. Browser has memory leak issue if continue to open urls. To avoid this, need to close window when reach max collect times. Collect Time equal to how many request send to DIA to get task."
+      "description": "**undefined** means infinity. Browser has memory leak issue if continue to open urls. To avoid this, need to close window when reach max collect times. Collect Time equal to how many request send to BitSky to get task."
     },
     "idelTime": {
       "title": "Producer Idel Time",
@@ -125,7 +125,7 @@
     "maxRetry": {
       "title": "Max Retry Time",
       "type": "integer",
-      "description": "Max retry time if send collected tasks fail, if retried max time, then it will send back to DIA and mark those tasks fail",
+      "description": "Max retry time if send collected tasks fail, if retried max time, then it will send back to BitSky and mark those tasks fail",
       "default": 1
     },
     "baseURL": {

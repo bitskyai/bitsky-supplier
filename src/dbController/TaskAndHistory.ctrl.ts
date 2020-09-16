@@ -622,7 +622,7 @@ export async function updateTasksStateForManagementDB(
         mongoDBUdpateData.$set.system_ended_at = Date.now();
         mongoDBUdpateData.$set.system_state = TASK_STATE.timeout;
         mongoDBUdpateData.$set.system_failures_reason =
-          "Producer collect task timeout. Engine automatically set to TIMEOUT status";
+          "Producer collect task timeout. Supplier automatically set to TIMEOUT status";
         // Since this is set by system, so don't auto increase fail number
         // Actually, it isn't easy to auto increase `system_failures_number` ^_^
       }
@@ -691,7 +691,7 @@ export async function updateTasksStateForManagementDB(
         sqlUpdateData.system_ended_at = Date.now();
         sqlUpdateData.system_state = TASK_STATE.timeout;
         sqlUpdateData.system_failures_reason =
-          "Producer collect task timeout. Engine automatically set to TIMEOUT status";
+          "Producer collect task timeout. Supplier automatically set to TIMEOUT status";
       }
 
       taskQuery.set(sqlUpdateData);
@@ -949,7 +949,7 @@ export async function getTasksForProducerDB(
         }
       } else {
         // if securityKey is empty, this means it is on-primse mode, if a request was sent by UI Server, it always contains a securityKey, only if this request is directly sent to
-        // DIA-Engine, then it possible don't have securityKey, in this mode, then it should be able to get all permissions tasks since they are belong to same user
+        // BitSky-Supplier, then it possible don't have securityKey, in this mode, then it should be able to get all permissions tasks since they are belong to same user
         tasks = await repo.find(query);
       }
     } else {
@@ -1032,7 +1032,7 @@ export async function getTasksForProducerDB(
         }
       } else {
         // if securityKey is empty, this means it is on-primse mode, if a request was sent by UI Server, it always contains a securityKey, only if this request is directly sent to
-        // DIA-Engine, then it possible don't have securityKey, in this mode, then it should be able to get all permissions tasks since they are belong to same user
+        // BitSky-Supplier, then it possible don't have securityKey, in this mode, then it should be able to get all permissions tasks since they are belong to same user
         tasks = await taskQuery.getMany();
       }
     }

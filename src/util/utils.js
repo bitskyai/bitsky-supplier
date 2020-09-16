@@ -323,11 +323,11 @@ function validateRetailerAndUpdateState(retailerData) {
 
 function generateGlobalId(entityType){
   let id = uuidv4();
-  if(!entityType){
-    entityType = "bitsky-dia";
-  }
-  id = `${entityType}::${Date.now()}::${id}`;
-  id = btoa(id);
+  // if(!entityType){
+  //   entityType = "bitsky-bitsky";
+  // }
+  // id = `${entityType}::${Date.now()}::${id}`;
+  // id = btoa(id);
   return id;
 }
 

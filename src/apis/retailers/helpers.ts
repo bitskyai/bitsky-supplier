@@ -47,7 +47,7 @@ async function checkRetailerExistByGlobalID(gid, securityKey) {
 
 /**
  * OperationIndex: 0001
- * Register a Retailer to DIA.
+ * Register a Retailer to BitSky.
  * Follow KISS principle, you need to make sure your **globalId** is unique.
  * Currently, **globalId** is only way for **Retailer** Identity.
  * @param {object} retailer - Retailer need to be register

@@ -1,6 +1,6 @@
 openapi: 3.0.1
 info:
-  title: DIA Engine
+  title: BitSky Supplier
   description: Decentralized Task Agency
   termsOfService: http://swagger.io/terms/
   contact:
@@ -655,7 +655,7 @@ paths:
     get:
       tags:
         - server
-      summary: Check DIA's health status
+      summary: Check BitSky's health status
       description: Operation Index - 0009
       operationId: checkHealth
       responses:
@@ -692,19 +692,19 @@ components:
       properties:
         name:
           type: string
-          description: DIA Name
-          example: "dia"
+          description: BitSky Name
+          example: "bitsky"
         description:
           type: string
-          description: DIA description.
+          description: BitSky description.
           example: "Decentralized Task Agency"
         version:
           type: string
-          description: DIA version
+          description: BitSky version
           example: "0.0.1"
         migrationVersion:
           type: string
-          description: DIA currently migrationVersion
+          description: BitSky currently migrationVersion
           example: 1
     Error:
       type: object

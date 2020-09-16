@@ -43,7 +43,7 @@ async function checkProducerExistByGlobalID(gid, securityKey) {
 }
 
 /**
- * Register an Producer to DIA.
+ * Register an Producer to BitSky.
  * Follow KISS principle, you need to make sure your **globalId** is unique.
  * Currently, **globalId** is only way for **Producer** Identity.
  * @param {object} Producer - Producer need to be register
@@ -194,8 +194,8 @@ async function getProducer(
       system: {},
     };
 
-    if (requestedWith !== CONFIG.REQUESTED_WITH_ENGINE_UI) {
-      // if it isn't called by engine-ui then update last ping, otherwise don't need
+    if (requestedWith !== CONFIG.REQUESTED_WITH_SUPPLIER_UI) {
+      // if it isn't called by supplier-ui then update last ping, otherwise don't need
       updateProducer.system.lastPing = Date.now();
     }
 

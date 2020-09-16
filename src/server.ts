@@ -1,5 +1,5 @@
 /**
- * Created by Shaoke Xu on 4/29/18.
+ * Created by Neo on 4/29/18.
  */
 
 import "reflect-metadata";
@@ -63,7 +63,7 @@ export async function startServer(customConfig) {
     });
 
     server.on("close", () => {
-      logger.info("Engine Server closed");
+      logger.info("Supplier Server closed");
       // process.emit("cleanup");
 
       logger.info("Giving 100ms time to cleanup..");
