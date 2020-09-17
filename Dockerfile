@@ -19,7 +19,7 @@ CMD ["node", "build/index.js"]
 
 # Metadata
 LABEL bitsky.image.vendor="BitSky" \
-    bitsky.image.url="https://bitsky.ai" \
+    bitsky.image.url="https://www.bitsky.ai" \
     bitsky.image.title="BitSky Supplier Service" \
     bitsky.image.description="CRUD Retailer Services and Producers. CRUD Tasks." \
     bitsky.image.documentation="https://docs.bitsky.ai"

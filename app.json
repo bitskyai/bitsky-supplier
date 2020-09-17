@@ -9,7 +9,7 @@
     "automation",
     "nodejs"
   ],
-  "website": "https://bitsky.ai",
+  "website": "https://www.bitsky.ai",
   "logo": "https://raw.githubusercontent.com/bitskyai/bitsky-electron/master/assets/icons/bitsky512.png",
   "env": {
     "TYPEORM_CONNECTION": {

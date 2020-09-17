@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema",
-  "$id": "https://bitsky.ai/schemas/task.json",
+  "$id": "https://www.bitsky.ai/schemas/task.json",
   "type": "object",
   "title": "Task Schema",
   "version": "1.0.0",
