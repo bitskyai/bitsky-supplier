@@ -12,7 +12,7 @@ if (isMongo()) {
 // Will use JSON schema to validation
 export abstract class BaseProducer extends Base {
 
-  // ["SERVICE", "HEADLESSBROWSER"]
+  // ["HTTP", "HEADLESSBROWSER"]
   @Column()
   type: string;
 

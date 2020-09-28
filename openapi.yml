@@ -546,7 +546,7 @@ paths:
             type: string
             enum:
               - HEADLESSBROWSER
-              - SERVICE
+              - HTTP
         - in: query
           name: gid
           required: true

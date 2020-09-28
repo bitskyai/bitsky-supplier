@@ -7,11 +7,14 @@ const { HTTPError } = require("../util/error");
 
 function flattenToObject(retailers) {
   function toObject(retailer) {
+    if(!retailer){
+      return retailer;
+    }
     let obj: any = {};
-    obj.globalId = retailer.global_id;
-    obj.name = retailer.name;
+    obj.globalId = _.get(retailer, "global_id");
+    obj.name = _.get(retailer, "name");
     // obj.description = retailer.description;
-    obj.baseURL = retailer.base_url;
+    obj.baseURL = _.get(retailer, "base_url");
     if (_.get(retailer, "callback_method")) {
       !obj.callback ? (obj.callback = {}) : "";
       obj.callback.method = retailer.callback_method;
@@ -258,11 +261,14 @@ export async function getRetailerByGlobalIdDB(gid: string, securityKey: string) 
     return retailer;
   } catch (err) {
     let error = new HTTPError(
-      500,
+      404,
       err,
-      {},
-      "00005000001",
-      "Retailer.ctrl->getRetailerByGlobalIdDB"
+      {
+        globalId: gid
+      },
+      "00004040001",
+      gid,
+      securityKey
     );
     logger.error(`getRetailerByGlobalIdDB, error:${error.message}`, { error });
     throw error;

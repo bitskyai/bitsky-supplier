@@ -227,7 +227,7 @@
       "title": "Producer Type",
       "type": "string",
       "description": "Producer type of this producer",
-      "enum": ["SERVICE", "HEADLESSBROWSER"]
+      "enum": ["HTTP", "HEADLESSBROWSER"]
     },
     "permission": {
       "type": "string",
