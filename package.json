@@ -1,6 +1,6 @@
 {
   "name": "@bitskyai/supplier",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "Decentralized Task Agency",
   "migrationVersion": "1",
   "main": "./src/app.js",
