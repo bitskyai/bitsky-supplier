@@ -13,4 +13,6 @@ if (isMongo()) {
 export abstract class BaseTasksJobQueue extends Base {
   @Column()
   producer_global_id: string;
+  @Column()
+  timestamp: number;
 }

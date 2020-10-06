@@ -8,7 +8,9 @@ import { isMongo } from "../util/dbConfiguration";
 export async function addATaskJob(globalId, producerGlobalId) {
   try {
     const repo = getRepository(TasksJobQueue);
+    const timestamp:any = Date.now();
     const job = await repo.save({
+      timestamp: timestamp,
       global_id: globalId,
       producer_global_id: producerGlobalId,
     });
@@ -37,14 +39,14 @@ export async function getTopTaskJob() {
       repo = await getMongoRepository(TasksJobQueue);
       let query: any = {
         $query: {},
-        $orderby: { created_at: 1, _id: 1 },
+        $orderby: { timestamp: 1, _id: 1 },
       };
       job = await repo.findOne(query);
     } else {
       job = await getRepository(TasksJobQueue)
         .createQueryBuilder()
         .orderBy({
-          created_at: "ASC",
+          timestamp: "ASC",
           id: "ASC",
         })
         .getOne();
@@ -67,23 +69,32 @@ export async function getTopTaskJob() {
 export async function removeTimeoutJob() {
   try {
     // only timeout those task that didn't remove after timeout
-    let timeoutCreatedAt: any =
+    const timeoutCreatedAt: any =
       Date.now() - getConfig("TASK_JOB_TIMEOUT") * 1.1;
-    timeoutCreatedAt = new Date(timeoutCreatedAt).toISOString();
+    // timeoutCreatedAt = new Date(timeoutCreatedAt).toISOString();
     logger.info(`Remove all task jobs created before ${timeoutCreatedAt}`, {
       function: "removeTimeoutJob",
     });
     if (isMongo()) {
       await getMongoRepository(TasksJobQueue).deleteMany({
-        created_at: {
-          $lt: new Date(timeoutCreatedAt),
+        timestamp: {
+          $lt: timeoutCreatedAt,
         },
       });
     } else {
+      // const taskQuery = await getRepository(
+      //   TasksJobQueue
+      // ).createQueryBuilder("task");
+      // taskQuery.where("timestamp < :timeoutCreatedAt", { timeoutCreatedAt });
+      // const tasks = await taskQuery.getMany();
+
+      // console.log('=====>>> need to delete tasks: ', tasks);
+      // console.log('=====>>> timeoutCreatedAt: ', timeoutCreatedAt);
+
       await getRepository(TasksJobQueue)
         .createQueryBuilder()
         .delete()
-        .where("created_at < :timeoutCreatedAt", { timeoutCreatedAt })
+        .where("timestamp < :timeoutCreatedAt", { timeoutCreatedAt })
         .execute();
     }
   } catch (err) {}
