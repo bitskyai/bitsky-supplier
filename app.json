@@ -10,7 +10,7 @@
     "nodejs"
   ],
   "website": "https://www.bitsky.ai",
-  "logo": "https://raw.githubusercontent.com/bitskyai/bitsky-electron/master/assets/icons/bitsky512.png",
+  "logo": "https://raw.githubusercontent.com/bitskyai/bitsky-desktop-app/master/assets/icons/bitsky512.png",
   "env": {
     "TYPEORM_CONNECTION": {
       "description": "Database connection type. Currently, available values [sqlite, mongodb].",
@@ -37,9 +37,19 @@
       "description": "Database password. Example: welcome",
       "required": false
     },
-    "NPM_CONFIG_PRODUCTION":{
-      "description": "Only installing dependencies",
-      "value": "true",
+    "TASK_TIMEOUT_CHECK_TIME":{
+      "description": "How frequently to check whether Tasks are timeout",
+      "value": "60000",
+      "required": false
+    },
+    "TIMEOUT_VALUE_FOR_TASK":{
+      "description": "Timeout value for a Task",
+      "value": "300000",
+      "required": false
+    },
+    "RETAILER_STATE_CHECK_TIME":{
+      "description": "How frequently to check Retailer state",
+      "value": "10000",
       "required": false
     }
   },
