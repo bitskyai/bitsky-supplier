@@ -17,6 +17,7 @@ export abstract class Base {
 
   @UpdateDateColumn()
   modified_at: string;
+  
   constructor(){
     this.global_id = uuidv4();
   }
@@ -28,6 +29,6 @@ export abstract class BaseMongo extends Base {
 }
 
 export abstract class BaseSQL extends Base {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn()
+  id: number;
 }

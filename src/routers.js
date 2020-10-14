@@ -1,5 +1,5 @@
 /**
- * Created by Shaoke Xu on 5/5/18.
+ * Created by Neo on 5/5/18.
  */
 const express = require('express');
 const logger = require('./util/logger');
@@ -8,10 +8,10 @@ const packageJson = require('../package.json');
 // routers
 const apikey = require('./apis/apikey');
 const self = require('./apis/self');
-const sois = require('./apis/sois');
-const intelligences = require('./apis/intelligences');
-const intelligencesHistory = require('./apis/intelligenceshistory');
-const agents = require('./apis/agents');
+const retailers = require('./apis/retailers');
+const tasks = require('./apis/tasks');
+const tasksHistory = require('./apis/taskshistory');
+const producers = require('./apis/producers');
 const health = require('./apis/health');
 
 function createAPIRouters(app){
@@ -19,17 +19,16 @@ function createAPIRouters(app){
 
   // middleware that is specific to this router
   router.use(function timeLog (req, res, next) {
-    logger.info('[API Router] Time: ', Date.now());
     next();
   });
 
   // register redfin routers
   apikey.router(router);
   self.router(router);
-  sois.router(router);
-  intelligences.router(router);
-  intelligencesHistory.router(router);
-  agents.router(router);
+  retailers.router(router);
+  tasks.router(router);
+  tasksHistory.router(router);
+  producers.router(router);
 
 
   return router;
@@ -40,7 +39,7 @@ function createHealthRouter(app){
 
   // middleware that is specific to this router
   router.use(function timeLog (req, res, next) {
-    logger.info('[Health Router] Time: ', Date.now());
+    logger.debug(`[Health Router] Time: ${ Date.now()}`);
     next();
   });
 

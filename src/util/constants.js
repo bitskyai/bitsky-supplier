@@ -3,24 +3,33 @@ const path = require('path');
 const packageJson = require("../../package.json");
 
 const CONFIG = {
-  X_REQUESTED_WITH: "x-munew-requested-with", // who send this request
-  DIA_UI: "x_munew_dia_ui",
-  X_SECURITY_KEY_HEADER: "x-munew-security-key", // This is an http request header, used for follow service to identify who send this request
+  REQUESTED_WITH_SUPPLIER_UI: "bitsky-ui", // Request by bitsky-ui
+  X_RESPONSED_WITH: "x-bitsky-responsed-with",
+  X_REQUESTED_WITH: "x-bitsky-requested-with", // who send this request
+  BITSKY_UI: "x_bitsky_ui",
+  X_SERIAL_ID: "x-bitsky-serial-id", // request serial id
+  X_JOB_ID: "x-bitsky-job-id", // each request is a job
+  X_SECURITY_KEY_HEADER: "x-bitsky-security-key", // This is an http request header, used for follow service to identify who send this request
   SECURITY_KEY_IN_DB: "securityKey",
-  SOI_STATE_CHECK_TIME: 10 * 1000, // How frequently to check SOI state
-  TIMEOUT_VALUE_FOR_INTELLIGENCE: 5 * 60 * 1000,
-  MAX_FAIL_NUMBER_FOR_INTELLIGENCE: 3, // Max fail number for an intelligence, if more then this fail number, this intelligence will be moved to history
+  TASK_TIMEOUT_CHECK_TIME: 60*1000, // HOW frequently to check task timeout
+  TASK_JOB_TIMEOUT: 60*1000, // Timeout value for a task job
+  RETAILER_STATE_CHECK_TIME: 10 * 1000, // How frequently to check Retailer state
+  TIMEOUT_VALUE_FOR_TASK: 5 * 60 * 1000,
+  MAX_FAIL_NUMBER_FOR_TASK: 3, // Max fail number for an task, if more then this fail number, this task will be moved to history
   LOG_FILES_PATH: "./public/log",
+  LOG_MAX_SIZE: 50*1024*1024, // 50MB
+  ERROR_LOG_FILE_NAME: "error.log",
+  COMBINED_LOG_FILE_NAME: "combined.log",
   NODE_ENV: "development",
-  EACH_TIME_INTELLIGENCES_NUMBER: 1,
+  EACH_TIME_TASKS_NUMBER: 1,
   SERVICE_NAME: packageJson.name,
-  LOG_LEVEL: "debug",
+  LOG_LEVEL: "info",
   PORT: 9099, // server port number
   MONGODB_URI: `mongodb://localhost:27017/${packageJson.name}`,
   DEFAULT_HEALTH_METHOD: "GET",
   DEFAULT_HEALTH_PATH: "/health",
-  DEFAULT_INTELLIGENCES_METHOD: "POST",
-  DEFAULT_INTELLIGENCES_PATH: "/apis/intelligences"
+  DEFAULT_TASKS_METHOD: "POST",
+  DEFAULT_TASKS_PATH: "/apis/tasks"
 };
 
 const DEFAULT_DB_CONFIG = {
@@ -40,14 +49,14 @@ const DEFAULT_SQLITE = {
 
 const DEFAULT_MONGODB = {
   type: "mongodb",
-  url: `mongodb://localhost:27017/${packageJson.name}`
+  url: `mongodb://localhost:27017/${packageJson.name}`,
 };
 
 const COLLECTIONS_NAME = {
-  sois: "sois",
-  agents: "agents",
-  intelligences: "intelligences",
-  intelligencesHistory: "intelligences_history",
+  retailers: "retailers",
+  producers: "producers",
+  tasks: "tasks",
+  tasksHistory: "tasks_history",
   serverInfo: "server_info",
   history: "history",
   log: "log",
@@ -55,7 +64,7 @@ const COLLECTIONS_NAME = {
   unknownData: "unknown_data"
 };
 
-const INTELLIGENCE_STATE = {
+const TASK_STATE = {
   draft: "DRAFT",
   configured: "CONFIGURED",
   finished: "FINISHED",
@@ -65,14 +74,14 @@ const INTELLIGENCE_STATE = {
   timeout: "TIMEOUT"
 };
 
-const AGENT_STATE = {
+const PRODUCER_STATE = {
   draft: "DRAFT",
   configured: "CONFIGURED",
   active: "ACTIVE",
   deleted: "DELETED"
 };
 
-const SOI_STATE = {
+const RETAILER_STATE = {
   draft: "DRAFT",
   configured: "CONFIGURED",
   active: "ACTIVE",
@@ -84,8 +93,8 @@ const PERMISSIONS = {
   private: "PRIVATE"
 };
 
-const DEFAULT_SOI = {
-  name: `SOI ${Date.now()}`,
+const DEFAULT_RETAILER = {
+  name: `Retailer ${Date.now()}`,
   system: {
     state: "FAILED",
     version: "1.0.0"
@@ -96,11 +105,11 @@ const DEFAULT_SOI = {
   },
   callback: {
     method: "POST",
-    path: "/apis/intelligences"
+    path: "/apis/tasks"
   }
 };
 
-const DEFAULT_INTELLIGENCE = {
+const DEFAULT_TASK = {
   system: {
     state: "CONFIGURED",
     version: "1.0.0",
@@ -108,11 +117,11 @@ const DEFAULT_INTELLIGENCE = {
   },
   type: "CRAWLER",
   permission: "PRIVATE",
-  suitableAgents: ["BROWSEREXTENSION"],
+  suitableProducers: ["HEADLESSBROWSER"],
   priority: 100
 };
 
-const DEFAULT_AGENT = {
+const DEFAULT_PRODUCER = {
   system: {
     version: "1.0.0",
     state: "DRAFT"
@@ -128,13 +137,13 @@ const DEFAULT_AGENT = {
 module.exports = {
   CONFIG,
   COLLECTIONS_NAME,
-  DEFAULT_SOI,
-  INTELLIGENCE_STATE,
-  AGENT_STATE,
-  SOI_STATE,
+  DEFAULT_RETAILER,
+  TASK_STATE,
+  PRODUCER_STATE,
+  RETAILER_STATE,
   PERMISSIONS,
-  DEFAULT_INTELLIGENCE,
-  DEFAULT_AGENT,
+  DEFAULT_TASK,
+  DEFAULT_PRODUCER,
   DEFAULT_DB_CONFIG,
   DEFAULT_SQLITE,
   DEFAULT_MONGODB

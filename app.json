@@ -1,25 +1,62 @@
 {
-  "name": "dia-engine",
-  "description": "Decentralized Intelligence Agency engine",
+  "name": "bitsky",
+  "description": "Make Life Productive. BitSky is a fast web crawling, web scraping and automation toolbox",
   "keywords": [
-    "DIA",
-    "DIA Engine",
-    "Data Crawling",
-    "Automation",
+    "web crawling",
+    "web scraping",
+    "crawl",
+    "scrape",
+    "automation",
     "nodejs"
   ],
-  "website": "https://munew.io",
-  "repository": "https://github.com/munew/dia-engine.git",
+  "website": "https://www.bitsky.ai",
+  "logo": "https://raw.githubusercontent.com/bitskyai/bitsky-desktop-app/master/assets/icons/bitsky512.png",
   "env": {
-    "API_KEY": {
-      "description": "API Key for restful api validation",
-      "value": "5b0e37dd-2bc8-42b4-8e18-d9b8faf19c99"
+    "TYPEORM_CONNECTION": {
+      "description": "Database connection type. Currently, available values [sqlite, mongodb].",
+      "value": "sqlite",
+      "required": false
+    },
+    "TYPEORM_HOST": {
+      "description": "Database host. Required when your TYPEORM_CONNECTION isn't sqlite. Example: bitsky123.mlab.com",
+      "required": false
+    },
+    "TYPEORM_DATABASE": {
+      "description": "Database name. Required when your TYPEORM_CONNECTION isn't sqlite. Example: bitsky",
+      "required": false
+    },
+    "TYPEORM_PORT": {
+      "description": "Database host port. Example: 27017",
+      "required": false
+    },
+    "TYPEORM_USERNAME": {
+      "description": "Database username. Example: dbuser",
+      "required": false
+    },
+    "TYPEORM_PASSWORD": {
+      "description": "Database password. Example: welcome",
+      "required": false
+    },
+    "TASK_TIMEOUT_CHECK_TIME":{
+      "description": "How frequently to check whether Tasks are timeout",
+      "value": "60000",
+      "required": false
+    },
+    "TIMEOUT_VALUE_FOR_TASK":{
+      "description": "Timeout value for a Task",
+      "value": "300000",
+      "required": false
+    },
+    "RETAILER_STATE_CHECK_TIME":{
+      "description": "How frequently to check Retailer state",
+      "value": "10000",
+      "required": false
     }
   },
   "success_url": "/",
   "buildpacks": [
     {
-      "url": "http://github.com/heroku/heroku-buildpack-nodejs.git"
+      "url": "heroku/nodejs"
     }
   ]
 }

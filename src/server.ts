@@ -1,5 +1,5 @@
 /**
- * Created by Shaoke Xu on 4/29/18.
+ * Created by Neo on 4/29/18.
  */
 
 import "reflect-metadata";
@@ -34,8 +34,11 @@ export async function startServer(customConfig) {
       server.destroy();
     }
     server = app.listen(getConfig("PORT"), function() {
+      console.log(
+        `BitSky server listening on http://localhost:${getConfig("PORT")}/ in ${app.get("env")} mode`
+      );
       logger.info(
-        "Express server listening on http://localhost:%d/ in %s mode",
+        "BitSky server listening on http://localhost:%d/ in %s mode",
         getConfig("PORT"),
         app.get("env")
       );
@@ -60,7 +63,7 @@ export async function startServer(customConfig) {
     });
 
     server.on("close", () => {
-      logger.info("Server closed");
+      logger.info("Supplier Server closed");
       // process.emit("cleanup");
 
       logger.info("Giving 100ms time to cleanup..");

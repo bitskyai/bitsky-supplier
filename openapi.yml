@@ -1,10 +1,10 @@
 openapi: 3.0.1
 info:
-  title: DIA Engine
-  description: Decentralized Intelligence Agency
+  title: BitSky Supplier
+  description: Decentralized Task Agency
   termsOfService: http://swagger.io/terms/
   contact:
-    email: shaokexu@gmail.com
+    email: help.bitskyai@gmail.com
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -12,42 +12,42 @@ info:
 servers:
   - url: http://localhost:9099/
 tags:
-  - name: soi
-    description: Service of Intelligence
+  - name: retailer
+    description: Service of Task
   - name: server
-    description: Decentralized Intelligence Agency
-  - name: intelligences
-    description: Intelligences want to collect
+    description: Decentralized Task Agency
+  - name: tasks
+    description: Tasks want to collect
 paths:
-  /apis/sois:
+  /apis/retailers:
     get:
       tags:
-        - soi
-      summary: Get a list of SOIs
+        - retailer
+      summary: Get a list of Retailers
       description: Operation Index - 0011
-      operationId: getSOIs
+      operationId: getRetailers
       responses:
         200:
-          description: Get SOIs successful
+          description: Get Retailers successful
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "./src/schemas/soi.json"
+                  $ref: "./src/schemas/retailer.json"
     post:
       tags:
-        - soi
-      summary: Register a SOI.
+        - retailer
+      summary: Register a Retailer.
       description: Operation Index - 0001
-      operationId: registerSOI
+      operationId: registerRetailer
       requestBody:
-        description: Need to register SOI information
+        description: Need to register Retailer information
         required: true
         content:
           application/json:
             schema:
-              $ref: "./src/schemas/soi.json"
+              $ref: "./src/schemas/retailer.json"
       responses:
         200:
           description: Registered successful
@@ -67,27 +67,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /apis/sois/{gid}:
+  /apis/retailers/{gid}:
     get:
       tags:
-        - soi
-      summary: Get a SOI.
+        - retailer
+      summary: Get a Retailer.
       description: Operation Index - 0002
-      operationId: getSOI
+      operationId: getRetailer
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of SOI
+          description: global_id of Retailer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Get a SOI successful
+          description: Get a Retailer successful
           content:
             application/json:
               schema:
-                $ref: "./src/schemas/soi.json"
+                $ref: "./src/schemas/retailer.json"
         400:
           description: Bad request, the data pass isn't valid
           content:
@@ -95,56 +95,56 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         404:
-          description: Cannot find specific SOI
+          description: Cannot find specific Retailer
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
     put:
       tags:
-        - soi
-      summary: Update a SOI
+        - retailer
+      summary: Update a Retailer
       description: Operation Index - 0003
-      operationId: updateSOI
+      operationId: updateRetailer
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of SOI
+          description: global_id of Retailer
           schema:
             $ref: "#/components/schemas/GlobalId"
       requestBody:
-        description: SOI information need to update
+        description: Retailer information need to update
         required: true
         content:
           application/json:
             schema:
-              $ref: "./src/schemas/soi.json"
+              $ref: "./src/schemas/retailer.json"
       responses:
         204:
-          description: Update SOI successful
+          description: Update Retailer successful
         404:
-          description: Cannot find specific SOI
+          description: Cannot find specific Retailer
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
     delete:
       tags:
-        - soi
-      summary: Unregister a SOI
+        - retailer
+      summary: Unregister a Retailer
       description: Operation Index - 0004
-      operationId: unregisterSOI
+      operationId: unregisterRetailer
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of SOI
+          description: global_id of Retailer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Delete SOI successful
+          description: Delete Retailer successful
           content:
             application/json:
               schema:
@@ -153,7 +153,7 @@ paths:
                   global_id:
                     $ref: "#/components/schemas/GlobalId"
         404:
-          description: Cannot find specific SOI
+          description: Cannot find specific Retailer
           content:
             application/json:
               schema:
@@ -161,27 +161,27 @@ paths:
                 properties:
                   global_id:
                     $ref: "#/components/schemas/GlobalId"
-  /apis/sois/{gid}/status:
+  /apis/retailers/{gid}/status:
     put:
       tags:
-        - soi
-      summary: Update a SOI status
+        - retailer
+      summary: Update a Retailer status
       description: Operation Index - 0010
-      operationId: updateSOIStatus
+      operationId: updateRetailerStatus
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of SOI
+          description: global_id of Retailer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Update a SOI successful
+          description: Update a Retailer successful
           content:
             application/json:
               schema:
-                $ref: "./src/schemas/soi.json"
+                $ref: "./src/schemas/retailer.json"
         400:
           description: Bad request, the data pass isn't valid
           content:
@@ -189,39 +189,39 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         404:
-          description: Cannot find specific SOI
+          description: Cannot find specific Retailer
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /apis/agents:
+  /apis/producers:
     get:
       tags:
-        - agent
+        - producer
       description: Operation Index - 0012
-      operationId: getAgents
+      operationId: getProducers
       responses:
         200:
-          description: Get Agents successful
+          description: Get Producers successful
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "./src/schemas/agent.json"
+                  $ref: "./src/schemas/producer.json"
     post:
       tags:
-        - agent
-      summary: Register an Agent.
+        - producer
+      summary: Register an Producer.
       description: Operation Index - 0013
-      operationId: registerAgent
+      operationId: registerProducer
       requestBody:
-        description: Need to register Agent information
+        description: Need to register Producer information
         required: true
         content:
           application/json:
             schema:
-              $ref: "./src/schemas/agent.json"
+              $ref: "./src/schemas/producer.json"
       responses:
         200:
           description: Registered successful
@@ -241,27 +241,27 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /apis/agents/{gid}:
+  /apis/producers/{gid}:
     get:
       tags:
-        - agent
-      summary: Get an Agent
+        - producer
+      summary: Get an Producer
       description: Operation Index - 0014
-      operationId: getAgent
+      operationId: getProducer
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of Agent
+          description: global_id of Producer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Get an agent successful
+          description: Get an producer successful
           content:
             application/json:
               schema:
-                $ref: "./src/schemas/agent.json"
+                $ref: "./src/schemas/producer.json"
         400:
           description: Bad request, the data pass isn't valid
           content:
@@ -269,56 +269,56 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         404:
-          description: Cannot find specific Agent
+          description: Cannot find specific Producer
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
     put:
       tags:
-        - agent
-      summary: Update an Agent
+        - producer
+      summary: Update an Producer
       description: Operation Index - 0015
-      operationId: updateAgent
+      operationId: updateProducer
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of Agent
+          description: global_id of Producer
           schema:
             $ref: "#/components/schemas/GlobalId"
       requestBody:
-        description: Agent information need to update
+        description: Producer information need to update
         required: true
         content:
           application/json:
             schema:
-              $ref: "./src/schemas/agent.json"
+              $ref: "./src/schemas/producer.json"
       responses:
         204:
-          description: Update Agent successful
+          description: Update Producer successful
         404:
-          description: Cannot find specific Agent
+          description: Cannot find specific Producer
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
     delete:
       tags:
-        - agent
-      summary: Unregister an Agent
+        - producer
+      summary: Unregister an Producer
       description: Operation Index - 0016
-      operationId: unregisterAgent
+      operationId: unregisterProducer
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of Agent
+          description: global_id of Producer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Delete Agent successful
+          description: Delete Producer successful
           content:
             application/json:
               schema:
@@ -327,7 +327,7 @@ paths:
                   global_id:
                     $ref: "#/components/schemas/GlobalId"
         404:
-          description: Cannot find specific Agent
+          description: Cannot find specific Producer
           content:
             application/json:
               schema:
@@ -335,27 +335,27 @@ paths:
                 properties:
                   global_id:
                     $ref: "#/components/schemas/GlobalId"
-  /apis/agents/{gid}/activate:
+  /apis/producers/{gid}/activate:
     post:
       tags:
-        - agent
-      summary: Activate an Agent status
+        - producer
+      summary: Activate an Producer status
       description: Operation Index - 0017
-      operationId: activateAgentStatus
+      operationId: activateProducerStatus
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of agent
+          description: global_id of producer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Update a Agent successful
+          description: Update a Producer successful
           content:
             application/json:
               schema:
-                $ref: "./src/schemas/agent.json"
+                $ref: "./src/schemas/producer.json"
         400:
           description: Bad request, the data pass isn't valid
           content:
@@ -363,32 +363,32 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         404:
-          description: Cannot find specific Agent
+          description: Cannot find specific Producer
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /apis/agents/{gid}/deactivate:
+  /apis/producers/{gid}/deactivate:
     post:
       tags:
-        - agent
-      summary: Activate an Agent status
+        - producer
+      summary: Activate an Producer status
       description: Operation Index - 0018
-      operationId: deactivateAgentStatus
+      operationId: deactivateProducerStatus
       parameters:
         - in: path
           name: gid
           required: true
-          description: global_id of agent
+          description: global_id of producer
           schema:
             $ref: "#/components/schemas/GlobalId"
       responses:
         200:
-          description: Update a Agent successful
+          description: Update a Producer successful
           content:
             application/json:
               schema:
-                $ref: "./src/schemas/agent.json"
+                $ref: "./src/schemas/producer.json"
         400:
           description: Bad request, the data pass isn't valid
           content:
@@ -396,18 +396,18 @@ paths:
               schema:
                 $ref: "#/components/schemas/Error"
         404:
-          description: Cannot find specific Agent
+          description: Cannot find specific Producer
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/Error"
-  /apis/manangement/intelligences:
+  /apis/manangement/tasks:
     get:
       tags:
-        - intelligences
-      summary: Get intelligences
+        - tasks
+      summary: Get tasks
       description: Operation Index - 0019
-      operationId: getIntelligencesForManagement
+      operationId: getTasksForManagement
       parameters:
         - in: query
           name: cursor
@@ -416,7 +416,7 @@ paths:
             $ref: "#/components/schemas/Cursor"
         - in: query
           name: limit
-          description: How many intelligences for each page
+          description: How many tasks for each page
           schema:
             type: integer
             default: 50
@@ -427,20 +427,20 @@ paths:
             type: string
         - in: query
           name: state
-          description: search intelligence's state that is contained state.
+          description: search task's state that is contained state.
           schema:
             type: string
             example:
               - PAUSED,TIMEOUT
       responses:
         200:
-          description: Get intelligences successful
+          description: Get tasks successful
           content:
             application/json:
               schema:
                 type: object
                 required:
-                  - intelligences
+                  - tasks
                 properties:
                   previousCursor:
                     $ref: "#/components/schemas/Cursor"
@@ -448,17 +448,17 @@ paths:
                     $ref: "#/components/schemas/Cursor"
                   total:
                     type: integer
-                    description: Total number of intelligences
-                  intelligences:
+                    description: Total number of tasks
+                  tasks:
                     type: array
                     items:
-                      $ref: "./src/schemas/intelligence.json"
+                      $ref: "./src/schemas/task.json"
     delete:
       tags:
-        - intelligences
-      summary: Delete intelligences from database
+        - tasks
+      summary: Delete tasks from database
       description: Operation Index - 0022
-      operationId: deleteIntelligencesForManagement
+      operationId: deleteTasksForManagement
       parameters:
         - in: query
           name: url
@@ -466,7 +466,7 @@ paths:
           schema:
             type: string
       requestBody:
-        description: Pause all passed Intelligences
+        description: Pause all passed Tasks
         required: true
         content:
           application/json:
@@ -474,17 +474,17 @@ paths:
               type: array
               items:
                 type: string
-                description: Intelligences Global Id
+                description: Tasks Global Id
       responses:
         204:
           description: Delete successful
-  /apis/manangement/intelligences/pause:
+  /apis/manangement/tasks/pause:
     post:
       tags:
-        - intelligences
-      summary: Pause all matched intelligences.
+        - tasks
+      summary: Pause all matched tasks.
       description: Operation Index - 0020. **ids** priority high than **query parameters(`url`)**, if you pass both, only **ids** will be executed
-      operationId: pauseIntelligencesForManagement
+      operationId: pauseTasksForManagement
       parameters:
         - in: query
           name: url
@@ -492,7 +492,7 @@ paths:
           schema:
             type: string
       requestBody:
-        description: Pause all passed Intelligences
+        description: Pause all passed Tasks
         required: true
         content:
           application/json:
@@ -500,17 +500,17 @@ paths:
               type: array
               items:
                 type: string
-                description: Intelligences Global Id
+                description: Tasks Global Id
       responses:
         204:
-          description: Pasuse all intelligences successful
-  /apis/manangement/intelligences/resume:
+          description: Pasuse all tasks successful
+  /apis/manangement/tasks/resume:
     post:
       tags:
-        - intelligences
-      summary: Get intelligences
+        - tasks
+      summary: Get tasks
       description: Operation Index - 0021. **ids** priority high than **query parameters(`url`)**, if you pass both, only **ids** will be executed
-      operationId: resumeIntelligencesForManagement
+      operationId: resumeTasksForManagement
       parameters:
         - in: query
           name: url
@@ -518,7 +518,7 @@ paths:
           schema:
             type: string
       requestBody:
-        description: Resume all passed Intelligences
+        description: Resume all passed Tasks
         required: true
         content:
           application/json:
@@ -526,42 +526,41 @@ paths:
               type: array
               items:
                 type: string
-                description: Intelligences Global Id
+                description: Tasks Global Id
       responses:
         204:
-          description: Resume all intelligences successful
-  /apis/intelligences:
+          description: Resume all tasks successful
+  /apis/tasks:
     get:
       tags:
-        - intelligences
-      summary: Get intelligences for agents to execute
+        - tasks
+      summary: Get tasks for producers to execute
       description: Operation Index - 0005
-      operationId: getIntelligences
+      operationId: getTasks
       parameters:
         - in: query
           name: type
           required: true
-          description: Agent Type
+          description: Producer Type
           schema:
             type: string
             enum:
-              - BROWSEREXTENSION
               - HEADLESSBROWSER
-              - SERVICE
+              - HTTP
         - in: query
           name: gid
           required: true
-          description: Agent Global Id
+          description: Producer Global Id
           schema:
             $ref: "#/components/schemas/GlobalId"
         - in: query
           name: limit
-          description: How many intelligences want to get
+          description: How many tasks want to get
           schema:
             type: number
         - in: query
           name: permission
-          description: permisson for this agent
+          description: permisson for this producer
           schema:
             type: string
             default: public
@@ -570,45 +569,45 @@ paths:
               - public
       responses:
         200:
-          description: Intelligences for collected
+          description: Tasks for collected
           content:
             application/json:
               schema:
                 type: array
                 items:
-                  $ref: "./src/schemas/intelligence.json"
+                  $ref: "./src/schemas/task.json"
     post:
       tags:
-        - intelligences
-      summary: Add intelligences to collecting list
+        - tasks
+      summary: Add tasks to collecting list
       description: Operation Index - 0006
-      operationId: addIntelligences
+      operationId: addTasks
       requestBody:
-        description: Need to collect intelligences
+        description: Need to collect tasks
         required: true
         content:
           application/json:
             schema:
               type: array
               items:
-                $ref: "./src/schemas/intelligence.json"
+                $ref: "./src/schemas/task.json"
       responses:
         200:
-          description: Extract intelligences successful
+          description: Extract tasks successful
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/AddSuccess"
         404:
-          description: Cannot find specific SOI, please make sure you registered
+          description: Cannot find specific Retailer, please make sure you registered
     put:
       tags:
-        - intelligences
-      summary: Update intelligences
+        - tasks
+      summary: Update tasks
       description: Operation Index - 0007
-      operationId: updateIntelligences
+      operationId: updateTasks
       requestBody:
-        description: Update intelligences
+        description: Update tasks
         required: true
         content:
           application/json:
@@ -616,52 +615,52 @@ paths:
               type: array
               items:
                 allOf:
-                  - $ref: "./src/schemas/intelligence.json"
+                  - $ref: "./src/schemas/task.json"
                   - type: object
                     properties:
                       operation:
                         type: string
-                        description: what kind of operation want to do to this intelligence. This will not be save to Intelligence.
+                        description: what kind of operation want to do to this task. This will not be save to Task.
                         default: DELETE
                         enum:
                           - DELETE
                           - UPDATE
       responses:
         200:
-          description: Extract intelligences successful
+          description: Extract tasks successful
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/AddSuccess"
         404:
-          description: Cannot find specific SOI, please make sure you registered
+          description: Cannot find specific Retailer, please make sure you registered
     delete:
       tags:
-        - intelligences
-      summary: Delete intelligences from collecting list
+        - tasks
+      summary: Delete tasks from collecting list
       description: Operation Index - 0008
-      operationId: deleteIntelligences
+      operationId: deleteTasks
       parameters:
         - in: query
           name: gids
-          description: Intelligences' Global Id that want to delete
+          description: Tasks' Global Id that want to delete
           schema:
             type: array
             items:
               $ref: "#/components/schemas/GlobalId"
       responses:
         204:
-          description: Update SOI successful
+          description: Update Retailer successful
   /health:
     get:
       tags:
         - server
-      summary: Check DIA's health status
+      summary: Check BitSky's health status
       description: Operation Index - 0009
       operationId: checkHealth
       responses:
         200:
-          description: SOI is active
+          description: Retailer is active
           content:
             application/json:
               schema:
@@ -680,12 +679,12 @@ components:
       properties:
         successful:
           type: array
-          description: Successful Intelligence global_id
+          description: Successful Task global_id
           items:
             $ref: "#/components/schemas/GlobalId"
         fail:
           type: array
-          description: Fail Intelligence global_id
+          description: Fail Task global_id
           items:
             $ref: "#/components/schemas/GlobalId"
     HealthStatus:
@@ -693,19 +692,19 @@ components:
       properties:
         name:
           type: string
-          description: DIA Name
-          example: "dia"
+          description: BitSky Name
+          example: "bitsky"
         description:
           type: string
-          description: DIA description.
-          example: "Decentralized Intelligence Agency"
+          description: BitSky description.
+          example: "Decentralized Task Agency"
         version:
           type: string
-          description: DIA version
+          description: BitSky version
           example: "0.0.1"
         migrationVersion:
           type: string
-          description: DIA currently migrationVersion
+          description: BitSky currently migrationVersion
           example: 1
     Error:
       type: object

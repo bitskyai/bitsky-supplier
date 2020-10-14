@@ -7,7 +7,8 @@ const { HTTPError } = require("../util/error");
 export async function getServerInfo() {
   try {
     const serverInfoRepo = getRepository(ServerInformation);
-    const serverInfo = await serverInfoRepo.find();
+
+    const serverInfo = await serverInfoRepo.find({});
     logger.debug("[getServerInfo], serverInfo: %o", serverInfo);
     return serverInfo && serverInfo[0];
   } catch (err) {

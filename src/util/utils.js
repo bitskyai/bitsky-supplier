@@ -2,13 +2,13 @@ const _ = require("lodash");
 const Ajv = require("ajv");
 const uuidv4 = require('uuid/v4');
 
-const soiSchema = require("../schemas/soi.json");
-const agentSchema = require("../schemas/agent.json");
-const intelligenceSchema = require("../schemas/intelligence.json");
+const retailerSchema = require("../schemas/retailer.json");
+const producerSchema = require("../schemas/producer.json");
+const taskSchema = require("../schemas/task.json");
 const UnknownData = require("../data_models/UnknownData");
 const { logUnknownDataToDB } = require("./db");
 const logger = require("./logger");
-const { AGENT_STATE, SOI_STATE } = require("./constants");
+const { PRODUCER_STATE, RETAILER_STATE } = require("./constants");
 const { CustomError } = require('./error');
 /**
  * Get a number value. If it doesn't contain valid number value, then return NaN
@@ -207,13 +207,13 @@ function omit(obj, omitKeys, iterateKeys) {
  */
 
 /**
- * Based on Agent Schema to validate an agent
- * @param {object} agentData - agent data want to be validate
+ * Based on Producer Schema to validate an producer
+ * @param {object} producerData - producer data want to be validate
  * @returns {ValidateResult}
  */
-function validateAgent(agentData) {
+function validateProducer(producerData) {
   var ajv = new Ajv();
-  let valid = ajv.validate(agentSchema, agentData);
+  let valid = ajv.validate(producerSchema, producerData);
   return {
 	  valid,
 	  errors: ajv.errors
@@ -221,13 +221,13 @@ function validateAgent(agentData) {
 }
 
 /**
- * Based on Intelligence Schema to validate an intelligence
- * @param {object} intelligenceData - intelligence data want to be validated
+ * Based on Task Schema to validate an task
+ * @param {object} taskData - task data want to be validated
  * @returns {ValidateResult}
  */
-function validateIntelligence(intelligenceData) {
+function validateTask(taskData) {
   var ajv = new Ajv();
-  let valid = ajv.validate(intelligenceSchema, intelligenceData);
+  let valid = ajv.validate(taskSchema, taskData);
   return {
 	  valid,
 	  errors: ajv.errors
@@ -235,13 +235,13 @@ function validateIntelligence(intelligenceData) {
 }
 
 /**
- * Based on SOI Schema to validate a SOI
- * @param {object} soiData - agent data want to be validate
+ * Based on Retailer Schema to validate a Retailer
+ * @param {object} retailerData - producer data want to be validate
  * @returns {ValidateResult}
  */
-function validateSOI(soiData) {
+function validateRetailer(retailerData) {
   var ajv = new Ajv();
-  let valid = ajv.validate(soiSchema, soiData);
+  let valid = ajv.validate(retailerSchema, retailerData);
   return {
 	  valid,
 	  errors: ajv.errors
@@ -249,85 +249,85 @@ function validateSOI(soiData) {
 }
 
 /**
- * Based on Agent Schema to validate agent and update agent state.
- * If agent state is active, then 
- * @param {object} agentData - agent data want to validate
- * @returns {object} - return validate agent with state be updated to correct
+ * Based on Producer Schema to validate producer and update producer state.
+ * If producer state is active, then 
+ * @param {object} producerData - producer data want to validate
+ * @returns {object} - return validate producer with state be updated to correct
  */
-function validateAgentAndUpdateState(agentData) {
-  // Default to set agent state to draft, since agent state is required.
-  // It is useful for new agent that need to be registered
-  if (!agentData.system.state) {
-    agentData.system.state = AGENT_STATE.draft;
+function validateProducerAndUpdateState(producerData) {
+  // Default to set producer state to draft, since producer state is required.
+  // It is useful for new producer that need to be registered
+  if (!producerData.system.state) {
+    producerData.system.state = PRODUCER_STATE.draft;
   }
   // for **deleted** status don't need to validate
   // TODO: maybe need to retrun warning, when need then can change
-  if( _.toUpper(agentData.system.state) === _.toUpper(AGENT_STATE.deleted)){
-    return agentData;
+  if( _.toUpper(producerData.system.state) === _.toUpper(PRODUCER_STATE.deleted)){
+    return producerData;
   }
-  let validateResult = validateAgent(agentData);
+  let validateResult = validateProducer(producerData);
   // for active state, don't change its state
-  if(_.toUpper(agentData.system.state) === _.toUpper(AGENT_STATE.active)){
+  if(_.toUpper(producerData.system.state) === _.toUpper(PRODUCER_STATE.active)){
     if (!validateResult.valid) {
       // for active state, but it isn't valid, then this means something wrong, throw error
-      throw new CustomError(null, {agentData}, '00004000001', agentData.globalId);
+      throw new CustomError(null, {producerData}, '00004000001', producerData.globalId);
     }
     // if it is valid, then don't need to change state
   }else{
     if (validateResult.valid) {
-      agentData.system.state = _.toUpper(AGENT_STATE.configured);
+      producerData.system.state = _.toUpper(PRODUCER_STATE.configured);
     } else {
-      agentData.system.state = _.toUpper(AGENT_STATE.draft);
+      producerData.system.state = _.toUpper(PRODUCER_STATE.draft);
     }
   }
-  return agentData;
+  return producerData;
 }
 
 /**
- * Based on SOI Schema to validate SOI and update SOI state.
+ * Based on Retailer Schema to validate Retailer and update Retailer state.
 
- * @param {object} soiData - SOI data want to validate
- * @returns {object} - return validate soi with state be updated to correct
+ * @param {object} retailerData - Retailer data want to validate
+ * @returns {object} - return validate retailer with state be updated to correct
  */
-function validateSOIAndUpdateState(soiData) {
-  // Default to set SOI state to draft, since SOI state is required.
-  // It is useful for new SOI that need to be registered
-  if (!soiData.system.state) {
-    soiData.system.state = SOI_STATE.draft;
+function validateRetailerAndUpdateState(retailerData) {
+  // Default to set Retailer state to draft, since Retailer state is required.
+  // It is useful for new Retailer that need to be registered
+  if (!retailerData.system.state) {
+    retailerData.system.state = RETAILER_STATE.draft;
   }
   // for **deleted** status don't need to validate
   // TODO: maybe need to retrun warning, when need then can change
-  if( _.toUpper(soiData.system.state) === _.toUpper(soiData.deleted)){
-    return soiData;
+  if( _.toUpper(retailerData.system.state) === _.toUpper(retailerData.deleted)){
+    return retailerData;
   }
-  let validateResult = validateSOI(soiData);
-  console.log("validateSOIAndUpdateState->soiData: ", JSON.stringify(soiData));
-  console.log("validateSOIAndUpdateState->validateResult: ", JSON.stringify(validateResult));
+  let validateResult = validateRetailer(retailerData);
+  console.log("validateRetailerAndUpdateState->retailerData: ", JSON.stringify(retailerData));
+  console.log("validateRetailerAndUpdateState->validateResult: ", JSON.stringify(validateResult));
   // for active state, don't change its state
-  if(_.toUpper(soiData.system.state) === _.toUpper(SOI_STATE.active)){
+  if(_.toUpper(retailerData.system.state) === _.toUpper(RETAILER_STATE.active)){
     if (!validateResult.valid) {
       // for active state, but it isn't valid, then this means something wrong, throw error
-      // throw new CustomError(null, {soiData}, '00004000001', soiData.globalId);
-      soiData.system.state = _.toUpper(SOI_STATE.draft);
+      // throw new CustomError(null, {retailerData}, '00004000001', retailerData.globalId);
+      retailerData.system.state = _.toUpper(RETAILER_STATE.draft);
     }
     // if it is valid, then don't need to change state
   }else{
     if (validateResult.valid) {
-      soiData.system.state = _.toUpper(SOI_STATE.configured);
+      retailerData.system.state = _.toUpper(RETAILER_STATE.configured);
     } else {
-      soiData.system.state = _.toUpper(SOI_STATE.draft);
+      retailerData.system.state = _.toUpper(RETAILER_STATE.draft);
     }
   }
-  return soiData;
+  return retailerData;
 }
 
 function generateGlobalId(entityType){
   let id = uuidv4();
-  if(!entityType){
-    entityType = "munew-dia";
-  }
-  id = `${entityType}::${Date.now()}::${id}`;
-  id = btoa(id);
+  // if(!entityType){
+  //   entityType = "bitsky-bitsky";
+  // }
+  // id = `${entityType}::${Date.now()}::${id}`;
+  // id = btoa(id);
   return id;
 }
 
@@ -351,10 +351,10 @@ module.exports = {
   logAnUnKnownData,
   getTodaySpecificTimeUTCTimestamp,
   omit,
-  validateAgent,
-  validateAgentAndUpdateState,
-  validateIntelligence,
-  validateSOI,
-  validateSOIAndUpdateState,
+  validateProducer,
+  validateProducerAndUpdateState,
+  validateTask,
+  validateRetailer,
+  validateRetailerAndUpdateState,
   convertStringToRegExp
 };

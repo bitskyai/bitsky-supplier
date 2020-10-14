@@ -28,7 +28,7 @@ export default function getDBConfiguration() {
     configuration = { ...constants.DEFAULT_DB_CONFIG, ...configuration };
 
     if (configuration.type == constants.DEFAULT_SQLITE.type) {
-      configuration.database = getConfig('TYPEORM_DATABASE');
+      configuration.database = getConfig('TYPEORM_DATABASE') || constants.DEFAULT_SQLITE.database;
       configuration.entities = [
         path.join(__dirname, "../entity/**/*.common.js"),
         path.join(__dirname, "../entity/**/*.sql.js"),
@@ -37,8 +37,12 @@ export default function getDBConfiguration() {
     } else if (configuration.type == constants.DEFAULT_MONGODB.type) {
       dbType = "nosql";
       // https://typeorm.io/#/connection-options/mongodb-connection-options
-      configuration.url = getConfig('TYPEORM_URL');
+      // configuration.url = getConfig('TYPEORM_URL');
       // Following set will overwrite parameters set from URL
+      if (getConfig('TYPEORM_URL')) {
+        configuration.url = getConfig('TYPEORM_URL');
+      }
+
       if (getConfig('TYPEORM_HOST')) {
         configuration.host = getConfig('TYPEORM_HOST');
       }
@@ -49,6 +53,14 @@ export default function getDBConfiguration() {
 
       if (getConfig('TYPEORM_DATABASE')) {
         configuration.database = getConfig('TYPEORM_DATABASE');
+      }
+
+      if (getConfig('TYPEORM_USERNAME')) {
+        configuration.username = getConfig('TYPEORM_USERNAME');
+      }
+
+      if (getConfig('TYPEORM_PASSWORD')) {
+        configuration.password = getConfig('TYPEORM_PASSWORD');
       }
 
       configuration.useNewUrlParser = true;
